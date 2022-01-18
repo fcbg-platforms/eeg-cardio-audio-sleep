@@ -1,3 +1,6 @@
+numpy
+scipy
 mne
 neurokit2
 bsl
+sounddevice

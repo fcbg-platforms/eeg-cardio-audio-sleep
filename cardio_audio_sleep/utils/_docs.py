@@ -9,6 +9,20 @@ import sys
 # ------------------------- Documentation dictionary -------------------------
 docdict = dict()
 
+# ----------------------------------- audio ----------------------------------
+docdict['audio_volume'] = """
+volume : list | int | float
+    If an int or a float is provided, the sound will use only one channel
+    (mono). If a 2-length sequence is provided, the sound will use 2
+    channels (stereo). Volume of each channel is given between 0 and 100.
+    For stereo, the volume is given as [L, R]."""
+docdict['audio_sample_rate'] = """
+sample_rate : int
+    Sampling frequency of the sound. The default is 44100 kHz."""
+docdict['audio_duration'] = """
+duration : float
+    Duration of the sound. The default is 0.1 second."""
+
 # ------------------------- Documentation functions --------------------------
 docdict_indented = dict()
 

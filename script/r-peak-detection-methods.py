@@ -1,3 +1,4 @@
+#%% With neurokit
 import math
 
 import mne
@@ -50,4 +51,34 @@ for peak in peaks1['ECG_R_Peaks']:
 for peak in peaks2['ECG_R_Peaks']:
     ax[1].axvline(peak, color='teal')
 for peak in peaks3['ECG_R_Peaks']:
+    ax[2].axvline(peak, color='teal')
+
+#%% With ecgdetectors
+import mne
+from ecgdetectors import Detectors
+from matplotlib import pyplot as plt
+
+
+# Load raw
+fname = 'C:/Users/Mathieu/Documents/git/cardio-audio-sleep/data/ecg-raw.fif'
+raw = mne.io.read_raw_fif(fname, preload=True)
+data1 = raw.get_data()[0, :1067]
+data2 = raw.get_data()[0, :1075]
+data3 = raw.get_data()[0, :1090]
+fs = raw.info['sfreq']
+detectors = Detectors(fs)
+
+r_peaks1 = detectors.swt_detector(data1)
+r_peaks2 = detectors.swt_detector(data2)
+r_peaks3 = detectors.swt_detector(data3)
+
+f, ax = plt.subplots(3, 1, sharex=True, sharey=False, figsize=(10, 5))
+ax[0].plot(data1)
+ax[1].plot(data2)
+ax[2].plot(data3)
+for peak in r_peaks1:
+    ax[0].axvline(peak, color='teal')
+for peak in r_peaks2:
+    ax[1].axvline(peak, color='teal')
+for peak in r_peaks3:
     ax[2].axvline(peak, color='teal')

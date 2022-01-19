@@ -5,3 +5,4 @@ neurokit2
 bsl
 sounddevice
 PyWavelets
+py-ecg-detectors

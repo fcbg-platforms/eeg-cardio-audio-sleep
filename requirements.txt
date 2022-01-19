@@ -4,3 +4,4 @@ mne
 neurokit2
 bsl
 sounddevice
+PyWavelets

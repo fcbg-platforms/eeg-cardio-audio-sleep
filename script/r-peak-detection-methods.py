@@ -1,0 +1,55 @@
+import math
+
+import mne
+import numpy as np
+import neurokit2 as nk
+from matplotlib import pyplot as plt
+from scipy.signal import butter, sosfiltfilt
+
+
+# Load raw
+fname = 'C:/Users/Mathieu/Documents/git/cardio-audio-sleep/data/ecg-raw.fif'
+raw = mne.io.read_raw_fif(fname, preload=True)
+data1 = raw.get_data()[0, :1075]
+data2 = raw.get_data()[0, :1080]
+data3 = raw.get_data()[0, :1090]
+fs = raw.info['sfreq']
+
+# BP filter
+bp_low = 1 / (0.5 * fs)
+bp_high = 15 / (0.5 * fs)
+sos = butter(2, [bp_low, bp_high], btype='bandpass', output='sos')
+clean1 = sosfiltfilt(sos, data1)
+clean2 = sosfiltfilt(sos, data2)
+clean3 = sosfiltfilt(sos, data3)
+
+# Find peaks
+method = 'kalidas2017'
+peaks1 = nk.ecg.ecg_findpeaks(clean1, sampling_rate=fs, method=method)
+peaks2 = nk.ecg.ecg_findpeaks(clean2, sampling_rate=fs, method=method)
+peaks3 = nk.ecg.ecg_findpeaks(clean3, sampling_rate=fs, method=method)
+
+idx = math.ceil(0.06 * fs)
+peak1 = peaks1['ECG_R_Peaks'][-1]
+pos1 = peak1 - idx + np.argmax(data1[peak1-idx:peak1])
+peak2 = peaks2['ECG_R_Peaks'][-1]
+pos2 = peak2 - idx + np.argmax(data2[peak2-idx:peak2])
+peak3 = peaks3['ECG_R_Peaks'][-1]
+pos3 = peak3 - idx + np.argmax(data3[peak3-idx:peak3])
+
+# Plot
+f, ax = plt.subplots(3, 1, sharex=True, sharey=False, figsize=(10, 5))
+ax[0].plot(clean1)
+ax[1].plot(clean2)
+ax[2].plot(clean3)
+ax[0].axvline(pos1, color='crimson')
+ax[1].axvline(pos2, color='crimson')
+ax[2].axvline(pos3, color='crimson')
+for peak in peaks1['ECG_R_Peaks']:
+    ax[0].axvline(peak, color='teal')
+for peak in peaks2['ECG_R_Peaks']:
+    ax[1].axvline(peak, color='teal')
+for peak in peaks3['ECG_R_Peaks']:
+    ax[2].axvline(peak, color='teal')
+
+f.suptitle('Kalidas 2017 - BP[1, 15] Hz')

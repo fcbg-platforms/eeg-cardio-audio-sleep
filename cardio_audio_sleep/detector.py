@@ -132,4 +132,9 @@ class Detector:
         # look for actual peak location in the preceding 60 ms
         idx = math.ceil(0.06 * self._sample_rate)
         pos = peak - idx + np.argmax(self._raw_ecg_buffer[peak-idx:peak])
-        return True, self._timestamps_buffer[pos]
+        return True, pos
+
+    @property
+    def timestamps_buffer(self):
+        """The LSL timestamp buffer."""
+        return self._timestamps_buffer

@@ -1,18 +1,21 @@
 import math
 
 from bsl import StreamReceiver
+from bsl.utils import Timer
 import neurokit2 as nk
 import numpy as np
+from scipy.signal import butter, sosfilt, sosfilt_zi
 
 from .utils._checks import _check_type, _check_value
 
-_BUFFER_DURATION = 1  # seconds
+_BUFFER_DURATION = 5  # seconds
 
 
 class Detector:
     """
     Class detecting R-peaks from an ECG LSL stream.
     Adapted from BSL StreamViewer scope.
+    Takes _BUFFER_DURATION seconds to initialize to fill an entire buffer.
 
     Parameters
     ----------
@@ -50,6 +53,25 @@ class Detector:
         self._ecg_buffer = np.zeros(self._duration_buffer_samples)
         self._timestamps_buffer = np.zeros(self._duration_buffer_samples)
 
+        # BP filter
+        self._init_bandpass_filter()
+
+        # Fill an entire buffer
+        timer = Timer()
+        while timer.sec() <= _BUFFER_DURATION:
+            self.update_loop()
+
+    def _init_bandpass_filter(self):
+        """
+        Initialize the bandpass filter (Butter, order 1, [8, 16] Hz)
+        """
+        bp_low = 1 / (0.5 * self._sample_rate)
+        bp_high = 15 / (0.5 * self._sample_rate)
+        self._sos = butter(
+            1, [bp_low, bp_high], btype='bandpass', output='sos')
+        self._zi_coeff = sosfilt_zi(self._sos)
+        self._zi = None
+
     def update_loop(self):
         """
         Main update loop acquiring data from the LSL stream and filling the
@@ -62,6 +84,8 @@ class Detector:
         if len(self._ts_list) == 0:
             return  # no new samples
 
+        self._filter_signal()
+
         # shape (samples, )
         self._timestamps_buffer = np.roll(
             self._timestamps_buffer, -len(self._ts_list))
@@ -70,23 +94,30 @@ class Detector:
         self._ecg_buffer[-len(self._ts_list):] = \
             self._data_acquired[:, self._ecg_channel_idx]
 
+    def _filter_signal(self):
+        """
+        Apply bandpass filter on the acquired signal.
+        """
+        if self._zi is None:
+            self._zi = self._zi_coeff * np.mean(
+                self._data_acquired[:, self._ecg_channel_idx])
+        self._data_acquired[:, self._ecg_channel_idx], self._zi = \
+            sosfilt(self._sos, self._data_acquired[:, self._ecg_channel_idx],
+                    zi=self._zi)
+
     def new_peaks(self):
         """
         Look if new R-peaks have entered the buffer.
         """
-        # timeit on 1024 samples: 134 µs ± 175 ns per loop
-        # (mean ± std. dev. of 7 runs, 10000 loops each)
-        clean = nk.ecg.ecg_clean(ecg_signal=self._ecg_buffer,
-                                 sampling_rate=self._sample_rate,
-                                 method='hamilton2002')
-        # timeit on 1024 samples: 328 µs ± 925 ns per loop
-        # (mean ± std. dev. of 7 runs, 1000 loops each)
-        peaks = nk.ecg.ecg_findpeaks(clean,
+        peaks = nk.ecg.ecg_findpeaks(self._ecg_buffer,
                                      sampling_rate=self._sample_rate,
-                                     method='hamilton2002')
+                                     method='kalidas2017')
         # check if last peak just entered the buffer
-        peak = peaks['ECG_R_Peaks'][-1]
-        if self._duration_buffer_samples - len(self._ts_list) < peak:
-            return True
+        if len(peaks['ECG_R_Peaks']) != 0:
+            peak = peaks['ECG_R_Peaks'][-1]
+            if self._duration_buffer_samples - len(self._ts_list) <= peak:
+                return True
+            else:
+                return False
         else:
             return False

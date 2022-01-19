@@ -50,7 +50,8 @@ class Detector:
         self._ts_list = list()  # samples that have just been acquired
 
         # Buffers
-        self._ecg_buffer = np.zeros(self._duration_buffer_samples)
+        self._raw_ecg_buffer = np.zeros(self._duration_buffer_samples)
+        self._filtered_ecg_buffer = np.zeros(self._duration_buffer_samples)
         self._timestamps_buffer = np.zeros(self._duration_buffer_samples)
 
         # BP filter
@@ -63,7 +64,7 @@ class Detector:
 
     def _init_bandpass_filter(self):
         """
-        Initialize the bandpass filter (Butter, order 1, [8, 16] Hz)
+        Initialize the bandpass filter (Butter, order 1, [1, 15] Hz)
         """
         bp_low = 1 / (0.5 * self._sample_rate)
         bp_high = 15 / (0.5 * self._sample_rate)
@@ -84,14 +85,20 @@ class Detector:
         if len(self._ts_list) == 0:
             return  # no new samples
 
-        self._filter_signal()
-
         # shape (samples, )
         self._timestamps_buffer = np.roll(
             self._timestamps_buffer, -len(self._ts_list))
         self._timestamps_buffer[-len(self._ts_list):] = self._ts_list
-        self._ecg_buffer = np.roll(self._ecg_buffer, -len(self._ts_list))
-        self._ecg_buffer[-len(self._ts_list):] = \
+
+        self._raw_ecg_buffer = np.roll(
+            self._raw_ecg_buffer, -len(self._ts_list))
+        self._raw_ecg_buffer[-len(self._ts_list):] = \
+            self._data_acquired[:, self._ecg_channel_idx]
+
+        self._filter_signal()
+        self._filtered_ecg_buffer = np.roll(
+            self._filtered_ecg_buffer, -len(self._ts_list))
+        self._filtered_ecg_buffer[-len(self._ts_list):] = \
             self._data_acquired[:, self._ecg_channel_idx]
 
     def _filter_signal(self):
@@ -108,16 +115,21 @@ class Detector:
     def new_peaks(self):
         """
         Look if new R-peaks have entered the buffer.
+        Kalidas2017 always mark right after the peak.
         """
-        peaks = nk.ecg.ecg_findpeaks(self._ecg_buffer,
+        peaks = nk.ecg.ecg_findpeaks(self._filtered_ecg_buffer,
                                      sampling_rate=self._sample_rate,
                                      method='kalidas2017')
-        # check if last peak just entered the buffer
-        if len(peaks['ECG_R_Peaks']) != 0:
-            peak = peaks['ECG_R_Peaks'][-1]
-            if self._duration_buffer_samples - len(self._ts_list) <= peak:
-                return True
-            else:
-                return False
-        else:
-            return False
+        # stop if there is no peak
+        if len(peaks['ECG_R_Peaks']) == 0:
+            return False, None
+
+        peak = peaks['ECG_R_Peaks'][-1]
+        # stop if last peak is not in the latest acquired window
+        if peak < self._duration_buffer_samples - len(self._ts_list):
+            return False, None
+
+        # look for actual peak location in the preceding 60 ms
+        idx = math.ceil(0.06 * self._sample_rate)
+        pos = peak - idx + np.argmax(self._raw_ecg_buffer[peak-idx:peak])
+        return True, self._timestamps_buffer[pos]

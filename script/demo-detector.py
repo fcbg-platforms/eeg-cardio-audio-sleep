@@ -3,11 +3,10 @@ import time
 from bsl import StreamRecorder, StreamPlayer
 from bsl.utils import Timer
 from bsl.triggers.software import TriggerSoftware
+from ecgdetectors import Detectors
 from mne import find_events
 from mne.io import read_raw_fif
 from matplotlib import pyplot as plt
-from neurokit2.ecg import ecg_findpeaks
-from scipy.signal import butter, sosfiltfilt
 
 from cardio_audio_sleep import Detector
 
@@ -54,22 +53,16 @@ if __name__ == '__main__':  # required on windows PC for multiprocessing
 
     # Retrieve data array
     data = raw.get_data(picks='ECG')[0, :]
-
-    # BP filter
-    bp_low = 1 / (0.5 * raw.info['sfreq'])
-    bp_high = 15 / (0.5 * raw.info['sfreq'])
-    sos = butter(1, [bp_low, bp_high], btype='bandpass', output='sos')
-    clean = sosfiltfilt(sos, data)
-    peaks = ecg_findpeaks(clean, sampling_rate=raw.info['sfreq'],
-                          method='kalidas2017')
+    detectors = Detectors(raw.info['sfreq'])
+    r_peaks = detectors.swt_detector(data)
 
     # Plot
     f, ax = plt.subplots(1, 1)
-    ax.plot(raw.times, clean)
+    ax.plot(raw.times, data)
     for ev in events:
         if ev[2] == 1:
             ax.axvline(raw.times[ev[0]], color='yellow')
         if ev[2] == 2:
             ax.axvline(raw.times[ev[0]], color='crimson', linewidth=3)
-    for peak in peaks['ECG_R_Peaks']:
+    for peak in r_peaks:
         ax.axvline(raw.times[peak], color='teal', linestyle='--')

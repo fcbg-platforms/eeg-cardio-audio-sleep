@@ -4,7 +4,6 @@ from bsl import StreamReceiver
 from bsl.utils import Timer
 from ecgdetectors import Detectors
 import numpy as np
-from scipy.signal import butter, sosfilt, sosfilt_zi
 
 from .utils._checks import _check_type, _check_value
 

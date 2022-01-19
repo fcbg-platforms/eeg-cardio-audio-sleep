@@ -31,25 +31,23 @@ peaks3 = nk.ecg.ecg_findpeaks(clean3, sampling_rate=fs, method=method)
 
 idx = math.ceil(0.06 * fs)
 peak1 = peaks1['ECG_R_Peaks'][-1]
-pos1 = peak1 - idx + np.argmax(data1[peak1-idx:peak1])
+pos1 = peak1 - idx + np.argmax(data1[peak1-idx:peak1+1])
 peak2 = peaks2['ECG_R_Peaks'][-1]
-pos2 = peak2 - idx + np.argmax(data2[peak2-idx:peak2])
+pos2 = peak2 - idx + np.argmax(data2[peak2-idx:peak2+1])
 peak3 = peaks3['ECG_R_Peaks'][-1]
-pos3 = peak3 - idx + np.argmax(data3[peak3-idx:peak3])
+pos3 = peak3 - idx + np.argmax(data3[peak3-idx:peak3+1])
 
 # Plot
 f, ax = plt.subplots(3, 1, sharex=True, sharey=False, figsize=(10, 5))
 ax[0].plot(clean1)
 ax[1].plot(clean2)
 ax[2].plot(clean3)
-ax[0].axvline(pos1, color='crimson')
-ax[1].axvline(pos2, color='crimson')
-ax[2].axvline(pos3, color='crimson')
+ax[0].axvline(pos1, color='crimson', linestyle='--')
+ax[1].axvline(pos2, color='crimson', linestyle='--')
+ax[2].axvline(pos3, color='crimson', linestyle='--')
 for peak in peaks1['ECG_R_Peaks']:
     ax[0].axvline(peak, color='teal')
 for peak in peaks2['ECG_R_Peaks']:
     ax[1].axvline(peak, color='teal')
 for peak in peaks3['ECG_R_Peaks']:
     ax[2].axvline(peak, color='teal')
-
-f.suptitle('Kalidas 2017 - BP[1, 15] Hz')

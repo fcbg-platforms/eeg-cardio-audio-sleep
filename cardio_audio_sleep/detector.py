@@ -28,7 +28,8 @@ class Detector:
         # Check arguments and create StreamReceiver
         _check_type(stream_name, (str, ), item_name='stream_name')
         _check_type(ecg_ch_name, (str, ), item_name='ecg_ch_name')
-        _check_type(duration_buffer, ('numeric', ), item_name='duration_buffer')
+        _check_type(duration_buffer, ('numeric', ),
+                    item_name='duration_buffer')
         if duration_buffer <= 0.2:
             raise ValueError(
                 "Argument 'duration_buffer' must be strictly larger than 0.2. "

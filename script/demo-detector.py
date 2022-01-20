@@ -27,6 +27,7 @@ if __name__ == '__main__':  # required on windows PC for multiprocessing
     timer = Timer()
 
     #%% Record
+    detector.prefill_buffer()
     trigger.signal(2)  # start trigger
 
     while timer.sec() <= 60:

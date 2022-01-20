@@ -7,14 +7,13 @@ import numpy as np
 
 from .utils._checks import _check_type, _check_value
 
-_BUFFER_DURATION = 5  # seconds
-
 
 class Detector:
     """
     Class detecting R-peaks from an ECG LSL stream.
     Adapted from BSL StreamViewer scope.
-    Takes _BUFFER_DURATION seconds to initialize to fill an entire buffer.
+    Initialization has to fill an entire buffer and will take as long as
+    duration_buffer seconds.
 
     Parameters
     ----------
@@ -22,45 +21,49 @@ class Detector:
         Name of the LSL stream to connect to.
     ecg_ch_name : str
         Name of the ECG channel in the LSL stream.
+    duration_buffer : float
+        The duration of the data buffer.
     """
 
-    def __init__(self, stream_name, ecg_ch_name):
+    def __init__(self, stream_name, ecg_ch_name, duration_buffer=5):
+        # Check arguments and create StreamReceiver
         _check_type(stream_name, (str, ), item_name='stream_name')
         _check_type(ecg_ch_name, (str, ), item_name='ecg_ch_name')
+        _check_type(duration_buffer, ('numeric'), item_name='duration_buffer')
+        if duration_buffer <= 0.2:
+            raise ValueError(
+                "Argument 'duration_buffer' must be strictly larger than 0.2. "
+                f"Provided: '{duration_buffer}' seconds.")
         self._sr = StreamReceiver(bufsize=0.2, winsize=0.2)
         if len(self._sr.streams) == 0:
             raise ValueError(
                 'The StreamReceiver did not connect to any streams.')
         _check_value(stream_name, self._sr.streams, item_name='stream_name')
         self._stream_name = stream_name
+        _check_value(ecg_ch_name, self._sr.streams[stream_name].ch_list,
+                     item_name='ecg_ch_name')
 
         # Infos from stream
         self._sample_rate = int(
             self._sr.streams[self._stream_name].sample_rate)
-        try:
-            self._ecg_channel_idx = \
-                self._sr.streams[self._stream_name]._ch_list.index(ecg_ch_name)
-        except ValueError:
-            raise ValueError(
-                f"The ECG channel '{ecg_ch_name}' could not be found in the "
-                f"stream '{stream_name}'.")
+        self._ecg_channel_idx = \
+            self._sr.streams[self._stream_name].ch_list.index(ecg_ch_name)
 
         # Variables
-        self._duration_buffer = _BUFFER_DURATION
+        self._duration_buffer = float(duration_buffer)
         self._duration_buffer_samples = math.ceil(
-            _BUFFER_DURATION*self._sample_rate)
-        self._ts_list = list()  # samples that have just been acquired
+            self._duration_buffer*self._sample_rate)
 
         # Buffers
-        self._ecg_buffer = np.zeros(self._duration_buffer_samples)
         self._timestamps_buffer = np.zeros(self._duration_buffer_samples)
+        self._ecg_buffer = np.zeros(self._duration_buffer_samples)
 
         # R-Peak detectors
         self._detectors = Detectors(self._sample_rate)
 
         # Fill an entire buffer
         timer = Timer()
-        while timer.sec() <= _BUFFER_DURATION:
+        while timer.sec() <= self._duration_buffer:
             self.update_loop()
 
     def update_loop(self):
@@ -99,12 +102,48 @@ class Detector:
         if peak < self._duration_buffer_samples - len(self._ts_list):
             return False, None
 
-        # look for actual peak location in the preceding 60 ms
-        idx = math.ceil(0.06 * self._sample_rate)
+        # look for actual peak location in the preceding 200 ms
+        idx = math.ceil(0.2 * self._sample_rate)
         pos = peak - idx + np.argmax(self._ecg_buffer[peak-idx:peak])
         return True, pos
+
+    # --------------------------------------------------------------------
+    @property
+    def sr(self):
+        """The connected StreamReceiver."""
+        return self._sr
+
+    @property
+    def stream_name(self):
+        """The connected stream."""
+        return self._stream_name
+
+    @property
+    def ecg_ch_name(self):
+        """The ECG channel name."""
+        return self.sr.streams[self.stream_name].ch_list[self.ecg_channel_idx]
+
+    @property
+    def ecg_channel_idx(self):
+        """The ECG channel idx."""
+        return self._ecg_channel_idx
+
+    @property
+    def duration_buffer(self):
+        """The duration of the buffer in seconds."""
+        return self._duration_buffer
+
+    @property
+    def duration_buffer_samples(self):
+        """The duration of the buffer in samples."""
+        return self._duration_buffer_samples
 
     @property
     def timestamps_buffer(self):
         """The LSL timestamp buffer."""
         return self._timestamps_buffer
+
+    @property
+    def ecg_buffer(self):
+        """The ECG samples buffer."""
+        return self._ecg_buffer

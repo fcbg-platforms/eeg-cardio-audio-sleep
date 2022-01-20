@@ -5,6 +5,7 @@ from bsl.utils import Timer
 from ecgdetectors import Detectors
 import numpy as np
 
+from . import logger
 from .utils._checks import _check_type, _check_value
 
 
@@ -12,8 +13,6 @@ class Detector:
     """
     Class detecting R-peaks from an ECG LSL stream.
     Adapted from BSL StreamViewer scope.
-    Initialization has to fill an entire buffer and will take as long as
-    duration_buffer seconds.
 
     Parameters
     ----------
@@ -60,11 +59,18 @@ class Detector:
 
         # R-Peak detectors
         self._detectors = Detectors(self._sample_rate)
+        logger.info('R-peak detector with sample rate %s Hz initialized.',
+                    self._sample_rate)
 
-        # Fill an entire buffer
+    def prefill_buffer(self):
+        """Prefill an entire buffer before starting to avoid any
+        discontinuities in the ECG buffer."""
+        logger.info('Filling an entire buffer of %s seconds..',
+                    self._duration_buffer)
         timer = Timer()
         while timer.sec() <= self._duration_buffer:
             self.update_loop()
+        logger.info('Buffer pre-filled, ready to start!')
 
     def update_loop(self):
         """

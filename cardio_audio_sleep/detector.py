@@ -109,8 +109,8 @@ class Detector:
         if peak < self._duration_buffer_samples - len(self._ts_list):
             return False, None
 
-        # look for actual peak location in the preceding 200 ms
-        idx = math.ceil(0.2 * self._sample_rate)
+        # look for actual peak location in the preceding 50 ms
+        idx = math.ceil(0.05 * self._sample_rate)
         pos = peak - idx + np.argmax(self._ecg_buffer[peak-idx:peak])
 
         logger.debug(

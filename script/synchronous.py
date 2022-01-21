@@ -8,8 +8,10 @@ from mne import find_events
 from mne.io import read_raw_fif
 from matplotlib import pyplot as plt
 
-from cardio_audio_sleep import Detector
+from cardio_audio_sleep import Detector, set_log_level
 from cardio_audio_sleep.audio import Tone
+
+set_log_level('DEBUG')
 
 
 if __name__ == '__main__':  # required on windows PC for multiprocessing

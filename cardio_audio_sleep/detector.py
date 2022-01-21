@@ -112,6 +112,23 @@ class Detector:
         # look for actual peak location in the preceding 200 ms
         idx = math.ceil(0.2 * self._sample_rate)
         pos = peak - idx + np.argmax(self._ecg_buffer[peak-idx:peak])
+
+        logger.debug(
+            "\n--------------------------------------\n"
+            "R-Peak has entered the buffer:\n"
+            " - Last buffer sample: %.2f\n"
+            " - Detection position: %.2f\n"
+            " - Actual peak position: %.2f\n"
+            "--------------------------------------\n"
+            "Δ detection-peak: %.4f\n"
+            "Δ buffer-peak: %.4f\n"
+            "--------------------------------------\n",
+            self.timestamps_buffer[-1],
+            self.timestamps_buffer[peak],
+            self.timestamps_buffer[pos],
+            self.timestamps_buffer[peak] - self.timestamps_buffer[pos],
+            self.timestamps_buffer[-1] - self.timestamps_buffer[pos])
+
         return True, pos
 
     # --------------------------------------------------------------------

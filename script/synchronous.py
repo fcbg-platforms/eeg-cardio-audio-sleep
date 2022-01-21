@@ -39,7 +39,6 @@ if __name__ == '__main__':  # required on windows PC for multiprocessing
 
     timer.reset()
     while timer.sec() <= 60:
-        time.sleep(0.1)  # don't update too often to pull more than 1 chunk
         detector.update_loop()
         peak, pos = detector.new_peaks()
         if peak:
@@ -48,7 +47,7 @@ if __name__ == '__main__':  # required on windows PC for multiprocessing
             delay = detector.timestamps_buffer[-1] \
                 - detector.timestamps_buffer[pos]
             # aim for sound at +150 ms
-            while audio_timer.sec() < 0.15 - delay:
+            while audio_timer.sec() < 0.1 - delay:
                 pass
             trigger.signal(1)  # trigger when the peak was found
             sound.play()

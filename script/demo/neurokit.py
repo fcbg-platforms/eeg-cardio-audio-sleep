@@ -1,10 +1,10 @@
 #%% With neurokit
 import math
 
-import mne
-import numpy as np
-import neurokit2 as nk
 from matplotlib import pyplot as plt
+import mne
+import neurokit2 as nk
+import numpy as np
 from scipy.signal import butter, sosfiltfilt
 
 

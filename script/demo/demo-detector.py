@@ -4,9 +4,9 @@ from bsl import StreamRecorder, StreamPlayer
 from bsl.utils import Timer
 from bsl.triggers.software import TriggerSoftware
 from ecgdetectors import Detectors
+from matplotlib import pyplot as plt
 from mne import find_events
 from mne.io import read_raw_fif
-from matplotlib import pyplot as plt
 
 from cardio_audio_sleep import Detector
 

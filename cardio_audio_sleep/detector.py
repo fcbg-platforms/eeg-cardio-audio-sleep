@@ -102,12 +102,12 @@ class Detector:
         peaks = self._detectors.swt_detector(self._ecg_buffer)
         # stop if there is no peak
         if len(peaks) == 0:
-            return False, None
+            return None
 
         peak = peaks[-1]
         # stop if last peak is not in the latest acquired window
         if peak < self._duration_buffer_samples - len(self._ts_list):
-            return False, None
+            return None
 
         # look for actual peak location in the preceding 50 ms
         idx = math.ceil(0.05 * self._sample_rate)
@@ -129,7 +129,7 @@ class Detector:
             self.timestamps_buffer[peak] - self.timestamps_buffer[pos],
             self.timestamps_buffer[-1] - self.timestamps_buffer[pos])
 
-        return True, pos
+        return pos
 
     # --------------------------------------------------------------------
     @property

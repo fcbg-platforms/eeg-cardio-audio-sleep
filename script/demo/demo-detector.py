@@ -23,7 +23,7 @@ if __name__ == '__main__':  # required on windows PC for multiprocessing
     recorder.start()
     time.sleep(0.2)
     trigger = TriggerSoftware(recorder)
-    detector = Detector('StreamPlayer', 'ECG')  # takes 5 seconds to init
+    detector = Detector('StreamPlayer', 'ECG')
     timer = Timer()
 
     #%% Record
@@ -33,8 +33,8 @@ if __name__ == '__main__':  # required on windows PC for multiprocessing
     while timer.sec() <= 60:
         time.sleep(0.1)  # don't update too often to pull more than 1 chunk
         detector.update_loop()
-        peak, pos = detector.new_peaks()
-        if peak:
+        pos = detector.new_peaks()
+        if pos is not None:
             trigger.signal(1)  # trigger when the peak was found
             # audio/trigger should be schedule based on pos
 

@@ -1,7 +1,6 @@
 import math
 
 from ecgdetectors import Detectors
-from matplotlib import pyplot as plt
 from mne import find_events
 from mne.io import read_raw_fif
 import numpy as np

@@ -80,7 +80,8 @@ class Detector:
         """
         self._sr.acquire()
         # to be changed with ._get_buffer() if latest version is used
-        self._data_acquired, self._ts_list = self._sr.get_buffer()
+        self._data_acquired, self._ts_list = self._sr.get_buffer(
+            self._stream_name)
         self._sr.reset_buffer()
         if len(self._ts_list) == 0:
             return  # no new samples

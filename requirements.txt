@@ -1,8 +1,5 @@
 numpy
 scipy
 mne
-neurokit2
 bsl
 sounddevice
-PyWavelets
-py-ecg-detectors

@@ -2,8 +2,8 @@ import math
 
 from bsl import StreamReceiver
 from bsl.utils import Timer
-from ecgdetectors import Detectors
 import numpy as np
+from scipy.signal import find_peaks
 
 from . import logger
 from .utils._checks import _check_type, _check_value
@@ -59,7 +59,8 @@ class Detector:
         self._ecg_buffer = np.zeros(self._duration_buffer_samples)
 
         # R-Peak detectors
-        self._detectors = Detectors(self._sample_rate)
+        self._last_peak = None
+        self._first_time = None  # for debug logging purposes
         logger.info('R-peak detector with sample rate %s Hz initialized.',
                     self._sample_rate)
 
@@ -95,42 +96,55 @@ class Detector:
         self._ecg_buffer[-len(self._ts_list):] = \
             self._data_acquired[:, self._ecg_channel_idx]
 
+        if self._first_time is None:
+            self._first_time = self._ts_list[0]
+
     def new_peaks(self):
         """
         Look if new R-peaks have entered the buffer.
-        Kalidas2017 always mark right after the peak.
         """
-        peaks = self._detectors.swt_detector(self._ecg_buffer)
+        peaks = self._detect_peak()
         # stop if there is no peak
         if len(peaks) == 0:
             return None
 
         peak = peaks[-1]
-        # stop if last peak is not in the latest acquired window
-        if peak < self._duration_buffer_samples - len(self._ts_list):
+        # stop if last peak is already treated or keep track
+        is_last = self._timestamps_buffer[peak] == self._last_peak
+        if self._last_peak is not None and is_last:
             return None
-
-        # look for actual peak location in the preceding 50 ms
-        idx = math.ceil(0.05 * self._sample_rate)
-        pos = peak - idx + np.argmax(self._ecg_buffer[peak-idx:peak])
+        else:
+            self._last_peak = self._timestamps_buffer[peak]
 
         logger.debug(
             "\n--------------------------------------\n"
             "R-Peak has entered the buffer:\n"
             " - Last buffer sample: %.2f\n"
-            " - Detection position: %.2f\n"
-            " - Actual peak position: %.2f\n"
+            " - Peak position: %.2f\n"
             "--------------------------------------\n"
-            "Δ detection-peak: %.4f\n"
             "Δ buffer-peak: %.4f\n"
             "--------------------------------------\n",
-            self.timestamps_buffer[-1],
-            self.timestamps_buffer[peak],
-            self.timestamps_buffer[pos],
-            self.timestamps_buffer[peak] - self.timestamps_buffer[pos],
-            self.timestamps_buffer[-1] - self.timestamps_buffer[pos])
+            self.timestamps_buffer[-1] - self._first_time,
+            self.timestamps_buffer[peak] - self._first_time,
+            self.timestamps_buffer[-1] - self.timestamps_buffer[peak])
 
-        return pos
+        return peak
+
+    def _detect_peak(self):
+        """
+        Detect peaks in the ECG buffer.
+        """
+        # detrending
+        times = np.linspace(0, 5, self._ecg_buffer.size)
+        z = np.polyfit(times, self._ecg_buffer, 1)
+        linear_fit = z[0] * times + z[1]
+        data = self._ecg_buffer - linear_fit
+
+        # peak detection
+        height = np.percentile(data, 97.5)
+        peaks, _ = find_peaks(data, height=height, prominence=700)
+
+        return peaks
 
     # --------------------------------------------------------------------
     @property

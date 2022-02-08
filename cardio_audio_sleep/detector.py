@@ -141,7 +141,7 @@ class Detector:
         data = self._ecg_buffer - linear_fit
 
         # peak detection
-        height = np.percentile(data, 97.5)
+        height = np.percentile(data, 98)
         peaks, _ = find_peaks(data, height=height, prominence=700)
 
         return peaks

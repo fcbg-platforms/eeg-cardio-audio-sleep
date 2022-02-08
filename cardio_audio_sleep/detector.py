@@ -22,10 +22,20 @@ class Detector:
         Name of the ECG channel in the LSL stream.
     duration_buffer : float
         The duration of the data buffer.
+    peak_height_perc : float
+        Minimum height of the peak expressed as a percentile of the samples in
+        the buffer. Default to 98%.
+    peak_prominence : float
+        Minimum peak prominence as defined by scipy. Default to 700.
     """
 
-    def __init__(self, stream_name, ecg_ch_name, duration_buffer=5):
+    def __init__(self, stream_name, ecg_ch_name, duration_buffer=5,
+                 peak_height_perc=98, peak_prominence=700):
         # Check arguments and create StreamReceiver
+        self._peak_height_perc = Detector._check_peak_height_perc(
+            peak_height_perc)
+        self._peak_prominence = Detector._check_peak_prominence(
+            peak_prominence)
         _check_type(stream_name, (str, ), item_name='stream_name')
         _check_type(ecg_ch_name, (str, ), item_name='ecg_ch_name')
         _check_type(duration_buffer, ('numeric', ),
@@ -60,7 +70,6 @@ class Detector:
 
         # R-Peak detectors
         self._last_peak = None
-        self._first_time = None  # for debug logging purposes
         logger.info('R-peak detector with sample rate %s Hz initialized.',
                     self._sample_rate)
 
@@ -110,22 +119,17 @@ class Detector:
 
         peak = peaks[-1]
         # stop if last peak is already treated or keep track
-        is_last = self._timestamps_buffer[peak] == self._last_peak
-        if self._last_peak is not None and is_last:
-            return None
+        if self._last_peak is not None:
+            if self._timestamps_buffer[peak] - self._last_peak <= 0.1:
+                return None
         else:
             self._last_peak = self._timestamps_buffer[peak]
 
         logger.debug(
             "\n--------------------------------------\n"
             "R-Peak has entered the buffer:\n"
-            " - Last buffer sample: %.2f\n"
-            " - Peak position: %.2f\n"
-            "--------------------------------------\n"
             "Δ buffer-peak: %.4f\n"
             "--------------------------------------\n",
-            self.timestamps_buffer[-1] - self._first_time,
-            self.timestamps_buffer[peak] - self._first_time,
             self.timestamps_buffer[-1] - self.timestamps_buffer[peak])
 
         return peak
@@ -141,8 +145,9 @@ class Detector:
         data = self._ecg_buffer - linear_fit
 
         # peak detection
-        height = np.percentile(data, 98)
-        peaks, _ = find_peaks(data, height=height, prominence=700)
+        height = np.percentile(data, self._peak_height_perc)
+        peaks, _ = find_peaks(data, height=height,
+                              prominence=self._peak_prominence)
 
         return peaks
 
@@ -186,3 +191,40 @@ class Detector:
     def ecg_buffer(self):
         """The ECG samples buffer."""
         return self._ecg_buffer
+
+    @property
+    def peak_height_perc(self):
+        """The minimum peak height as a percentile of the data."""
+        return self._peak_height_perc
+
+    @property
+    def peak_prominence(self):
+        """The peak prominence setting."""
+        return self._peak_prominence
+
+    # --------------------------------------------------------------------
+    @staticmethod
+    def _check_peak_height_perc(peak_height_perc):
+        """Checks argument 'peak_height_perc'."""
+        _check_type(peak_height_perc, ('numeric', ),
+                    item_name='peak_height_perc')
+        if peak_height_perc <= 0:
+            raise ValueError(
+                "Argument 'peak_height_perc' must be a strictly positive "
+                f"number. Provided: '{peak_height_perc}%'.")
+        if 100 <= peak_height_perc:
+            raise ValueError(
+                "Argument 'peak_height_perc' must be a percentage between "
+                f"0 and 100 excluded. Provided '{peak_height_perc}%'.")
+        return float(peak_height_perc)
+
+    @staticmethod
+    def _check_peak_prominence(peak_prominence):
+        """Checks argument 'peak_prominence'."""
+        _check_type(peak_prominence, ('numeric', ),
+                    item_name='peak_prominence')
+        if peak_prominence <= 0:
+            raise ValueError(
+                "Argument 'peak_prominence' must be a strictly positive "
+                f"number. Provided: '{peak_prominence}'.")
+        return float(peak_prominence)

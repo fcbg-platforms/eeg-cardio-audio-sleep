@@ -1,5 +1,5 @@
 matplotlib
 pyqt5
 spyder-kernels
-ecgdetectors
+py-ecg-detectors
 neurokit2

@@ -44,11 +44,11 @@ class Detector:
             raise ValueError(
                 "Argument 'duration_buffer' must be strictly larger than 0.2. "
                 f"Provided: '{duration_buffer}' seconds.")
-        self._sr = StreamReceiver(bufsize=0.2, winsize=0.2)
+        self._sr = StreamReceiver(bufsize=0.2, winsize=0.2,
+                                  stream_name=stream_name)
         if len(self._sr.streams) == 0:
             raise ValueError(
                 'The StreamReceiver did not connect to any streams.')
-        _check_value(stream_name, self._sr.streams, item_name='stream_name')
         self._stream_name = stream_name
         _check_value(ecg_ch_name, self._sr.streams[stream_name].ch_list,
                      item_name='ecg_ch_name')
@@ -90,8 +90,7 @@ class Detector:
         """
         self._sr.acquire()
         # to be changed with ._get_buffer() if latest version is used
-        self._data_acquired, self._ts_list = self._sr.get_buffer(
-            self._stream_name)
+        self._data_acquired, self._ts_list = self._sr.get_buffer()
         self._sr.reset_buffer()
         if len(self._ts_list) == 0:
             return  # no new samples

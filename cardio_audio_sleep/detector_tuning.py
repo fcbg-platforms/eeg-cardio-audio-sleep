@@ -86,17 +86,13 @@ def peak_detection_parameters_tuning(
         axs.append(fig.add_subplot(k))
     fig.subplots_adjust(left=0.1, right=0.9, bottom=0.25)
 
-    for k in range(4):
-        axs[k].plot(data[k], color='dimgray')
+    for k, ax in enumerate(axs):
+        ax.plot(data[k], color='dimgray')
 
     # Slider for height percentile
     height_slider_ax  = fig.add_axes([0.1, 0.15, 0.8, 0.03],
                                      facecolor='lightgoldenrodyellow')
     height_slider = Slider(height_slider_ax, 'height', 80, 100., valinit=98.)
-
-    for k in range(4):
-        axs[k].axhline(np.percentile(data[k], height_slider.val),
-                       linestyle='--', color='tan')
 
     # Slider for prominence
     prominence_slider_ax  = fig.add_axes([0.1, 0.1, 0.8, 0.03],
@@ -104,35 +100,31 @@ def peak_detection_parameters_tuning(
     prominence_slider = Slider(prominence_slider_ax, 'prominence',
                                100, 4000, valinit=700.)
 
-    for k in range(4):
-        peaks, _ = find_peaks(data[k],
-                              height=np.percentile(data[k], height_slider.val),
-                              prominence=prominence_slider.val)
-        for peak in peaks:
-            axs[k].axvline(peak, linestyle='--', color='navy', linewidth=0.75)
+    # Init lines
+    global height_lines
+    global peak_lines
+    height_lines = _draw_height(axs, data, height_slider)
+    peak_lines = _draw_peaks(axs, data, height_slider, prominence_slider)
 
     # Action on slider change
     def sliders_on_changed(val):
-        # replot data
-        for k in range(4):
-            axs[k].clear()
-            axs[k].plot(data[k], color='dimgray')
+        """Action on slider movement."""
+        global height_lines
+        global peak_lines
 
-        # recompute height / prominence
-        height=np.percentile(data[k], height_slider.val)
-        prominence=prominence_slider.val
+        # remove outdated height lines
+        for k in range(len(height_lines)-1, -1, -1):
+            height_lines[-1].remove()
+            del height_lines[-1]
+        # remove outdated peak lines
+        for peak_lines_ in peak_lines:
+            for k in range(len(peak_lines_)-1, -1, -1):
+                peak_lines_[k].remove()
+                del peak_lines_[k]
 
-        # add height lines
-        for k in range(4):
-            axs[k].axhline(height, linestyle='--', color='tan')
-
-        # add peaks
-        for k in range(4):
-            peaks, _ = find_peaks(
-                data[k], height=height, prominence=prominence)
-            for peak in peaks:
-                axs[k].axvline(peak, linestyle='--', color='navy',
-                               linewidth=0.75)
+        # draw new lines
+        height_lines = _draw_height(axs, data, height_slider)
+        peak_lines = _draw_peaks(axs, data, height_slider, prominence_slider)
 
         # update fig
         fig.canvas.draw_idle()
@@ -162,3 +154,28 @@ def peak_detection_parameters_tuning(
     plt.show(block = True)
 
     return height_slider.val, prominence_slider.val
+
+
+def _draw_peaks(axs, data, height_slider, prominence_slider):
+    """Draw the peaks vertical lines on all 4 axis."""
+    peak_lines = [[] * 4]
+    for k, ax in enumerate(axs):
+        height = np.percentile(data[k], height_slider.val)
+        peaks, _ = find_peaks(data[k], height=height,
+                              prominence=prominence_slider.val)
+        peak_lines.append([])  # init new list
+        for peak in peaks:
+            peak_lines[-1].append(
+                ax.axvline(peak, linestyle='--', color='navy', linewidth=0.75))
+
+    return peak_lines
+
+
+def _draw_height(axs, data, height_slider):
+    """Draw the vertical lines corresponding to the height on all 4 axis."""
+    height_lines = list()
+    for k, ax in enumerate(axs):
+        height = np.percentile(data[k], height_slider.val)
+        height_lines.append(ax.axhline(height, linestyle='--', color='tan'))
+
+    return height_lines

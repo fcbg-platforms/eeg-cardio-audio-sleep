@@ -15,6 +15,28 @@ def peak_detection_parameters_tuning(
         ecg_ch_name: str,
         duration_buffer: float = 5
         ):
+    """
+    GUI to tune the height and the prominence parameter of the R-peak detector.
+
+    The GUI starts by acquiring 4 different buffer window that will be
+    detrended and displayed.
+
+    Parameters
+    ----------
+    stream_name : str
+        Name of the LSL stream to connect to.
+    ecg_ch_name : str
+        Name of the ECG channel in the LSL stream.
+    duration_buffer : float
+        The duration of the data buffer.
+
+    Returns
+    -------
+    height : float
+        The height setting retained (express as a percentage).
+    prominence : float
+        The prominence setting retained.
+    """
     _check_type(stream_name, (str, ), item_name='stream_name')
     _check_type(ecg_ch_name, (str, ), item_name='ecg_ch_name')
     _check_type(duration_buffer, ('numeric', ),
@@ -138,3 +160,5 @@ def peak_detection_parameters_tuning(
 
     # Show
     plt.show(block = True)
+
+    return height_slider.val, prominence_slider.val

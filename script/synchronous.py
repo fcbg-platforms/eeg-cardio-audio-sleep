@@ -1,6 +1,7 @@
 import time
 
 from bsl.utils import Timer
+from bsl.utils.lsl import search_lsl
 from bsl.triggers.lpt import TriggerArduino2LPT
 
 from cardio_audio_sleep import Detector, set_log_level
@@ -16,10 +17,16 @@ sound = Tone(volume=5, frequency=1000)
 # Create trigger
 trigger = TriggerArduino2LPT(delay=100)
 
-# Create detector
-stream_name = 'eego '
+# Stream settings
+stream_name = search_lsl(ignore_markers=True, timeout=5)
 ecg_ch_name = 'AUX7'
-detector = Detector(stream_name, ecg_ch_name, duration_buffer=5)
+# Peak detection settings
+peak_height_perc = 98
+peak_prominence = 700
+# Create detector
+detector = Detector(
+    stream_name, ecg_ch_name, duration_buffer=5,
+    peak_height_perc=peak_height_perc, peak_prominence=peak_prominence)
 
 # Create timers
 timer = Timer()

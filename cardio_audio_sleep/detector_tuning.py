@@ -151,7 +151,7 @@ def peak_detection_parameters_tuning(
     confirm_button.on_clicked(confirm_button_on_clicked)
 
     # Show
-    plt.show(block = True)
+    plt.show(block=True)
 
     return height_slider.val, prominence_slider.val
 

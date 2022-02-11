@@ -104,9 +104,6 @@ class Detector:
         self._ecg_buffer[-len(self._ts_list):] = \
             self._data_acquired[:, self._ecg_channel_idx]
 
-        if self._first_time is None:
-            self._first_time = self._ts_list[0]
-
     def new_peaks(self):
         """
         Look if new R-peaks have entered the buffer.

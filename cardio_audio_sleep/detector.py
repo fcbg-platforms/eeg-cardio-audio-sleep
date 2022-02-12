@@ -118,8 +118,7 @@ class Detector:
         if self._last_peak is not None:
             if self._timestamps_buffer[peak] - self._last_peak <= 0.1:
                 return None
-        else:
-            self._last_peak = self._timestamps_buffer[peak]
+        self._last_peak = self._timestamps_buffer[peak]
 
         logger.debug(
             "\n--------------------------------------\n"

@@ -1,6 +1,6 @@
 import time
 
-from bsl import StreamRecorder, StreamPlayer
+from bsl import StreamRecorder
 from bsl.utils import Timer
 from bsl.triggers.software import TriggerSoftware
 from ecgdetectors import Detectors
@@ -15,21 +15,27 @@ set_log_level('DEBUG')
 
 
 if __name__ == '__main__':  # required on windows PC for multiprocessing
-#%% Start a Mock StreamPlayer
-    fif = 'C:/Users/Mathieu/Documents/git/cardio-audio-sleep/data/ecg-raw.fif'
-    sp = StreamPlayer('StreamPlayer', fif)
-    sp.start(blocking=True)
-
     #%% Create the sound
     sound = Tone(volume=5, frequency=1000)
 
-    #%% Initialize
+    #%% Initialize recording and trigger
     recorder = StreamRecorder('C:/Users/Mathieu/Downloads/', fname='test',
                               fif_subdir=False)
     recorder.start()
     time.sleep(0.2)
     trigger = TriggerSoftware(recorder)
-    detector = Detector('StreamPlayer', 'ECG')
+
+    #%% Create detector
+    stream_name = 'StreamPlayer'
+    ecg_ch_name = 'ECG'
+    # Peak detection settings
+    peak_height_perc = 98
+    peak_prominence = 700
+    # Detector
+    detector = Detector(
+        stream_name, ecg_ch_name, duration_buffer=5,
+        peak_height_perc=peak_height_perc, peak_prominence=peak_prominence)
+    # Timers
     timer = Timer()
     audio_timer = Timer()
 
@@ -57,9 +63,6 @@ if __name__ == '__main__':  # required on windows PC for multiprocessing
     trigger.close()
     time.sleep(0.5)
     recorder.stop()
-
-    #%% Stop Mock StreamPlayer
-    sp.stop()
 
     #%% Load file and plot
     fname = 'C:/Users/Mathieu/Downloads/test-StreamPlayer-raw.fif'

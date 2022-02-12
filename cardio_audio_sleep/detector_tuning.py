@@ -90,13 +90,13 @@ def peak_detection_parameters_tuning(
         ax.plot(data[k], color='dimgray')
 
     # Slider for height percentile
-    height_slider_ax  = fig.add_axes([0.1, 0.15, 0.8, 0.03],
-                                     facecolor='lightgoldenrodyellow')
+    height_slider_ax = fig.add_axes([0.1, 0.15, 0.8, 0.03],
+                                    facecolor='lightgoldenrodyellow')
     height_slider = Slider(height_slider_ax, 'height', 80, 100., valinit=98.)
 
     # Slider for prominence
-    prominence_slider_ax  = fig.add_axes([0.1, 0.1, 0.8, 0.03],
-                                     facecolor='lightgoldenrodyellow')
+    prominence_slider_ax = fig.add_axes([0.1, 0.1, 0.8, 0.03],
+                                        facecolor='lightgoldenrodyellow')
     prominence_slider = Slider(prominence_slider_ax, 'prominence',
                                100, 4000, valinit=700.)
 
@@ -136,6 +136,7 @@ def peak_detection_parameters_tuning(
     reset_button = Button(reset_button_ax, 'Reset',
                           color='lightgoldenrodyellow',
                           hovercolor='0.975')
+
     def reset_button_on_clicked(mouse_event):
         height_slider.reset()
         prominence_slider.reset()
@@ -146,6 +147,7 @@ def peak_detection_parameters_tuning(
     confirm_button = Button(confirm_button_ax, 'Confirm',
                             color='lightgoldenrodyellow',
                             hovercolor='0.975')
+
     def confirm_button_on_clicked(mouse_event):
         plt.close(fig=fig)
     confirm_button.on_clicked(confirm_button_on_clicked)

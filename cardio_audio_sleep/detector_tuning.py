@@ -92,7 +92,7 @@ def peak_detection_parameters_tuning(
     # Slider for height percentile
     height_slider_ax = fig.add_axes([0.1, 0.15, 0.8, 0.03],
                                     facecolor='lightgoldenrodyellow')
-    height_slider = Slider(height_slider_ax, 'height', 80, 100., valinit=98.)
+    height_slider = Slider(height_slider_ax, 'height', 80, 100., valinit=97.5)
 
     # Slider for prominence
     prominence_slider_ax = fig.add_axes([0.1, 0.1, 0.8, 0.03],

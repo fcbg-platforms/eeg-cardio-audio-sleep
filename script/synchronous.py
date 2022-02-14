@@ -21,7 +21,7 @@ trigger = TriggerArduino2LPT(delay=100)
 stream_name = search_lsl(ignore_markers=True, timeout=5)
 ecg_ch_name = 'AUX7'
 # Peak detection settings
-peak_height_perc = 98
+peak_height_perc = 97.5
 peak_prominence = 700
 # Create detector
 detector = Detector(

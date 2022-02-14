@@ -45,8 +45,8 @@ while timer.sec() <= 60:
         # compute where we are relative to the r-peak
         delay = detector.timestamps_buffer[-1] \
             - detector.timestamps_buffer[pos]
-        # aim for sound at +100 ms
-        while audio_timer.sec() < 0.1 - delay:
+        # aim for sound at +50 ms (computer specific tuning)
+        while audio_timer.sec() < 0.030 - delay:
             pass
         trigger.signal(1)  # trigger when the sound is delivered
         sound.play()

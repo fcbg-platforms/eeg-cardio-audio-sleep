@@ -19,7 +19,7 @@ set_log_level('DEBUG')
 stream_name = search_lsl(ignore_markers=True, timeout=5)
 ecg_ch_name = 'AUX7'
 
-#%% Recorder
+#%% Start Recorder
 recorder = StreamRecorder(
     record_dir='/home/eeg/Downloads/', fname='test', stream_name=stream_name,
     fif_subdir=False)
@@ -43,7 +43,7 @@ detector = Detector(
 timer = Timer()
 audio_timer = Timer()
 
-#%% Loop
+#%% Main loop
 detector.prefill_buffer()
 trigger.signal(2)  # start trigger
 
@@ -71,33 +71,33 @@ time.sleep(0.5)
 recorder.stop()
 time.sleep(0.5)
 
-#%% Load file
+#%% Load file and plot
 fname = f'/home/eeg/Downloads/test-{stream_name}-raw.fif'
 raw = mne.io.read_raw_fif(fname, preload=True)
 raw.pick_channels(['TRIGGER', 'AUX3', 'AUX7'])
 raw.set_channel_types({'AUX3': 'misc', 'AUX7': 'ecg'})
 raw.rename_channels({'AUX3': 'Sound', 'AUX7': 'ECG'})
 
-#%% Triggers
+# Triggers
 events = mne.find_events(raw, stim_channel='TRIGGER')
 tmin, tmax = [elt[0] / raw.info['sfreq']
                for elt in events if elt[2] == 2]
 raw.crop(tmin, tmax, include_tmax=False)
 
-# research for events
+# Research for triggers
 events = mne.find_events(raw, stim_channel='TRIGGER')[1:, 0]
 events -= raw.first_samp
 
-#%% Apply notch
+# Apply notch
 raw.notch_filter(np.arange(50, 251, 50), picks=['Sound', 'ECG'])
 
-#%% Find ECG peaks
+# Find ECG peaks
 raw.filter(1., 15., picks='ECG', phase='zero-double')
 data = raw.get_data(picks='ECG')[0, :]
 height = np.percentile(data, 97.5)
 peaks, _ = find_peaks(data, height=height)
 
-#%% Find max after each peak on the Sound channel
+# Find max after each peak on the Sound channel
 delays = list()
 sound = raw.get_data(picks='Sound')[0, :]
 delta = math.ceil(raw.info['sfreq'] * 0.1)
@@ -105,7 +105,7 @@ for peak in peaks:
     pos = np.argmax(sound[peak:peak+delta])
     delays.append(pos / raw.info['sfreq'])
 
-#%% Determine R-peak to event
+# Find max after each peak on the trigger channel
 trigger_delays = list()
 triggers = raw.get_data(picks='TRIGGER')[0, :]
 delta = math.ceil(raw.info['sfreq'] * 0.1)
@@ -113,7 +113,7 @@ for peak in peaks:
     pos = np.argmax(triggers[peak:peak+delta])
     trigger_delays.append(pos / raw.info['sfreq'])
 
-#%% Plot
+# Plot data
 f, ax = plt.subplots(1, 1)
 ax.plot(raw.times, data)
 ax.axhline(height)
@@ -122,14 +122,14 @@ for ev in events:
 for peak in peaks:
     ax.axvline(raw.times[peak], color='teal', linestyle='--')
 
-#%% Plot distributions
+# Plot distributions
 f, ax = plt.subplots(1, 2)
 ax[0].set_title('R-peak to sound delay')
 ax[0].hist(delays, bins=20)
 ax[1].set_title('R-peak to event delay')
 ax[1].hist(trigger_delays, bins=20)
 
-#%% Prints
+# Print statistics
 print(f'R-peak to sound (mean): {np.mean(delays):.5f} s')
 print(f'R-peak to sound (std): {np.std(delays):.5f} s')
 print(f'R-peak to trigger (mean): {np.mean(trigger_delays):.5f} s')

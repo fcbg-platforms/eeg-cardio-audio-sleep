@@ -33,7 +33,7 @@ detector = Detector(
 timer = Timer()
 audio_timer = Timer()
 
-#%% Loop
+#%% Main loop
 detector.prefill_buffer()
 trigger.signal(2)  # start trigger
 

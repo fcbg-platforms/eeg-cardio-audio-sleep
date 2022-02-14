@@ -44,7 +44,7 @@ detector = Detector(
 
 timer = Timer()
 
-#%% Loop
+#%% Main loop
 detector.prefill_buffer()
 port.setData(2)
 core.wait(0.1)

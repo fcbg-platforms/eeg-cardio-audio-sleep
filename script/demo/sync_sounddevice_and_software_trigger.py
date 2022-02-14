@@ -19,7 +19,7 @@ if __name__ == '__main__':  # required on windows PC for multiprocessing
     sound = Tone(volume=5, frequency=1000)
 
     #%% Initialize recording and trigger
-    recorder = StreamRecorder('C:/Users/Mathieu/Downloads/', fname='test',
+    recorder = StreamRecorder('/home/eeg/Downloads/', fname='test',
                               fif_subdir=False)
     recorder.start()
     time.sleep(0.2)
@@ -29,7 +29,7 @@ if __name__ == '__main__':  # required on windows PC for multiprocessing
     stream_name = 'StreamPlayer'
     ecg_ch_name = 'ECG'
     # Peak detection settings
-    peak_height_perc = 98
+    peak_height_perc = 97.5
     peak_prominence = 700
     # Detector
     detector = Detector(
@@ -65,7 +65,7 @@ if __name__ == '__main__':  # required on windows PC for multiprocessing
     recorder.stop()
 
     #%% Load file and plot
-    fname = 'C:/Users/Mathieu/Downloads/test-StreamPlayer-raw.fif'
+    fname = f'/home/eeg/Downloads/test-{stream_name}-raw.fif'
     raw = read_raw_fif(fname, preload=True)
     events = find_events(raw, stim_channel='TRIGGER')
 

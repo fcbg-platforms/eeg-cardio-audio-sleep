@@ -10,6 +10,10 @@ from cardio_audio_sleep.audio import Tone
 set_log_level('DEBUG')
 
 
+#%% Stream settings
+stream_name = search_lsl(ignore_markers=True, timeout=5)
+ecg_ch_name = 'AUX7'
+
 #%% Init
 # Create sound stimuli
 sound = Tone(volume=5, frequency=1000)
@@ -17,9 +21,6 @@ sound = Tone(volume=5, frequency=1000)
 # Create trigger
 trigger = TriggerArduino2LPT(delay=100)
 
-# Stream settings
-stream_name = search_lsl(ignore_markers=True, timeout=5)
-ecg_ch_name = 'AUX7'
 # Peak detection settings
 peak_height_perc = 97.5
 peak_prominence = 700

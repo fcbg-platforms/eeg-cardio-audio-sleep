@@ -75,13 +75,13 @@ class ParallelPort(_Trigger):
 
     # --------------------------------------------------------------------
     @property
-    def portaddr(self):
+    def address(self):
         """
         Port address.
 
         :type: `int`
         """
-        return self._portaddr
+        return self._address
 
     @property
     def delay(self):

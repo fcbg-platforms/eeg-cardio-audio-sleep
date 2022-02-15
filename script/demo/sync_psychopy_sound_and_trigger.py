@@ -7,7 +7,7 @@ from psychopy.sound.backend_ptb import SoundPTB as Sound
 import psychtoolbox as ptb
 
 from cardio_audio_sleep import Detector, set_log_level
-from cardio_audio_sleep.triggers.lpt import ParallelPort
+from cardio_audio_sleep.triggers import ParallelPort
 
 set_log_level('DEBUG')
 
@@ -28,7 +28,7 @@ sound = Sound(value='A', secs=0.1, stereo=True, volume=1.0, blockSize=32,
               preBuffer=-1, hamming=True)
 
 # Create trigger
-trigger = ParallelPort(address='/dev/parport0', delay=100)
+trigger = ParallelPort(address='/dev/parport0', delay=50)
 
 # Peak detection settings
 peak_height_perc = 97.5

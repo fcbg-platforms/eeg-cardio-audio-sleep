@@ -93,4 +93,9 @@ setup(
     install_requires=install_requires,
     packages=find_packages(),
     include_package_data=True,
+    entry_points={
+        'console_scripts': [
+            'cas = cardio_audio_sleep.commands.main:run'
+            ]
+        }
     )

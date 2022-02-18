@@ -25,6 +25,7 @@ trigger = ParallelPort(address='/dev/parport0', delay=50)
 bpm = 80  # beat per minute
 sleep = bpm / 60  # beat per seconds
 
+# Create timers
 timer = Clock()
 trigger_timer = Clock()
 

@@ -1,4 +1,5 @@
 from bsl.utils.lsl import search_lsl
+from numpy.random import default_rng
 from psychopy.clock import Clock, wait
 from psychopy.sound.backend_ptb import SoundPTB as Sound
 import psychtoolbox as ptb
@@ -29,6 +30,9 @@ detector = Detector(
     stream_name, ecg_ch_name, duration_buffer=5,
     peak_height_perc=peak_height_perc, peak_prominence=peak_prominence)
 
+# Init random generator
+rng = default_rng()
+
 # Create timers
 timer = Clock()
 trigger_timer = Clock()
@@ -45,12 +49,15 @@ while timer.getTime() <= 60:
         delay = detector.timestamps_buffer[-1] \
             - detector.timestamps_buffer[pos]
 
+        # determine a random delay
+        random = rng.uniform(0.03, 0.1)
+
         # retrieve current time and schedule sound
         time_pre_sound = ptb.GetSecs()
-        sound.play(when=time_pre_sound - delay + 0.05)
+        sound.play(when=time_pre_sound - delay + random)
 
         # retrieve current time and wait to deliver the trigger
-        target_time = ptb.GetSecs() - time_pre_sound - delay + 0.05
+        target_time = ptb.GetSecs() - time_pre_sound - delay + random
         trigger_timer.reset()
         while trigger_timer.getTime() < target_time:
             pass

@@ -14,7 +14,7 @@ import psychtoolbox as ptb
 
 from . import logger
 from .detector import Detector
-from .utils._checks import _check_type
+from .utils._checks import _check_type, _check_value
 
 
 BLOCK_SIZE = 255
@@ -251,7 +251,8 @@ def generate_sequence(
         size: int = BLOCK_SIZE,
         omissions: int = OMISSIONS,
         edge_perc: Union[int, float] = EDGE_PERC,
-        max_iter: int = 500
+        max_iter: int = 500,
+        on_diverge: str = 'warn',
         ):
     """
     Creates a valid sequence.
@@ -272,11 +273,16 @@ def generate_sequence(
         the beginning and at the end of the sequence.
     max_iter : int
         Maximum numnber of iteration to randomize the sequence.
+    on_diverge : str
+        Either 'warn' to log an error message or 'raise' to raise a
+        RuntimeError when the randomization does not converge within the
+        maximum number of iteration allowed.
     """
     _check_type(size, ('int', ), 'size')
     _check_type(omissions, ('int', ), 'omissions')
     _check_type(edge_perc, ('numeric', ), 'edge_perc')
     _check_type(max_iter, ('int', ), 'max_iter')
+    _check_value(on_diverge, ('warn', 'raise'), 'on_diverge')
     if size <= 0:
         raise ValueError(
             "Argument 'size' must be a strictly positive integer. "
@@ -310,8 +316,12 @@ def generate_sequence(
             break
 
         if max_iter < iter_:
-            logger.error("Randomize sequence generation could not converge.")
-            converged = False
+            msg = "Randomize sequence generation could not converge."
+            if on_diverge == 'warn':
+                logger.warning(msg)
+                converged = False
+            else:
+                raise RuntimeError(msg)
             break
 
         for i, (n, group) in enumerate(groups):

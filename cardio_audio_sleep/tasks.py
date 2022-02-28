@@ -155,7 +155,7 @@ def asynchronous(
     """
     _check_type(trigger, _Trigger, 'trigger')
     sequence = _check_sequence(sequence)
-    sequence_timings = _check_sequence_timings(sequence_timings, sequence)
+    sequence_timings = _check_sequence_timings(sequence_timings, sequence, 0.2)
 
     # Create sound stimuli
     sound = Sound(value=1000, secs=0.1, stereo=True, volume=1.0, blockSize=32,
@@ -216,7 +216,8 @@ def _check_sequence(
 
 def _check_sequence_timings(
         sequence_timings: ArrayLike,
-        sequence: ArrayLike
+        sequence: ArrayLike,
+        min_distance: Union[int, float]
         ):
     """
     Checks that the sequence timings are valid. Copies the sequence.
@@ -242,6 +243,11 @@ def _check_sequence_timings(
 
     if sequence_timings[0] != 0:
         sequence_timings -= sequence_timings[0]
+
+    if any(elt <= min_distance for elt in np.diff(sequence_timings)):
+        raise ValueError(
+            "All sequence timings should be separated by at least "
+            f"{min_distance} seconds.")
 
     return sequence_timings
 

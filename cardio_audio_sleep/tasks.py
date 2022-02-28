@@ -23,7 +23,7 @@ TRIGGERS = dict(sound=1, omission=2, start=10, stop=11)
 
 
 def synchronous(
-        trigger: _Trigger,
+        trigger,
         sequence: ArrayLike,
         stream_name: str,
         ecg_ch_name: str,
@@ -79,7 +79,7 @@ def synchronous(
 
 
 def isochronous(
-        trigger: _Trigger,
+        trigger,
         sequence: ArrayLike,
         bpm: Union[int, float]
         ):
@@ -133,7 +133,7 @@ def isochronous(
 
 
 def asynchronous(
-        trigger: _Trigger,
+        trigger,
         sequence: ArrayLike,
         sequence_timings: ArrayLike
         ):

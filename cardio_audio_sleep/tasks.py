@@ -1,5 +1,6 @@
 """Tasks functions."""
 
+from itertools import groupby
 import math
 import random
 from typing import Union
@@ -11,9 +12,9 @@ from psychopy.clock import wait
 from psychopy.sound.backend_ptb import SoundPTB as Sound
 import psychtoolbox as ptb
 
+from . import logger
 from .detector import Detector
 from .utils._checks import _check_type
-from .utils._logs import logger
 
 
 BLOCK_SIZE = 255
@@ -249,7 +250,8 @@ def _check_sequence_timings(
 def generate_sequence(
         size: int = BLOCK_SIZE,
         omissions: int = OMISSIONS,
-        edge_perc: Union[int, float] = EDGE_PERC
+        edge_perc: Union[int, float] = EDGE_PERC,
+        max_iter: int = 500
         ):
     """
     Creates a valid sequence.
@@ -257,6 +259,7 @@ def generate_sequence(
     - 20% (51) are omissions
 
     An omission should not be in the first or last 5%.
+    Omissions should not be consecutive.
 
     Parameters
     ----------
@@ -264,10 +267,16 @@ def generate_sequence(
         Total number of elements in the sequence.
     omissions : int
         Total number of omissions in the sequence.
+    edge_perc : float
+        Percentage of the total number of elements that have to be sound at
+        the beginning and at the end of the sequence.
+    max_iter : int
+        Maximum numnber of iteration to randomize the sequence.
     """
     _check_type(size, ('int', ), 'size')
     _check_type(omissions, ('int', ), 'omissions')
     _check_type(edge_perc, ('numeric', ), 'edge_perc')
+    _check_type(max_iter, ('int', ), 'max_iter')
     if size <= 0:
         raise ValueError(
             "Argument 'size' must be a strictly positive integer. "
@@ -280,11 +289,61 @@ def generate_sequence(
         raise ValueError(
             "Argument 'edge_perc' must be a valid percentage between 0 and "
             f"100. Provided {edge_perc}%.")
+    if max_iter <= 0:
+        raise ValueError(
+            "Argument 'max_iter' must be a strictly positive integer. "
+            f"Provided: '{max_iter}'.")
 
     n_edge = math.ceil(edge_perc * size / 100)
     start = [TRIGGERS['sound']] * n_edge
+
     middle = [TRIGGERS['sound']] * (size - omissions - 2 * n_edge)
     middle += [TRIGGERS['omission']] * omissions
     random.shuffle(middle)
+    iter_ = 0
+    while True:
+        groups = [(n, list(group)) for n, group in groupby(middle)]
+
+        if all(len(group[1]) == 1
+               for group in groups if group[0] == TRIGGERS['omission']):
+            converged = True
+            break
+
+        if max_iter < iter_:
+            logger.error("Randomize sequence generation could not converge.")
+            converged = False
+            break
+
+        for i, (n, group) in enumerate(groups):
+            if n == TRIGGERS['sound'] or len(group) == 1:
+                continue
+
+            # find the longest group of TRIGGERS['sound']
+            idx = np.argmax([len(g) if n == TRIGGERS['sound'] else 0
+                             for n, g in groups])
+            pos_sound = sum(len(g) for k, (_, g) in enumerate(groups)
+                            if k < idx)
+            pos_sound = pos_sound + len(groups[idx][1]) // 2  # center
+
+            # find position of current group
+            pos_omission = sum(len(g) for k, (_, g) in enumerate(groups)
+                               if k < i)
+
+            # swap first element from omissions with center of group of sounds
+            middle[pos_sound], middle[pos_omission] = \
+                middle[pos_omission], middle[pos_sound]
+
+            break
+
+        iter_ += 1
+
+    # sanity-check
+    if converged:
+        assert all(len(group) == 1
+                   for n, group in groups if n == TRIGGERS['omission'])
+        assert not any(middle[i-1] == TRIGGERS['omission'] \
+                       and middle[i] == TRIGGERS['omission']
+                       for i in range(1, len(middle)))
+
     end = [TRIGGERS['sound']] * n_edge
     return np.array(start + middle + end)

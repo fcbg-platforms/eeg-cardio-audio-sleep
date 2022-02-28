@@ -1,6 +1,6 @@
 from bsl.utils.lsl import list_lsl_streams, search_lsl
 
-from .. import logger
+from ._logs import logger
 
 
 def search_ANT_amplifier():

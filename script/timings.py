@@ -5,6 +5,8 @@ from matplotlib import pyplot as plt
 import numpy as np
 from scipy.signal import find_peaks, hilbert
 
+from cardio_audio_sleep.utils import match_positions
+
 
 #%% Load
 fname = r''
@@ -52,50 +54,27 @@ for k, elt in enumerate(supra_threshold_idx):
         sound_offsets.append(elt)
         sound_onsets.append(supra_threshold_idx[k+1])
 
-#%% Match trigger/sound and compute delay
-d = np.repeat(sound_onsets, len(events)).reshape(
-    len(sound_onsets), len(events))
-d -= events
-threshold = math.ceil(0.1 * raw.info['sfreq'])
-id_sounds, id_triggers = np.where((-threshold < d) & (d < threshold))
-assert id_sounds.shape == id_triggers.shape  # sanity-check
+assert len(sound_onsets) == len(sound_offsets)  # sanity-check
+sound_durations = [offset - onset
+                   for onset, offset in zip(sound_onsets, sound_offsets)]
 
-sound_trigger_delays = list()
-for k in range(id_sounds.size):
-    id_sound = id_sounds[k]
-    id_trigger = id_triggers[k]
-    delay = sound_onsets[id_sound] - events[id_trigger]
-    sound_trigger_delays.append(delay)
+#%% Match trigger/sound and compute delay
+threshold = math.ceil(0.1 * raw.info['sfreq'])
+id_sounds, id_events = match_positions(sound_onsets, events, threshold)
+sound_trigger_delays = [sound_onsets[ids] - events[ide]
+                        for ids, ide in zip(id_sounds, id_events)]
 
 #%% Match R-peak/triggers and compute delay
-d = np.repeat(ecg_peaks, len(events)).reshape(
-    len(ecg_peaks), len(events))
-d -= events
 threshold = math.ceil(0.1 * raw.info['sfreq'])
-id_rpeaks, id_triggers = np.where((-threshold < d) & (d < threshold))
-assert id_rpeaks.shape == id_triggers.shape  # sanity-check
-
-rpeak_trigger_delays = list()
-for k in range(id_rpeaks.size):
-    id_rpeak = id_rpeaks[k]
-    id_trigger = id_triggers[k]
-    delay = events[id_trigger] - ecg_peaks[id_rpeak]
-    rpeak_trigger_delays.append(delay)
+id_rpeaks, id_events = match_positions(ecg_peaks, events, threshold)
+rpeak_trigger_delays = [events[ide] - ecg_peaks[idr]
+                        for ide, idr in zip(id_events, id_rpeaks)]
 
 #%% Match R-peak/sound and compute delay
-d = np.repeat(ecg_peaks, len(sound_onsets)).reshape(
-    len(ecg_peaks), len(sound_onsets))
-d -= np.array(sound_onsets)
 threshold = math.ceil(0.1 * raw.info['sfreq'])
-id_rpeaks, id_sounds = np.where((-threshold < d) & (d < threshold))
-assert id_rpeaks.shape == id_sounds.shape  # sanity-check
-
-rpeak_sounds_delays = list()
-for k in range(id_rpeaks.size):
-    id_rpeak = id_rpeaks[k]
-    id_sound= id_sounds[k]
-    delay = sound_onsets[id_sound] - ecg_peaks[id_rpeak]
-    rpeak_sounds_delays.append(delay)
+id_rpeaks, id_sounds = match_positions(ecg_peaks, sound_onsets, threshold)
+rpeak_sounds_delays = [sound_onsets[ids] - ecg_peaks[idr]
+                       for ids, idr in zip(id_sounds, id_rpeaks)]
 
 #%% Plots
 f, ax = plt.subplots(3, 1, sharex=True)

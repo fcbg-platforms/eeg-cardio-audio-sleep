@@ -164,6 +164,7 @@ def asynchronous(
     # Compute delays
     delays = np.diff(sequence_timings)  # a[i+1] - a[i]
     delays -= 0.2  # from sound scheduling
+    assert all(0 < delay for delay in delays)  # sanity-check
 
     # Create counter
     counter = 0
@@ -241,8 +242,6 @@ def _check_sequence_timings(
 
     if sequence_timings[0] != 0:
         sequence_timings -= sequence_timings[0]
-
-    sequence_timings += 1  # add 1 for safety
 
     return sequence_timings
 

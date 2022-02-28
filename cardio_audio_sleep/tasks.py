@@ -36,7 +36,8 @@ def synchronous(
 
     Parameters
     ----------
-    trigger :
+    trigger : Trigger
+        A BSL trigger instance.
     sequence : array
         Sequence of stimulus/omissions (of length BLOCK_SIZE if complete).
         1 corresponds to a stound stimulus. 2 corresponds to an omission.
@@ -89,7 +90,8 @@ def isochronous(
 
     Parameters
     ----------
-    trigger :
+    trigger : Trigger
+        A BSL trigger instance.
     sequence : array
         Sequence of stimulus/omissions (of length BLOCK_SIZE if complete).
         1 corresponds to a stound stimulus. 2 corresponds to an omission.
@@ -145,7 +147,8 @@ def asynchronous(
 
     Parameters
     ----------
-    trigger :
+    trigger : Trigger
+        A BSL trigger instance.
     sequence : array
         Sequence of stimulus/omissions (of length BLOCK_SIZE if complete).
         1 corresponds to a stound stimulus. 2 corresponds to an omission.

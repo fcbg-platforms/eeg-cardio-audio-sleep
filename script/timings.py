@@ -6,6 +6,7 @@ import numpy as np
 from scipy.signal import find_peaks, hilbert
 
 from cardio_audio_sleep.io import read_raw
+from cardio_audio_sleep.tasks import TRIGGERS
 from cardio_audio_sleep.utils import match_positions
 
 
@@ -16,12 +17,15 @@ raw.pick_channels(['TRIGGER', 'Sound', 'ECG'])
 
 #%% Events
 events = mne.find_events(raw, stim_channel='TRIGGER')
-tmin = events[0][0] / raw.info['sfreq'] if events[0][2] == 2 else None
-tmax = events[-1][0] / raw.info['sfreq'] if events[-1][2] == 2 else None
+tmin = events[0][0] / raw.info['sfreq'] \
+    if events[0][2] == TRIGGERS['start'] else None
+tmax = events[-1][0] / raw.info['sfreq'] \
+    if events[-1][2] == TRIGGERS['stop'] else None
 raw.crop(tmin, tmax, include_tmax=True)
 
 events = mne.find_events(raw, stim_channel='TRIGGER')
-events = events[np.where(events[:, 2] != 2)]
+selection = np.where(events[:, 2] not in (TRIGGERS['start'], TRIGGERS['stop']))
+events = events[selection]
 events = np.array([ev[0] for ev in events])
 events -= raw.first_samp
 

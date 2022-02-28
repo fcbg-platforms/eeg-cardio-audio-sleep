@@ -5,15 +5,14 @@ from matplotlib import pyplot as plt
 import numpy as np
 from scipy.signal import find_peaks, hilbert
 
+from cardio_audio_sleep.io import read_raw
 from cardio_audio_sleep.utils import match_positions
 
 
 #%% Load
 fname = r''
-raw = mne.io.read_raw_fif(fname, preload=True)
-raw.rename_channels({'AUX3': 'Sound', 'AUX7': 'ECG'})
+raw = read_raw(fname, preload=True)
 raw.pick_channels(['TRIGGER', 'Sound', 'ECG'])
-raw.set_channel_types({'Sound': 'misc', 'ECG': 'ecg'})
 
 #%% Events
 events = mne.find_events(raw, stim_channel='TRIGGER')

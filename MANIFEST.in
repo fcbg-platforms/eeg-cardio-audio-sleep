@@ -1,1 +1,1 @@
-recursive-include cardio-audio-sleep/config *
+recursive-include cardio_audio_sleep/config *

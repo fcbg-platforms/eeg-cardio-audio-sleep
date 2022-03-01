@@ -61,6 +61,7 @@ def synchronous(
         Minimum peak prominence as defined by scipy.
     """
     _check_type(trigger, _Trigger, 'trigger')
+    _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
 
     # Create sound stimuli
@@ -124,6 +125,7 @@ def isochronous(
         Mean heartbeat measured during the last synchronous task (in bpm).
     """
     _check_type(trigger, _Trigger, 'trigger')
+    _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
     _check_type(bpm, ('numeric', ), 'bpm')
     if bpm <= 0:
@@ -169,7 +171,7 @@ def asynchronous(
     """
     Asynchronous block where sounds repeat a sequence from a synchronous task.
     Omissions are randomized (compared to the synchronous task they are
-    extracted from.)
+    extracted from).
 
     Parameters
     ----------
@@ -189,6 +191,7 @@ def asynchronous(
         was delivered.
     """
     _check_type(trigger, _Trigger, 'trigger')
+    _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
     sequence_timings = _check_sequence_timings(sequence_timings, sequence, 0.2)
 
@@ -222,6 +225,47 @@ def asynchronous(
         counter += 1
 
     trigger.signal(tdef.async_stop)
+
+
+def baseline(
+        trigger,
+        tdef,
+        duration: Union[int, float]
+        ):
+    """
+    Baseline block corresponding to a resting-state recording.
+
+    Parameters
+    ----------
+    trigger : Trigger
+        A BSL trigger instance.
+    tdef : TriggerDef
+        Trigger definition instance. Must contain the keys:
+            - baseline_start
+            - baseline_stop
+    duration : float
+        Duration of the resting-state block in seconds.
+    """
+    _check_type(trigger, _Trigger, 'trigger')
+    _check_tdef(tdef)
+
+    # Task loop
+    trigger.signal(tdef.baseline_start)
+    wait(duration)
+    trigger.signal(tdef.baseline_stop)
+
+
+def _check_tdef(tdef):
+    """
+    Checks that the trigger definition contains all the required keys.
+    """
+    _check_type(tdef, (TriggerDef, ), 'tdef')
+    keys = ('sound', 'omission',
+            'sync_start', 'sync_stop',
+            'iso_start', 'iso_stop',
+            'async_start', 'async_stop',
+            'baseline_start', 'baseline_stop')
+    assert all(hasattr(tdef, attribute) for attribute in keys)
 
 
 def _check_sequence(

@@ -6,7 +6,6 @@ import random
 from typing import Union
 
 from bsl.triggers import TriggerDef
-from bsl.triggers._trigger import _Trigger
 import numpy as np
 from numpy.typing import ArrayLike
 from psychopy.clock import wait
@@ -58,7 +57,6 @@ def synchronous(
     sequence_timings : list
         List of timings at which an R-peak occured.
     """
-    _check_type(trigger, _Trigger, 'trigger')
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
 
@@ -128,7 +126,6 @@ def isochronous(
     delay : float
         Delay between 2 stimulus in seconds.
     """
-    _check_type(trigger, _Trigger, 'trigger')
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
     _check_type(delay, ('numeric', ), 'delay')
@@ -194,7 +191,6 @@ def asynchronous(
         Array of length BLOCK_SIZE containing the timing at which the stimulus
         was delivered.
     """
-    _check_type(trigger, _Trigger, 'trigger')
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
     sequence_timings = _check_sequence_timings(sequence_timings, sequence, 0.2)
@@ -250,7 +246,6 @@ def baseline(
     duration : float
         Duration of the resting-state block in seconds.
     """
-    _check_type(trigger, _Trigger, 'trigger')
     _check_tdef(tdef)
 
     # Task loop

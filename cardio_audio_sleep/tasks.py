@@ -3,8 +3,10 @@
 from itertools import groupby
 import math
 import random
+from pathlib import Path
 from typing import Union
 
+from bsl.triggers import TriggerDef
 from bsl.triggers._trigger import _Trigger
 import numpy as np
 from numpy.typing import ArrayLike
@@ -17,14 +19,15 @@ from .detector import Detector
 from .utils._checks import _check_type, _check_value
 
 
-BLOCK_SIZE = 255
-OMISSIONS = 51
-EDGE_PERC = 5
-TRIGGERS = dict(sound=1, omission=2, start=10, stop=11)
+BLOCK_SIZE = 300
+OMISSIONS = 60
+EDGE_PERC = 10
+TDEF = TriggerDef(Path(__file__).parent / 'config' / 'triggers.ini')
 
 
 def synchronous(
         trigger,
+        tdef,
         sequence: ArrayLike,
         stream_name: str,
         ecg_ch_name: str,
@@ -38,12 +41,27 @@ def synchronous(
     ----------
     trigger : Trigger
         A BSL trigger instance.
+    tdef : TriggerDef
+        Trigger definition instance. Must contain the keys:
+            - sync_start
+            - sound (aligned on sequence)
+            - omission (aligned on sequence)
+            - sync_stop
     sequence : array
         Sequence of stimulus/omissions (of length BLOCK_SIZE if complete).
         1 corresponds to a stound stimulus. 2 corresponds to an omission.
+    stream_name : str
+        Name of the LSL stream to connect to.
+    ecg_ch_name : str
+        Name of the ECG channel in the LSL stream.
+    eak_height_perc : float
+        Minimum height of the peak expressed as a percentile of the samples in
+        the buffer.
+    peak_prominence : float
+        Minimum peak prominence as defined by scipy.
     """
     _check_type(trigger, _Trigger, 'trigger')
-    sequence = _check_sequence(sequence)
+    sequence = _check_sequence(sequence, tdef)
 
     # Create sound stimuli
     sound = Sound(value=1000, secs=0.1, stereo=True, volume=1.0, blockSize=32,
@@ -59,7 +77,7 @@ def synchronous(
     counter = 0
 
     # Task loop
-    trigger.signal(TRIGGERS['start'])
+    trigger.signal(tdef.sync_start)
 
     while counter <= len(sequence) - 1:
         detector.update_loop()
@@ -77,11 +95,12 @@ def synchronous(
             # next
             counter += 1
 
-    trigger.signal(TRIGGERS['stop'])
+    trigger.signal(tdef.sync_stop)
 
 
 def isochronous(
         trigger,
+        tdef,
         sequence: ArrayLike,
         bpm: Union[int, float]
         ):
@@ -92,6 +111,12 @@ def isochronous(
     ----------
     trigger : Trigger
         A BSL trigger instance.
+    tdef : TriggerDef
+        Trigger definition instance. Must contain the keys:
+            - iso_start
+            - sound (aligned on sequence)
+            - omission (aligned on sequence)
+            - iso_stop
     sequence : array
         Sequence of stimulus/omissions (of length BLOCK_SIZE if complete).
         1 corresponds to a stound stimulus. 2 corresponds to an omission.
@@ -99,7 +124,7 @@ def isochronous(
         Mean heartbeat measured during the last synchronous task (in bpm).
     """
     _check_type(trigger, _Trigger, 'trigger')
-    sequence = _check_sequence(sequence)
+    sequence = _check_sequence(sequence, tdef)
     _check_type(bpm, ('numeric', ), 'bpm')
     if bpm <= 0:
         raise ValueError(
@@ -118,7 +143,7 @@ def isochronous(
     counter = 0
 
     # Task loop
-    trigger.signal(TRIGGERS['start'])
+    trigger.signal(tdef.iso_start)
 
     while counter <= len(sequence) - 1:
         # stimuli
@@ -132,11 +157,12 @@ def isochronous(
         counter += 1
         wait(delay)
 
-    trigger.signal(TRIGGERS['stop'])
+    trigger.signal(tdef.iso_stop)
 
 
 def asynchronous(
         trigger,
+        tdef,
         sequence: ArrayLike,
         sequence_timings: ArrayLike
         ):
@@ -149,6 +175,12 @@ def asynchronous(
     ----------
     trigger : Trigger
         A BSL trigger instance.
+    tdef : TriggerDef
+        Trigger definition instance. Must contain the keys:
+            - async_start
+            - sound (aligned on sequence)
+            - omission (aligned on sequence)
+            - async_stop
     sequence : array
         Sequence of stimulus/omissions (of length BLOCK_SIZE if complete).
         1 corresponds to a stound stimulus. 2 corresponds to an omission.
@@ -157,7 +189,7 @@ def asynchronous(
         was delivered.
     """
     _check_type(trigger, _Trigger, 'trigger')
-    sequence = _check_sequence(sequence)
+    sequence = _check_sequence(sequence, tdef)
     sequence_timings = _check_sequence_timings(sequence_timings, sequence, 0.2)
 
     # Create sound stimuli
@@ -173,7 +205,7 @@ def asynchronous(
     counter = 0
 
     # Task loop
-    trigger.signal(TRIGGERS['start'])
+    trigger.signal(tdef.async_start)
 
     while counter <= len(sequence) - 1:
         # stimuli
@@ -189,11 +221,12 @@ def asynchronous(
         wait(delays[counter])
         counter += 1
 
-    trigger.signal(TRIGGERS['stop'])
+    trigger.signal(tdef.async_stop)
 
 
 def _check_sequence(
-        sequence: ArrayLike
+        sequence: ArrayLike,
+        tdef
         ):
     """
     Checks that the sequence is valid. Copies the sequence.
@@ -206,7 +239,7 @@ def _check_sequence(
             "Argument 'sequence' should be a 1D iterable and not a "
             f"{len(sequence.shape)}D iterable. ")
 
-    valids = (TRIGGERS['sound'], TRIGGERS['omission'])
+    valids = (tdef.sound, tdef.omission)
     if any(elt not in valids for elt in sequence):
         raise ValueError(
             "Unknown value within 'sequence'. All elements should be among "
@@ -256,16 +289,17 @@ def _check_sequence_timings(
 
 
 def generate_sequence(
-        size: int = BLOCK_SIZE,
-        omissions: int = OMISSIONS,
-        edge_perc: Union[int, float] = EDGE_PERC,
+        size: int,
+        omissions: int,
+        edge_perc: Union[int, float],
+        tdef,
         max_iter: int = 500,
         on_diverge: str = 'warn',
         ):
     """
     Creates a valid sequence.
-    - 255 sounds / block
-    - 20% (51) are omissions
+    - 300 sounds / block
+    - 20% (60) are omissions
 
     An omission should not be in the first or last 5%.
     Omissions should not be consecutive.
@@ -279,6 +313,10 @@ def generate_sequence(
     edge_perc : float
         Percentage of the total number of elements that have to be sound at
         the beginning and at the end of the sequence.
+    tdef : TriggerDef
+        Trigger definition instance. Must contain the keys:
+            - sound (aligned on sequence)
+            - omission (aligned on sequence)
     max_iter : int
         Maximum numnber of iteration to randomize the sequence.
     on_diverge : str
@@ -309,17 +347,17 @@ def generate_sequence(
             f"Provided: '{max_iter}'.")
 
     n_edge = math.ceil(edge_perc * size / 100)
-    start = [TRIGGERS['sound']] * n_edge
+    start = [tdef.sound] * n_edge
 
-    middle = [TRIGGERS['sound']] * (size - omissions - 2 * n_edge)
-    middle += [TRIGGERS['omission']] * omissions
+    middle = [tdef.sound] * (size - omissions - 2 * n_edge)
+    middle += [tdef.omission] * omissions
     random.shuffle(middle)
     iter_ = 0
     while True:
         groups = [(n, list(group)) for n, group in groupby(middle)]
 
         if all(len(group[1]) == 1
-               for group in groups if group[0] == TRIGGERS['omission']):
+               for group in groups if group[0] == tdef.omission):
             converged = True
             break
 
@@ -333,11 +371,11 @@ def generate_sequence(
             break
 
         for i, (n, group) in enumerate(groups):
-            if n == TRIGGERS['sound'] or len(group) == 1:
+            if n == tdef.sound or len(group) == 1:
                 continue
 
             # find the longest group of TRIGGERS['sound']
-            idx = np.argmax([len(g) if n == TRIGGERS['sound'] else 0
+            idx = np.argmax([len(g) if n == tdef.sound else 0
                              for n, g in groups])
             pos_sound = sum(len(g) for k, (_, g) in enumerate(groups)
                             if k < idx)
@@ -358,10 +396,9 @@ def generate_sequence(
     # sanity-check
     if converged:
         assert all(len(group) == 1
-                   for n, group in groups if n == TRIGGERS['omission'])
-        assert not any(middle[i-1] == TRIGGERS['omission'] \
-                       and middle[i] == TRIGGERS['omission']
+                   for n, group in groups if n == tdef.omission)
+        assert not any(middle[i-1] == middle[i] == tdef.omission
                        for i in range(1, len(middle)))
 
-    end = [TRIGGERS['sound']] * n_edge
+    end = [tdef.sound] * n_edge
     return np.array(start + middle + end)

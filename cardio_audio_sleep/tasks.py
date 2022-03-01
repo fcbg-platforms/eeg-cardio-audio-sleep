@@ -88,7 +88,7 @@ def synchronous(
                 - detector.timestamps_buffer[pos]
             # sound
             if sequence[counter] == 1:
-                sound.play(ptb.GetSecs() + 0.05 - delay)
+                sound.play(when=ptb.GetSecs() + 0.05 - delay)
             # trigger
             wait(0.05 - delay, hogCPUperiod=1)
             trigger.signal(sequence[counter])
@@ -151,7 +151,7 @@ def isochronous(
     while counter <= len(sequence) - 1:
         # stimuli
         if sequence[counter] == 1:
-            sound.play(ptb.GetSecs() + 0.2)
+            sound.play(when=ptb.GetSecs() + 0.2)
         # trigger
         wait(0.2, hogCPUperiod=1)
         trigger.signal(sequence[counter])
@@ -213,7 +213,7 @@ def asynchronous(
     while counter <= len(sequence) - 1:
         # stimuli
         if sequence[counter] == 1:
-            sound.play(ptb.GetSecs() + 0.2)
+            sound.play(when=ptb.GetSecs() + 0.2)
         # trigger
         wait(0.2, hogCPUperiod=1)
         trigger.signal(sequence[counter])

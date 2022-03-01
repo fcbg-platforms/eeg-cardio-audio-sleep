@@ -47,7 +47,7 @@ def synchronous(
         Name of the LSL stream to connect to.
     ecg_ch_name : str
         Name of the ECG channel in the LSL stream.
-    eak_height_perc : float
+    peak_height_perc : float
         Minimum height of the peak expressed as a percentile of the samples in
         the buffer.
     peak_prominence : float

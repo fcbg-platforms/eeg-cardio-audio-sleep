@@ -3,7 +3,6 @@
 from itertools import groupby
 import math
 import random
-from pathlib import Path
 from typing import Union
 
 from bsl.triggers import TriggerDef
@@ -17,12 +16,6 @@ import psychtoolbox as ptb
 from . import logger
 from .detector import Detector
 from .utils._checks import _check_type, _check_value
-
-
-BLOCK_SIZE = 300
-OMISSIONS = 60
-EDGE_PERC = 10
-TDEF = TriggerDef(Path(__file__).parent / 'config' / 'triggers.ini')
 
 
 def synchronous(

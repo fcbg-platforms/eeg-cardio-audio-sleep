@@ -52,6 +52,11 @@ def synchronous(
         the buffer.
     peak_prominence : float
         Minimum peak prominence as defined by scipy.
+
+    Returns
+    -------
+    sequence_timings : list
+        List of timings at which an R-peak occured.
     """
     _check_type(trigger, _Trigger, 'trigger')
     _check_tdef(tdef)
@@ -70,6 +75,9 @@ def synchronous(
     # Create counter
     counter = 0
 
+    # Create containers for sequence timings
+    sequence_timings = list()
+
     # Task loop
     trigger.signal(tdef.sync_start)
 
@@ -87,16 +95,19 @@ def synchronous(
             wait(0.05 - delay, hogCPUperiod=1)
             trigger.signal(sequence[counter])
             # next
+            sequence_timings.append(detector.timestamps_buffer[pos])
             counter += 1
 
     trigger.signal(tdef.sync_stop)
+
+    return sequence_timings
 
 
 def isochronous(
         trigger,
         tdef,
         sequence: ArrayLike,
-        bpm: Union[int, float]
+        delay: Union[int, float]
         ):
     """
     Isochronous block where sounds are delivered at a fix interval.
@@ -114,25 +125,25 @@ def isochronous(
     sequence : array
         Sequence of stimulus/omissions (of length BLOCK_SIZE if complete).
         1 corresponds to a stound stimulus. 2 corresponds to an omission.
-    bpm : float
-        Mean heartbeat measured during the last synchronous task (in bpm).
+    delay : float
+        Delay between 2 stimulus in seconds.
     """
     _check_type(trigger, _Trigger, 'trigger')
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
-    _check_type(bpm, ('numeric', ), 'bpm')
-    if bpm <= 0:
+    _check_type(delay, ('numeric', ), 'delay')
+    if delay <= 0:
         raise ValueError(
-            "Argument 'bpm' should be a strictly positive number. "
-            f"Provided: '{bpm}' beats per minute.")
+            "Argument 'delay' should be a strictly positive number. "
+            f"Provided: '{delay}' seconds.")
+    assert 0.2 < delay  # sanity-check
 
     # Create sound stimuli
     sound = Sound(value=1000, secs=0.1, stereo=True, volume=1.0, blockSize=32,
                   preBuffer=-1, hamming=True)
 
-    # Convert heartbeat from BPM to inter-stimulus delay.
-    delay = 1 / (bpm / 60)  # seconds
-    delay -= 0.2  # from sound scheduling
+    # Remove scheduling from delay
+    delay -= 0.2
 
     # Create counter
     counter = 0

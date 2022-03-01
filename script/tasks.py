@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from bsl.triggers import TriggerDef, ParallelPortTrigger
+import numpy as np
 
 from cardio_audio_sleep.tasks import (synchronous, isochronous, asynchronous,
                                       baseline, generate_sequence)
@@ -23,17 +24,18 @@ peak_prominence = 700
 # Sequence
 sequence = generate_sequence(300, 60, 10)
 # Task
-synchronous(trigger, tdef, sequence, stream_name, ecg_ch_name,
-            peak_height_perc, peak_prominence)
+sequence_timings = synchronous(
+    trigger, tdef, sequence, stream_name, ecg_ch_name, peak_height_perc,
+    peak_prominence)
 
 #%% Isochronous
 
-# Compute BPM
-bpm = 60
+# Compute inter-stimulus delay
+delay = np.mean(np.diff(sequence_timings))
 # Sequence
 sequence = generate_sequence(300, 60, 10)
 # Task
-isochronous(trigger, tdef, sequence, bpm)
+isochronous(trigger, tdef, sequence, delay)
 
 #%% Asynchronous
 

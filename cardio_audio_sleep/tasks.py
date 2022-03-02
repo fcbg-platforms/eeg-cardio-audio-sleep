@@ -11,6 +11,7 @@ from numpy.typing import ArrayLike
 from psychopy.clock import wait
 from psychopy.sound.backend_ptb import SoundPTB as Sound
 import psychtoolbox as ptb
+from pylsl import local_clock
 
 from . import logger
 from .detector import Detector
@@ -61,12 +62,12 @@ def synchronous(
     sequence = _check_sequence(sequence, tdef)
 
     # Create sound stimuli
-    sound = Sound(value=1000, secs=0.1, stereo=True, volume=1.0, blockSize=32,
+    sound = Sound(value=250, secs=0.1, stereo=True, volume=1.0, blockSize=32,
                   preBuffer=-1, hamming=True)
 
     # Create peak detector
     detector = Detector(
-        stream_name, ecg_ch_name, duration_buffer=5,
+        stream_name, ecg_ch_name, duration_buffer=3,
         peak_height_perc=peak_height_perc, peak_prominence=peak_prominence)
     detector.prefill_buffer()
 
@@ -85,13 +86,12 @@ def synchronous(
         pos = detector.new_peaks()
         if pos is not None:
             # compute where we are relative to the r-peak
-            delay = detector.timestamps_buffer[-1] \
-                - detector.timestamps_buffer[pos]
+            delay = local_clock() - detector.timestamps_buffer[pos]
             # sound
             if sequence[counter] == 1:
-                sound.play(when=ptb.GetSecs() + 0.05 - delay)
+                sound.play(when=ptb.GetSecs() + 0.15 - delay)
             # trigger
-            wait(0.05 - delay, hogCPUperiod=1)
+            wait(0.15 - delay, hogCPUperiod=1)
             trigger.signal(sequence[counter])
             # next
             sequence_timings.append(detector.timestamps_buffer[pos])
@@ -138,7 +138,7 @@ def isochronous(
     assert 0.2 < delay  # sanity-check
 
     # Create sound stimuli
-    sound = Sound(value=1000, secs=0.1, stereo=True, volume=1.0, blockSize=32,
+    sound = Sound(value=250, secs=0.1, stereo=True, volume=1.0, blockSize=32,
                   preBuffer=-1, hamming=True)
 
     # Remove scheduling from delay
@@ -200,7 +200,7 @@ def asynchronous(
     sequence_timings = _check_sequence_timings(sequence_timings, sequence, 0.2)
 
     # Create sound stimuli
-    sound = Sound(value=1000, secs=0.1, stereo=True, volume=1.0, blockSize=32,
+    sound = Sound(value=250, secs=0.1, stereo=True, volume=1.0, blockSize=32,
                   preBuffer=-1, hamming=True)
 
     # Compute delays

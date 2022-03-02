@@ -12,18 +12,18 @@ from cardio_audio_sleep.utils import match_positions
 
 
 #%% Load
-fname = r'/home/eeg/recordings/test-eegoSports 000650-raw.fif'
+fname = r'/home/eeg/recordings/sync-eegoSports 000650-raw.fif'
 raw = read_raw(fname)
 raw.pick_channels(['TRIGGER', 'Sound', 'ECG'])
 
 #%% Triggers
 directory = Path(__file__).parent.parent / 'cardio_audio_sleep' / 'config'
 tdef = TriggerDef(directory / 'triggers.ini')
-start = tdef.iso_start
-stop = tdef.iso_stop
+start = tdef.sync_start
+stop = tdef.sync_stop
 
 #%% Sound
-sound_frequency = 1000.
+sound_frequency = 250.
 
 #%% Events
 events = mne.find_events(raw, stim_channel='TRIGGER')
@@ -46,7 +46,7 @@ raw.filter(sound_frequency - 10, sound_frequency + 10, picks='Sound',
            phase='zero-double')
 sound = raw.get_data(picks='Sound')[0, :]
 analytic_signal = np.abs(hilbert(sound))
-analytic_signal_height = np.percentile(analytic_signal, 80)
+analytic_signal_height = np.percentile(analytic_signal, 89)
 supra_threshold_idx = np.where(analytic_signal > analytic_signal_height)[0]
 
 sound_onsets, sound_offsets = list(), list()
@@ -69,19 +69,19 @@ sound_durations = [offset - onset
                    for onset, offset in zip(sound_onsets, sound_offsets)]
 
 #%% Match trigger/sound and compute delay
-threshold = math.ceil(0.1 * raw.info['sfreq'])
+threshold = math.ceil(0.25 * raw.info['sfreq'])
 id_sounds, id_events = match_positions(sound_onsets, events, threshold)
 trigger_sound_delays = [sound_onsets[ids] - events[ide]
                         for ids, ide in zip(id_sounds, id_events)]
 
 #%% Match R-peak/triggers and compute delay
-threshold = math.ceil(0.1 * raw.info['sfreq'])
+threshold = math.ceil(0.25 * raw.info['sfreq'])
 id_rpeaks, id_events = match_positions(ecg_peaks, events, threshold)
 rpeak_trigger_delays = [events[ide] - ecg_peaks[idr]
                         for ide, idr in zip(id_events, id_rpeaks)]
 
 #%% Match R-peak/sound and compute delay
-threshold = math.ceil(0.1 * raw.info['sfreq'])
+threshold = math.ceil(0.25 * raw.info['sfreq'])
 id_rpeaks, id_sounds = match_positions(ecg_peaks, sound_onsets, threshold)
 rpeak_sounds_delays = [sound_onsets[ids] - ecg_peaks[idr]
                        for ids, idr in zip(id_sounds, id_rpeaks)]
@@ -125,19 +125,31 @@ for ev in events:
 f, ax = plt.subplots(4, 1, figsize=(5, 20))
 
 # Trigger/Sound
-ax[0].set_title('Trigger/Sound delay (ms)')
-ax[0].hist(np.array(trigger_sound_delays) * 1000 / raw.info['sfreq'])
+ax[0].set_title('Trigger/Sound delay (samples)')
+bins = np.arange(min(trigger_sound_delays) - 0.5,
+                 max(trigger_sound_delays) + 0.5,
+                 1)
+ax[0].hist(trigger_sound_delays, bins=bins)
 
 # R-peak/Trigger
-ax[1].set_title('R-Peak/Trigger delay (ms)')
-ax[1].hist(np.array(rpeak_trigger_delays) * 1000 / raw.info['sfreq'])
+ax[1].set_title('R-Peak/Trigger delay (samples)')
+bins = np.arange(min(rpeak_trigger_delays) - 0.5,
+                 max(rpeak_trigger_delays) + 0.5,
+                 1)
+ax[1].hist(rpeak_trigger_delays, bins=bins)
 
 # R-Peak/Sound
-ax[2].set_title('R-Peak/Sound delay (ms)')
-ax[2].hist(np.array(rpeak_sounds_delays) * 1000 / raw.info['sfreq'])
+ax[2].set_title('R-Peak/Sound delay (samples)')
+bins = np.arange(min(rpeak_sounds_delays) - 0.5,
+                 max(rpeak_sounds_delays) + 0.5,
+                 1)
+ax[2].hist(rpeak_sounds_delays, bins=bins)
 
 # Sound/Sound
-ax[3].set_title('Sound/Sound delay (ms)')
-ax[3].hist(np.array(sound_sound_delays) * 1000 / raw.info['sfreq'])
+ax[3].set_title('Sound/Sound delay (samples)')
+bins = np.arange(min(sound_sound_delays) - 0.5,
+                 max(sound_sound_delays) + 0.5,
+                 1)
+ax[3].hist(sound_sound_delays, bins=bins)
 
 f.tight_layout(pad=5, h_pad=5)

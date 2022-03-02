@@ -22,10 +22,10 @@ ecg_ch_name = 'AUX7'
 #%% Synchronous
 
 # Peak detection settings
-peak_height_perc = 97.5
-peak_prominence = 700
+peak_height_perc = 98
+peak_prominence = 1000
 # Sequence
-sequence = generate_sequence(300, 60, 10, tdef)
+sequence = generate_sequence(100, 0, 10, tdef)
 # Task
 sequence_timings = synchronous(
     trigger, tdef, sequence, stream_name, ecg_ch_name, peak_height_perc,
@@ -37,7 +37,7 @@ sequence_timings = synchronous(
 # Compute inter-stimulus delay
 delay = np.mean(np.diff(sequence_timings))
 # Sequence
-sequence = generate_sequence(300, 60, 10, tdef)
+sequence = generate_sequence(100, 0, 10, tdef)
 # Task
 isochronous(trigger, tdef, sequence, delay)
 
@@ -45,7 +45,7 @@ isochronous(trigger, tdef, sequence, delay)
 #%% Asynchronous
 
 # Sequence
-sequence = generate_sequence(300, 60, 10, tdef)
+sequence = generate_sequence(100, 0, 10, tdef)
 # Task
 asynchronous(trigger, tdef, sequence, sequence_timings)
 

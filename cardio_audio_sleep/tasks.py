@@ -376,7 +376,7 @@ def generate_sequence(
         raise ValueError(
             "Argument 'size' must be a strictly positive integer. "
             f"Provided: '{size}'.")
-    if omissions <= 0:
+    if omissions < 0:
         raise ValueError(
             "Argument 'omissions' must be a strictly positive integer. "
             f"Provided: '{omissions}'.")

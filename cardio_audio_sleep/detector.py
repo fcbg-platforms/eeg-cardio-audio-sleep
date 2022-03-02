@@ -4,6 +4,7 @@ from bsl import StreamReceiver
 from bsl.utils import Timer
 from mne.filter import filter_data
 import numpy as np
+from pylsl import local_clock
 from scipy.signal import find_peaks
 
 from . import logger
@@ -120,8 +121,10 @@ class Detector:
             "\n--------------------------------------\n"
             "R-Peak has entered the buffer:\n"
             "Δ buffer-peak: %.4f\n"
+            "Δ clock-peak: %.4f\n"
             "--------------------------------------\n",
-            self.timestamps_buffer[-1] - self.timestamps_buffer[peak])
+            self._timestamps_buffer[-1] - self._timestamps_buffer[peak],
+            local_clock() - self._timestamps_buffer[peak])
 
         return peak
 

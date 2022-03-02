@@ -288,7 +288,7 @@ def _check_sequence(
             "Unknown value within 'sequence'. All elements should be among "
             f"'{valids}'.")
 
-    logger.info('Provided sequence contains {sequence.size} elements.')
+    logger.info('Provided sequence contains %s elements.', sequence.size)
 
     return sequence
 

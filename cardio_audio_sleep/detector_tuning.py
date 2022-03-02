@@ -8,13 +8,14 @@ from mne.filter import filter_data
 from scipy.signal import find_peaks
 
 from . import logger
+from .utils import search_ANT_amplifier
 from .utils._checks import _check_type, _check_value
 
 
 def peak_detection_parameters_tuning(
-        stream_name: str,
         ecg_ch_name: str,
-        duration_buffer: float = 5
+        stream_name: str = None,
+        duration_buffer: float = 2
         ):
     """
     GUI to tune the height parameter of the R-peak detector.
@@ -24,10 +25,11 @@ def peak_detection_parameters_tuning(
 
     Parameters
     ----------
-    stream_name : str
-        Name of the LSL stream to connect to.
     ecg_ch_name : str
         Name of the ECG channel in the LSL stream.
+    stream_name : str
+        Name of the LSL stream to connect to. If None, attempts to find ANT
+        amplifiers.
     duration_buffer : float
         The duration of the data buffer.
 
@@ -36,10 +38,12 @@ def peak_detection_parameters_tuning(
     height : float
         The height setting retained (express as a percentage).
     """
-    _check_type(stream_name, (str, ), item_name='stream_name')
     _check_type(ecg_ch_name, (str, ), item_name='ecg_ch_name')
+    _check_type(stream_name, (str, None), item_name='stream_name')
     _check_type(duration_buffer, ('numeric', ),
                 item_name='duration_buffer')
+    if stream_name is None:
+        stream_name = search_ANT_amplifier()
     if duration_buffer <= 0.2:
         raise ValueError(
             "Argument 'duration_buffer' must be strictly larger than 0.2. "

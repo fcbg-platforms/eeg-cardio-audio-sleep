@@ -64,7 +64,7 @@ def synchronous(
 
     # Create peak detector
     detector = Detector(
-        stream_name, ecg_ch_name, duration_buffer=2,
+        stream_name, ecg_ch_name, duration_buffer=4,
         peak_height_perc=peak_height_perc)
     detector.prefill_buffer()
 

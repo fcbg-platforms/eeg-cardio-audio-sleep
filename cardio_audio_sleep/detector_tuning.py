@@ -15,7 +15,7 @@ from .utils._checks import _check_type, _check_value
 def peak_detection_parameters_tuning(
         ecg_ch_name: str,
         stream_name: str = None,
-        duration_buffer: float = 2
+        duration_buffer: float = 4
         ):
     """
     GUI to tune the height parameter of the R-peak detector.

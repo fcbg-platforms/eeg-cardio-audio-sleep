@@ -28,7 +28,7 @@ class Detector:
         the buffer. Default to 98%.
     """
 
-    def __init__(self, stream_name, ecg_ch_name, duration_buffer=2,
+    def __init__(self, stream_name, ecg_ch_name, duration_buffer=4,
                  peak_height_perc=98):
         # Check arguments and create StreamReceiver
         self._peak_height_perc = Detector._check_peak_height_perc(

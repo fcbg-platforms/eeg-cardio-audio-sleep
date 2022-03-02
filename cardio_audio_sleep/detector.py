@@ -28,7 +28,7 @@ class Detector:
         the buffer. Default to 98%.
     """
 
-    def __init__(self, stream_name, ecg_ch_name, duration_buffer=5,
+    def __init__(self, stream_name, ecg_ch_name, duration_buffer=2,
                  peak_height_perc=98):
         # Check arguments and create StreamReceiver
         self._peak_height_perc = Detector._check_peak_height_perc(
@@ -133,6 +133,10 @@ class Detector:
         # filter the entire buffer
         data = filter_data(self._ecg_buffer, self._sample_rate, 1., 15.,
                            phase='zero')
+        # ---------------------------------------------------
+        # timeit (mean ± std. dev. of 7 runs, 100 loops each)
+        # Windows i9-9700K - 7.12 ms ± 13.9 µs per loop
+        # ---------------------------------------------------
 
         # peak detection
         height = np.percentile(data, self._peak_height_perc)

@@ -1,32 +1,35 @@
 import math
+from pathlib import Path
 
+from bsl.triggers import TriggerDef
 import mne
 from matplotlib import pyplot as plt
 import numpy as np
 from scipy.signal import find_peaks, hilbert
 
 from cardio_audio_sleep.io import read_raw
-from cardio_audio_sleep.tasks import TRIGGERS
 from cardio_audio_sleep.utils import match_positions
 
 
 #%% Load
-fname = r''
-raw = read_raw(fname, preload=True)
+fname = r'/home/eeg/recordings/test-eegoSports 000650-raw.fif'
+raw = read_raw(fname)
 raw.pick_channels(['TRIGGER', 'Sound', 'ECG'])
+
+#%% Triggers
+directory = Path(__file__).parent.parent / 'cardio_audio_sleep' / 'config'
+tdef = TriggerDef(directory / 'triggers.ini')
+start = tdef.iso_start
+stop = tdef.iso_stop
 
 #%% Events
 events = mne.find_events(raw, stim_channel='TRIGGER')
-tmin = events[0][0] / raw.info['sfreq'] \
-    if events[0][2] == TRIGGERS['start'] else None
-tmax = events[-1][0] / raw.info['sfreq'] \
-    if events[-1][2] == TRIGGERS['stop'] else None
+tmin = events[0][0] / raw.info['sfreq'] if events[0][2] == start else None
+tmax = events[-1][0] / raw.info['sfreq'] if events[-1][2] == stop else None
 raw.crop(tmin, tmax, include_tmax=True)
 
 events = mne.find_events(raw, stim_channel='TRIGGER')
-selection = np.where(events[:, 2] not in (TRIGGERS['start'], TRIGGERS['stop']))
-events = events[selection]
-events = np.array([ev[0] for ev in events])
+events = np.array([ev[0] for ev in events if ev[2] != start and ev[2] != stop])
 events -= raw.first_samp
 
 #%% Find peaks on ECG

@@ -22,6 +22,9 @@ tdef = TriggerDef(directory / 'triggers.ini')
 start = tdef.iso_start
 stop = tdef.iso_stop
 
+#%% Sound
+sound_frequency = 1000.
+
 #%% Events
 events = mne.find_events(raw, stim_channel='TRIGGER')
 tmin = events[0][0] / raw.info['sfreq'] if events[0][2] == start else None
@@ -39,10 +42,11 @@ ecg_height = np.percentile(ecg, 97.5)
 ecg_peaks, _ = find_peaks(ecg, height=ecg_height)
 
 #%% Find sounds on Sound channel
-raw.filter(1., None, picks='Sound', phase='zero-double')
+raw.filter(sound_frequency - 10, sound_frequency + 10, picks='Sound',
+           phase='zero-double')
 sound = raw.get_data(picks='Sound')[0, :]
 analytic_signal = np.abs(hilbert(sound))
-analytic_signal_height = np.percentile(analytic_signal, 87)
+analytic_signal_height = np.percentile(analytic_signal, 80)
 supra_threshold_idx = np.where(analytic_signal > analytic_signal_height)[0]
 
 sound_onsets, sound_offsets = list(), list()
@@ -67,7 +71,7 @@ sound_durations = [offset - onset
 #%% Match trigger/sound and compute delay
 threshold = math.ceil(0.1 * raw.info['sfreq'])
 id_sounds, id_events = match_positions(sound_onsets, events, threshold)
-sound_trigger_delays = [sound_onsets[ids] - events[ide]
+trigger_sound_delays = [sound_onsets[ids] - events[ide]
                         for ids, ide in zip(id_sounds, id_events)]
 
 #%% Match R-peak/triggers and compute delay
@@ -81,6 +85,9 @@ threshold = math.ceil(0.1 * raw.info['sfreq'])
 id_rpeaks, id_sounds = match_positions(ecg_peaks, sound_onsets, threshold)
 rpeak_sounds_delays = [sound_onsets[ids] - ecg_peaks[idr]
                        for ids, idr in zip(id_sounds, id_rpeaks)]
+
+#%% Sound/Sound delays
+sound_sound_delays = np.diff(sound_onsets)
 
 #%% Plots
 f, ax = plt.subplots(3, 1, sharex=True)
@@ -113,3 +120,24 @@ ax[2].axhline(analytic_signal_height, color='lightgreen')
 for ev in events:
     for a in ax:
         a.axvline(ev, color='lightblue', linestyle='--')
+
+#%% Histograms
+f, ax = plt.subplots(4, 1, figsize=(5, 20))
+
+# Trigger/Sound
+ax[0].set_title('Trigger/Sound delay (ms)')
+ax[0].hist(np.array(trigger_sound_delays) * 1000 / raw.info['sfreq'])
+
+# R-peak/Trigger
+ax[1].set_title('R-Peak/Trigger delay (ms)')
+ax[1].hist(np.array(rpeak_trigger_delays) * 1000 / raw.info['sfreq'])
+
+# R-Peak/Sound
+ax[2].set_title('R-Peak/Sound delay (ms)')
+ax[2].hist(np.array(rpeak_sounds_delays) * 1000 / raw.info['sfreq'])
+
+# Sound/Sound
+ax[3].set_title('Sound/Sound delay (ms)')
+ax[3].hist(np.array(sound_sound_delays) * 1000 / raw.info['sfreq'])
+
+f.tight_layout(pad=5, h_pad=5)

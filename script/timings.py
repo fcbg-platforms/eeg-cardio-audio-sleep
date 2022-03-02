@@ -46,7 +46,7 @@ raw.filter(sound_frequency - 10, sound_frequency + 10, picks='Sound',
            phase='zero-double')
 sound = raw.get_data(picks='Sound')[0, :]
 analytic_signal = np.abs(hilbert(sound))
-analytic_signal_height = np.percentile(analytic_signal, 89)
+analytic_signal_height = np.percentile(analytic_signal, 92)
 supra_threshold_idx = np.where(analytic_signal > analytic_signal_height)[0]
 
 sound_onsets, sound_offsets = list(), list()
@@ -69,19 +69,19 @@ sound_durations = [offset - onset
                    for onset, offset in zip(sound_onsets, sound_offsets)]
 
 #%% Match trigger/sound and compute delay
-threshold = math.ceil(0.25 * raw.info['sfreq'])
+threshold = math.ceil(0.1 * raw.info['sfreq'])
 id_sounds, id_events = match_positions(sound_onsets, events, threshold)
 trigger_sound_delays = [sound_onsets[ids] - events[ide]
                         for ids, ide in zip(id_sounds, id_events)]
 
 #%% Match R-peak/triggers and compute delay
-threshold = math.ceil(0.25 * raw.info['sfreq'])
+threshold = math.ceil(0.1 * raw.info['sfreq'])
 id_rpeaks, id_events = match_positions(ecg_peaks, events, threshold)
 rpeak_trigger_delays = [events[ide] - ecg_peaks[idr]
                         for ide, idr in zip(id_events, id_rpeaks)]
 
 #%% Match R-peak/sound and compute delay
-threshold = math.ceil(0.25 * raw.info['sfreq'])
+threshold = math.ceil(0.1 * raw.info['sfreq'])
 id_rpeaks, id_sounds = match_positions(ecg_peaks, sound_onsets, threshold)
 rpeak_sounds_delays = [sound_onsets[ids] - ecg_peaks[idr]
                        for ids, idr in zip(id_sounds, id_rpeaks)]

@@ -94,7 +94,8 @@ def synchronous(
             sequence_timings.append(detector.timestamps_buffer[pos])
             counter += 1
             # wait for sound to be delivered before updating again
-            wait(0.1, hogCPUperiod=1)
+            # and give CPU time to other processes
+            wait(0.1, hogCPUperiod=0)
 
     wait(0.1)
     trigger.signal(tdef.sync_stop)
@@ -159,8 +160,8 @@ def isochronous(
         trigger.signal(sequence[counter])
 
         # next
-        counter += 1
         wait(delay)
+        counter += 1
 
     wait(0.1)
     trigger.signal(tdef.iso_stop)

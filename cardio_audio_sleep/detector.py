@@ -130,13 +130,22 @@ class Detector:
         """
         Detect peaks in the ECG buffer.
         """
-        # filter the entire buffer
+        # --------------------- Filter ---------------------
+        # timeit (mean ± std. dev. of 7 runs, 100 loops each)
+        # --------------------------------------------------
+        # System: Windows - AMD 5600X - DDR4 3600 MHz
+        # -------------------------------------------
+        # Data: 512 Hz - 2048 samples
+        # 3.71 ms ± 17.7 µs per loop
+        # ----------------------------
+        # Data: 1024 Hz - 4096 samples
+        # 7.03 ms ± 101 µs per loop
+        # ----------------------------
+        # Data: 2048 Hz - 8192 samples
+        # 13.3 ms ± 44.2 µs per loop
+        # --------------------------------------------------
         data = filter_data(self._ecg_buffer, self._sample_rate, 1., 15.,
                            phase='zero')
-        # ---------------------------------------------------
-        # timeit (mean ± std. dev. of 7 runs, 100 loops each)
-        # Windows i9-9700K - 7.12 ms ± 13.9 µs per loop
-        # ---------------------------------------------------
 
         # peak detection
         height = np.percentile(data, self._peak_height_perc)

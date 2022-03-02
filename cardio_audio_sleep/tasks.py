@@ -89,9 +89,9 @@ def synchronous(
             delay = local_clock() - detector.timestamps_buffer[pos]
             # sound
             if sequence[counter] == 1:
-                sound.play(when=ptb.GetSecs() + 0.15 - delay)
+                sound.play(when=ptb.GetSecs() + 0.05 - delay)
             # trigger
-            wait(0.15 - delay, hogCPUperiod=1)
+            wait(0.05 - delay, hogCPUperiod=1)
             trigger.signal(sequence[counter])
             # next
             sequence_timings.append(detector.timestamps_buffer[pos])

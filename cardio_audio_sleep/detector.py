@@ -2,6 +2,7 @@ import math
 
 from bsl import StreamReceiver
 from bsl.utils import Timer
+from mne.filter import filter_data
 import numpy as np
 from scipy.signal import find_peaks
 
@@ -25,17 +26,13 @@ class Detector:
     peak_height_perc : float
         Minimum height of the peak expressed as a percentile of the samples in
         the buffer. Default to 98%.
-    peak_prominence : float
-        Minimum peak prominence as defined by scipy. Default to 700.
     """
 
     def __init__(self, stream_name, ecg_ch_name, duration_buffer=5,
-                 peak_height_perc=98, peak_prominence=700):
+                 peak_height_perc=98):
         # Check arguments and create StreamReceiver
         self._peak_height_perc = Detector._check_peak_height_perc(
             peak_height_perc)
-        self._peak_prominence = Detector._check_peak_prominence(
-            peak_prominence)
         _check_type(stream_name, (str, ), item_name='stream_name')
         _check_type(ecg_ch_name, (str, ), item_name='ecg_ch_name')
         _check_type(duration_buffer, ('numeric', ),
@@ -133,16 +130,13 @@ class Detector:
         """
         Detect peaks in the ECG buffer.
         """
-        # detrending
-        times = np.linspace(0, 5, self._ecg_buffer.size)
-        z = np.polyfit(times, self._ecg_buffer, 1)
-        linear_fit = z[0] * times + z[1]
-        data = self._ecg_buffer - linear_fit
+        # filter the entire buffer
+        data = filter_data(self._ecg_buffer, self._sample_rate, 1., 15.,
+                           phase='zero')
 
         # peak detection
         height = np.percentile(data, self._peak_height_perc)
-        peaks, _ = find_peaks(data, height=height,
-                              prominence=self._peak_prominence)
+        peaks, _ = find_peaks(data, height=height)
 
         return peaks
 
@@ -156,6 +150,11 @@ class Detector:
     def stream_name(self):
         """The connected stream."""
         return self._stream_name
+
+    @property
+    def sample_rate(self):
+        """The connected stream sample rate."""
+        return self._sample_rate
 
     @property
     def ecg_ch_name(self):
@@ -192,11 +191,6 @@ class Detector:
         """The minimum peak height as a percentile of the data."""
         return self._peak_height_perc
 
-    @property
-    def peak_prominence(self):
-        """The peak prominence setting."""
-        return self._peak_prominence
-
     # --------------------------------------------------------------------
     @staticmethod
     def _check_peak_height_perc(peak_height_perc):
@@ -212,14 +206,3 @@ class Detector:
                 "Argument 'peak_height_perc' must be a percentage between "
                 f"0 and 100 excluded. Provided '{peak_height_perc}%'.")
         return float(peak_height_perc)
-
-    @staticmethod
-    def _check_peak_prominence(peak_prominence):
-        """Checks argument 'peak_prominence'."""
-        _check_type(peak_prominence, ('numeric', ),
-                    item_name='peak_prominence')
-        if peak_prominence <= 0:
-            raise ValueError(
-                "Argument 'peak_prominence' must be a strictly positive "
-                f"number. Provided: '{peak_prominence}'.")
-        return float(peak_prominence)

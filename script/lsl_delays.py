@@ -13,12 +13,11 @@ ecg_ch_name = 'AUX7'
 
 #%% Peak detection
 peak_height_perc = 97.8
-peak_prominence = 900
 
 #%% Loop
 detector = Detector(
     stream_name, ecg_ch_name, duration_buffer=3,
-    peak_height_perc=peak_height_perc, peak_prominence=peak_prominence)
+    peak_height_perc=peak_height_perc)
 detector.prefill_buffer()
 
 counter = 0
@@ -37,7 +36,7 @@ outliers = _find_outliers(delays, threshold=3)
 delays = [delay for k, delay in enumerate(delays) if k not in outliers]
 
 #%% Convert and prepare plots
-resolution = 1000 / detector.sr.streams[stream_name].sample_rate
+resolution = 1000 / detector.sample_rate
 delays = np.array(delays) * 1000
 bins = np.arange(min(delays) - resolution / 2, max(delays) + resolution / 2,
                  resolution)

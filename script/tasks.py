@@ -23,13 +23,11 @@ ecg_ch_name = 'AUX7'
 
 # Peak detection settings
 peak_height_perc = 97.8
-peak_prominence = 900
 # Sequence
 sequence = generate_sequence(100, 0, 10, tdef)
 # Task
 sequence_timings = synchronous(
-    trigger, tdef, sequence, stream_name, ecg_ch_name, peak_height_perc,
-    peak_prominence)
+    trigger, tdef, sequence, stream_name, ecg_ch_name, peak_height_perc)
 
 
 #%% Isochronous

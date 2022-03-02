@@ -25,7 +25,6 @@ def synchronous(
         stream_name: str,
         ecg_ch_name: str,
         peak_height_perc: Union[int, float],
-        peak_prominence: Union[int, float]
         ):
     """
     Synchronous block where sounds are sync to the heartbeat.
@@ -50,8 +49,6 @@ def synchronous(
     peak_height_perc : float
         Minimum height of the peak expressed as a percentile of the samples in
         the buffer.
-    peak_prominence : float
-        Minimum peak prominence as defined by scipy.
 
     Returns
     -------
@@ -67,8 +64,8 @@ def synchronous(
 
     # Create peak detector
     detector = Detector(
-        stream_name, ecg_ch_name, duration_buffer=3,
-        peak_height_perc=peak_height_perc, peak_prominence=peak_prominence)
+        stream_name, ecg_ch_name, duration_buffer=2,
+        peak_height_perc=peak_height_perc)
     detector.prefill_buffer()
 
     # Create counter
@@ -96,6 +93,8 @@ def synchronous(
             # next
             sequence_timings.append(detector.timestamps_buffer[pos])
             counter += 1
+            # wait for sound to be delivered before updating again
+            wait(0.1, hogCPUperiod=1)
 
     wait(0.1)
     trigger.signal(tdef.sync_stop)

@@ -22,4 +22,7 @@ def search_ANT_amplifier():
             "'eego' name. Please select a stream manually.")
         stream_name = search_lsl(ignore_markers=True, timeout=5)
 
+    if 'eego' not in stream_name:
+        raise RuntimeError("ANT Neuro amplifier could not be found.")
+
     return stream_name

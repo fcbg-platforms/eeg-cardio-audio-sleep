@@ -16,11 +16,13 @@ def search_ANT_amplifier():
     if len(stream_name) == 1:
         logger.info("Found LSL stream fron ANT Neuro amplifier.")
         stream_name = stream_name[0]
-    else:
+    elif 1 < len(stream_name):
         logger.warning(
             "Multiple LSL streams found matching the ANT Neuro amplifier "
             "'eego' name. Please select a stream manually.")
         stream_name = search_lsl(ignore_markers=True, timeout=5)
+    else:
+        stream_name = ''
 
     if 'eego' not in stream_name:
         raise RuntimeError("ANT Neuro amplifier could not be found.")

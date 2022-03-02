@@ -87,19 +87,23 @@ class Detector:
         detector's buffer on each call.
         """
         self._sr.acquire()
-        self._data_acquired, self._ts_list = self._sr.get_buffer()
+        data_acquired, _ = self._sr.get_buffer()
         self._sr.reset_buffer()
-        if self._data_acquired.shape[0] == 0:
+        n = data_acquired.shape[0]  # number of acquires samples
+        if n == 0:
             return  # no new samples
 
-        # shape (samples, )
-        self._timestamps_buffer = np.roll(
-            self._timestamps_buffer, -len(self._ts_list))
-        self._timestamps_buffer[-len(self._ts_list):] = self._ts_list
+        # generate timestamps from local clock
+        now = local_clock()
+        times = np.arange(now - n / self._sample_rate, now,
+                          1 / self._sample_rate)
 
-        self._ecg_buffer = np.roll(self._ecg_buffer, -len(self._ts_list))
-        self._ecg_buffer[-len(self._ts_list):] = \
-            self._data_acquired[:, self._ecg_channel_idx]
+        # shape (samples, )
+        self._ecg_buffer = np.roll(self._ecg_buffer, -n)
+        self._ecg_buffer[-n:] = data_acquired[:, self._ecg_channel_idx]
+
+        self._timestamps_buffer = np.roll(self._timestamps_buffer, -n)
+        self._timestamps_buffer[-n:] = times
 
     def new_peaks(self):
         """

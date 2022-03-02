@@ -79,7 +79,7 @@ def synchronous(
 
     # Task loop
     trigger.signal(tdef.sync_start)
-    wait(0.06)
+    wait(0.1)
 
     while counter <= len(sequence) - 1:
         detector.update_loop()
@@ -97,7 +97,7 @@ def synchronous(
             sequence_timings.append(detector.timestamps_buffer[pos])
             counter += 1
 
-    wait(0.06)
+    wait(0.1)
     trigger.signal(tdef.sync_stop)
 
     return sequence_timings
@@ -149,7 +149,7 @@ def isochronous(
 
     # Task loop
     trigger.signal(tdef.iso_start)
-    wait(0.06)
+    wait(0.1)
 
     while counter <= len(sequence) - 1:
         # stimuli
@@ -163,7 +163,7 @@ def isochronous(
         counter += 1
         wait(delay)
 
-    wait(0.06)
+    wait(0.1)
     trigger.signal(tdef.iso_stop)
 
 
@@ -213,7 +213,7 @@ def asynchronous(
 
     # Task loop
     trigger.signal(tdef.async_start)
-    wait(0.06)
+    wait(0.1)
 
     while counter <= len(sequence) - 1:
         # stimuli
@@ -229,7 +229,7 @@ def asynchronous(
         wait(delays[counter])
         counter += 1
 
-    wait(0.06)
+    wait(0.1)
     trigger.signal(tdef.async_stop)
 
 

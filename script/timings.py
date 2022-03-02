@@ -11,8 +11,12 @@ from cardio_audio_sleep.io import read_raw
 from cardio_audio_sleep.utils import match_positions
 
 
+#%% Sound
+sound_frequency = 250.  # in Hz
+detection_threshold = 90  # in %
+
 #%% Load
-fname = r'/home/eeg/recordings/sync-eegoSports 000650-raw.fif'
+fname = r''
 raw = read_raw(fname)
 raw.pick_channels(['TRIGGER', 'Sound', 'ECG'])
 
@@ -21,9 +25,6 @@ directory = Path(__file__).parent.parent / 'cardio_audio_sleep' / 'config'
 tdef = TriggerDef(directory / 'triggers.ini')
 start = tdef.sync_start
 stop = tdef.sync_stop
-
-#%% Sound
-sound_frequency = 250.
 
 #%% Events
 events = mne.find_events(raw, stim_channel='TRIGGER')
@@ -46,7 +47,7 @@ raw.filter(sound_frequency - 10, sound_frequency + 10, picks='Sound',
            phase='zero-double')
 sound = raw.get_data(picks='Sound')[0, :]
 analytic_signal = np.abs(hilbert(sound))
-analytic_signal_height = np.percentile(analytic_signal, 92)
+analytic_signal_height = np.percentile(analytic_signal, detection_threshold)
 supra_threshold_idx = np.where(analytic_signal > analytic_signal_height)[0]
 
 sound_onsets, sound_offsets = list(), list()

@@ -8,13 +8,12 @@ from typing import Union
 from bsl.triggers import TriggerDef
 import numpy as np
 from numpy.typing import ArrayLike
-from psychopy.clock import wait, Clock
+from psychopy.clock import wait
 from psychopy.sound.backend_ptb import SoundPTB as Sound
 import psychtoolbox as ptb
 from pylsl import local_clock
 
 from . import logger
-from .audio import Tone
 from .detector import Detector
 from .utils._checks import _check_type, _check_value
 
@@ -93,93 +92,6 @@ def synchronous(
                 sound.play(when=ptb.GetSecs() + 0.05 - delay)
             # trigger
             wait(0.05 - delay, hogCPUperiod=1)
-            trigger.signal(sequence[counter])
-            # next
-            sequence_timings.append(detector.timestamps_buffer[pos])
-            counter += 1
-
-    wait(0.1)
-    trigger.signal(tdef.sync_stop)
-
-    return sequence_timings
-
-
-def synchronous2(
-        trigger,
-        tdef,
-        sequence: ArrayLike,
-        stream_name: str,
-        ecg_ch_name: str,
-        peak_height_perc: Union[int, float],
-        peak_prominence: Union[int, float]
-        ):
-    """
-    Synchronous block where sounds are sync to the heartbeat.
-
-    Parameters
-    ----------
-    trigger : Trigger
-        A BSL trigger instance.
-    tdef : TriggerDef
-        Trigger definition instance. Must contain the keys:
-            - sync_start
-            - sound (aligned on sequence)
-            - omission (aligned on sequence)
-            - sync_stop
-    sequence : array
-        Sequence of stimulus/omissions (of length BLOCK_SIZE if complete).
-        1 corresponds to a stound stimulus. 2 corresponds to an omission.
-    stream_name : str
-        Name of the LSL stream to connect to.
-    ecg_ch_name : str
-        Name of the ECG channel in the LSL stream.
-    peak_height_perc : float
-        Minimum height of the peak expressed as a percentile of the samples in
-        the buffer.
-    peak_prominence : float
-        Minimum peak prominence as defined by scipy.
-
-    Returns
-    -------
-    sequence_timings : list
-        List of timings at which an R-peak occured.
-    """
-    _check_tdef(tdef)
-    sequence = _check_sequence(sequence, tdef)
-
-    # Create sound stimuli
-    sound = Tone(100, frequency=250)
-
-    # Create peak detector
-    detector = Detector(
-        stream_name, ecg_ch_name, duration_buffer=3,
-        peak_height_perc=peak_height_perc, peak_prominence=peak_prominence)
-    detector.prefill_buffer()
-
-    # Create counter
-    counter = 0
-    timer = Clock()
-
-    # Create containers for sequence timings
-    sequence_timings = list()
-
-    # Task loop
-    trigger.signal(tdef.sync_start)
-    wait(0.1)
-
-    while counter <= len(sequence) - 1:
-        detector.update_loop()
-        pos = detector.new_peaks()
-        if pos is not None:
-            timer.reset()
-            # compute where we are relative to the r-peak
-            delay = local_clock() - detector.timestamps_buffer[pos]
-            # sound
-            while timer.getTime() < 0.05 - delay:
-                pass
-            if sequence[counter] == 1:
-                sound.play()
-            # trigger
             trigger.signal(sequence[counter])
             # next
             sequence_timings.append(detector.timestamps_buffer[pos])

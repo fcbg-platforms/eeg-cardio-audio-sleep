@@ -37,8 +37,7 @@ outliers = _find_outliers(delays, threshold=3)
 delays = [delay for k, delay in enumerate(delays) if k not in outliers]
 
 #%% Convert and prepare plots
-fs = 2048
-resolution = 1000 / fs
+resolution = 1000 / detector.sr.streams[stream_name].sample_rate
 delays = np.array(delays) * 1000
 bins = np.arange(min(delays) - resolution / 2, max(delays) + resolution / 2,
                  resolution)

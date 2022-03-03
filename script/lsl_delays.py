@@ -12,7 +12,7 @@ stream_name = search_ANT_amplifier()
 ecg_ch_name = 'AUX7'
 
 #%% Peak detection
-peak_height_perc = 97.8
+peak_height_perc = 97.5
 
 #%% Loop
 detector = Detector(
@@ -43,5 +43,5 @@ bins = np.arange(min(delays) - resolution / 2, max(delays) + resolution / 2,
 
 #%% Plot
 f, ax = plt.subplots(1, 1)
-ax.set_title('LSL delays')
+ax.set_title('LSL delays (ms)')
 ax.hist(delays, bins=bins)

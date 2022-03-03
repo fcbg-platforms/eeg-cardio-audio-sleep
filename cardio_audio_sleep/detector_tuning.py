@@ -1,10 +1,10 @@
+import math
 import time
 
 from bsl import StreamReceiver
 from matplotlib import pyplot as plt
 from matplotlib.widgets import Button, Slider
 import numpy as np
-from mne.filter import filter_data
 from scipy.signal import find_peaks
 
 from . import logger
@@ -77,9 +77,12 @@ def peak_detection_parameters_tuning(
     del sr
     del data_
 
-    # Filter
+    # Detrend
     for k, data_ in enumerate(data):
-        data[k] = filter_data(data_, fs, 1., 15., phase='zero')
+        times = np.linspace(0, duration_buffer, data_.size)
+        z = np.polyfit(times, data_, 1)
+        linear_fit = z[0] * times + z[1]
+        data[k] = data_ - linear_fit
 
     # Figure
     fig = plt.figure(figsize=(10, 10))
@@ -102,7 +105,7 @@ def peak_detection_parameters_tuning(
     global height_lines
     global peak_lines
     height_lines = _draw_height(axs, data, height_slider)
-    peak_lines = _draw_peaks(axs, data, height_slider)
+    peak_lines = _draw_peaks(axs, data, height_slider, fs)
 
     # Action on slider change
     def sliders_on_changed(val):
@@ -122,7 +125,7 @@ def peak_detection_parameters_tuning(
 
         # draw new lines
         height_lines = _draw_height(axs, data, height_slider)
-        peak_lines = _draw_peaks(axs, data, height_slider)
+        peak_lines = _draw_peaks(axs, data, height_slider, fs)
 
         # update fig
         fig.canvas.draw_idle()
@@ -154,12 +157,13 @@ def peak_detection_parameters_tuning(
     return height_slider.val
 
 
-def _draw_peaks(axs, data, height_slider):
+def _draw_peaks(axs, data, height_slider, fs):
     """Draw the peaks vertical lines on all 4 axis."""
     peak_lines = [[] * 4]
     for k, ax in enumerate(axs):
         height = np.percentile(data[k], height_slider.val)
-        peaks, _ = find_peaks(data[k], height=height)
+        width = math.ceil(0.2 * fs)
+        peaks, _ = find_peaks(data[k], height=height, width=width)
         peak_lines.append([])  # init new list
         for peak in peaks:
             peak_lines[-1].append(

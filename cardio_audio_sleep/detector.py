@@ -135,11 +135,12 @@ class Detector:
         """
         Detect peaks in the ECG buffer.
         """
-        data = self.filter_data()
+        data = self.detrend_data()
 
         # peak detection
         height = np.percentile(data, self._peak_height_perc)
-        peaks, _ = find_peaks(data, height=height)
+        width = math.ceil(0.02 * self._sample_rate)
+        peaks, _ = find_peaks(data, height=height, width=width)
 
         return peaks
 
@@ -176,7 +177,11 @@ class Detector:
 
         Timeit
         ------
-        (mean ± std. dev. of 7 runs, 100 loops each)
+        (mean ± std. dev. of 7 runs, 1000 loops each)
+
+        Linux - i5-4590 - DDR3 1600 MHz
+            - Data: 1024 Hz - 4096 samples
+              366 µs ± 707 ns per loop
         """
         times = np.linspace(0, self._duration_buffer, self._ecg_buffer.size)
         z = np.polyfit(times, self._ecg_buffer, 1)

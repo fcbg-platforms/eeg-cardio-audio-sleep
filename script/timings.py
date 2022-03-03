@@ -13,7 +13,7 @@ from cardio_audio_sleep.utils import match_positions
 
 #%% Sound
 sound_frequency = 250.  # in Hz
-detection_threshold = 90  # in %
+detection_threshold = 88  # in %
 
 #%% Load
 fname = r''
@@ -154,3 +154,12 @@ bins = np.arange(min(sound_sound_delays) - 0.5,
 ax[3].hist(sound_sound_delays, bins=bins)
 
 f.tight_layout(pad=5, h_pad=5)
+
+#%% Async
+fname = r''
+sequence_timings = np.load(fname)
+
+sound_timings = (np.array(sound_onsets) - sound_onsets[0]) / raw.info['sfreq']
+async_delays = np.diff(sequence_timings)
+f, ax = plt.subplots(1, 1)
+ax.hist(sound_timings - async_delays)

@@ -11,7 +11,6 @@ from numpy.typing import ArrayLike
 from psychopy.clock import wait
 from psychopy.sound.backend_ptb import SoundPTB as Sound
 import psychtoolbox as ptb
-from pylsl import local_clock
 
 from . import logger
 from .detector import Detector
@@ -76,19 +75,18 @@ def synchronous(
 
     # Task loop
     trigger.signal(tdef.sync_start)
-    wait(0.1)
+    wait(0.2, hogCPUperiod=0)
 
     while counter <= len(sequence) - 1:
         detector.update_loop()
         pos = detector.new_peaks()
         if pos is not None:
-            # compute where we are relative to the r-peak
-            delay = local_clock() - detector.timestamps_buffer[pos]
             # sound
             if sequence[counter] == 1:
-                sound.play(when=ptb.GetSecs() + 0.05 - delay)
+                sound.play(when=detector.timestamps_buffer[pos] + 0.05)
             # trigger
-            wait(0.05 - delay, hogCPUperiod=1)
+            wait(ptb.GetSecs() - detector.timestamps_buffer[pos] + 0.05,
+                 hogCPUperiod=1)
             trigger.signal(sequence[counter])
             # next
             sequence_timings.append(detector.timestamps_buffer[pos])
@@ -97,7 +95,7 @@ def synchronous(
             # and give CPU time to other processes
             wait(0.1, hogCPUperiod=0)
 
-    wait(0.1)
+    wait(0.2, hogCPUperiod=0)
     trigger.signal(tdef.sync_stop)
 
     return sequence_timings
@@ -149,7 +147,7 @@ def isochronous(
 
     # Task loop
     trigger.signal(tdef.iso_start)
-    wait(0.1)
+    wait(0.2, hogCPUperiod=0)
 
     while counter <= len(sequence) - 1:
         # stimuli
@@ -163,7 +161,7 @@ def isochronous(
         wait(delay)
         counter += 1
 
-    wait(0.1)
+    wait(0.2, hogCPUperiod=0)
     trigger.signal(tdef.iso_stop)
 
 
@@ -213,7 +211,7 @@ def asynchronous(
 
     # Task loop
     trigger.signal(tdef.async_start)
-    wait(0.1)
+    wait(0.2, hogCPUperiod=0)
 
     while counter <= len(sequence) - 1:
         # stimuli
@@ -229,7 +227,7 @@ def asynchronous(
         wait(delays[counter])
         counter += 1
 
-    wait(0.1)
+    wait(0.2, hogCPUperiod=0)
     trigger.signal(tdef.async_stop)
 
 

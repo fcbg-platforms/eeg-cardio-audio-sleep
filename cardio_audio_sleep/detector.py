@@ -27,13 +27,16 @@ class Detector:
     peak_height_perc : float
         Minimum height of the peak expressed as a percentile of the samples in
         the buffer. Default to 98%.
+    peak_width : float
+        Minimum peak width expressed in ms. Default to 20 ms.
     """
 
     def __init__(self, stream_name, ecg_ch_name, duration_buffer=4,
-                 peak_height_perc=98):
+                 peak_height_perc=98, peak_width=20):
         # Check arguments and create StreamReceiver
         self._peak_height_perc = Detector._check_peak_height_perc(
             peak_height_perc)
+        self._peak_width = Detector._check_peak_width(peak_width)
         _check_type(stream_name, (str, ), item_name='stream_name')
         _check_type(ecg_ch_name, (str, ), item_name='ecg_ch_name')
         _check_type(duration_buffer, ('numeric', ),
@@ -68,6 +71,8 @@ class Detector:
 
         # R-Peak detectors
         self._last_peak = None
+        self._peak_width_samples = Detector._convert_peak_width_to_samples(
+            self._peak_width, self._sample_rate)
         logger.info('R-peak detector with sample rate %s Hz initialized.',
                     self._sample_rate)
 
@@ -139,8 +144,8 @@ class Detector:
 
         # peak detection
         height = np.percentile(data, self._peak_height_perc)
-        width = math.ceil(0.02 * self._sample_rate)
-        peaks, _ = find_peaks(data, height=height, width=width)
+        peaks, _ = find_peaks(data, height=height,
+                              width=self._peak_width_samples)
 
         return peaks
 
@@ -239,6 +244,11 @@ class Detector:
         """The minimum peak height as a percentile of the data."""
         return self._peak_height_perc
 
+    @property
+    def peak_width(self):
+        """The minimum peak width in samples."""
+        return self._peak_width
+
     # --------------------------------------------------------------------
     @staticmethod
     def _check_peak_height_perc(peak_height_perc):
@@ -254,3 +264,18 @@ class Detector:
                 "Argument 'peak_height_perc' must be a percentage between "
                 f"0 and 100 excluded. Provided '{peak_height_perc}%'.")
         return float(peak_height_perc)
+
+    @staticmethod
+    def _check_peak_width(peak_width):
+        """Checks argument 'peak_width'."""
+        _check_type(peak_width, ('numeric', ), item_name='peak_width')
+        if peak_width <= 0:
+            raise ValueError(
+                "Argument 'peak_width' must be a strictly positive "
+                f"number. Provided: '{peak_width}%'.")
+        return float(peak_width)
+
+    @staticmethod
+    def _convert_peak_width_to_samples(peak_width, fs):
+        """Convert a peak width from ms to samples."""
+        return math.ceil(peak_width / 1000 * fs)

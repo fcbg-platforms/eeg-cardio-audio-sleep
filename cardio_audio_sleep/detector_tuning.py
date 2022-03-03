@@ -18,7 +18,7 @@ def peak_detection_parameters_tuning(
         duration_buffer: float = 4
         ):
     """
-    GUI to tune the height parameter of the R-peak detector.
+    GUI to tune the height and width parameter of the R-peak detector.
 
     The GUI starts by acquiring 4 different buffer window that will be
     detrended and displayed.
@@ -36,7 +36,9 @@ def peak_detection_parameters_tuning(
     Returns
     -------
     height : float
-        The height setting retained (express as a percentage).
+        The height setting retained (expressed as a percentage).
+    width : float
+        The width retained (expressed in ms)
     """
     _check_type(ecg_ch_name, (str, ), item_name='ecg_ch_name')
     _check_type(stream_name, (str, None), item_name='stream_name')
@@ -101,11 +103,16 @@ def peak_detection_parameters_tuning(
                                     facecolor='lightgoldenrodyellow')
     height_slider = Slider(height_slider_ax, 'height', 80, 100., valinit=97.5)
 
+    # Slider for width
+    width_slider_ax = fig.add_axes([0.1, 0.1, 0.8, 0.03],
+                                        facecolor='lightgoldenrodyellow')
+    width_slider = Slider(width_slider_ax, 'width', 0, 100, valinit=20.)
+
     # Init lines
     global height_lines
     global peak_lines
     height_lines = _draw_height(axs, data, height_slider)
-    peak_lines = _draw_peaks(axs, data, height_slider, fs)
+    peak_lines = _draw_peaks(axs, data, height_slider, width_slider, fs)
 
     # Action on slider change
     def sliders_on_changed(val):
@@ -125,11 +132,12 @@ def peak_detection_parameters_tuning(
 
         # draw new lines
         height_lines = _draw_height(axs, data, height_slider)
-        peak_lines = _draw_peaks(axs, data, height_slider, fs)
+        peak_lines = _draw_peaks(axs, data, height_slider, width_slider, fs)
 
         # update fig
         fig.canvas.draw_idle()
     height_slider.on_changed(sliders_on_changed)
+    width_slider.on_changed(sliders_on_changed)
 
     # Add a reset buttom
     reset_button_ax = fig.add_axes([0.68, 0.025, 0.1, 0.04])
@@ -139,6 +147,7 @@ def peak_detection_parameters_tuning(
 
     def reset_button_on_clicked(mouse_event):
         height_slider.reset()
+        width_slider.reset()
     reset_button.on_clicked(reset_button_on_clicked)
 
     # Add a confirm button
@@ -154,15 +163,15 @@ def peak_detection_parameters_tuning(
     # Show
     plt.show(block=True)
 
-    return height_slider.val
+    return height_slider.val, width_slider.val
 
 
-def _draw_peaks(axs, data, height_slider, fs):
+def _draw_peaks(axs, data, height_slider, width_slider, fs):
     """Draw the peaks vertical lines on all 4 axis."""
     peak_lines = [[] * 4]
     for k, ax in enumerate(axs):
         height = np.percentile(data[k], height_slider.val)
-        width = math.ceil(0.2 * fs)
+        width = math.ceil(width_slider.val / 1000 * fs)
         peaks, _ = find_peaks(data[k], height=height, width=width)
         peak_lines.append([])  # init new list
         for peak in peaks:

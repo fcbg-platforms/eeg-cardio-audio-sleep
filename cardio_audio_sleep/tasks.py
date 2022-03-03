@@ -24,6 +24,7 @@ def synchronous(
         stream_name: str,
         ecg_ch_name: str,
         peak_height_perc: Union[int, float],
+        peak_width: Union[int, float],
         ):
     """
     Synchronous block where sounds are sync to the heartbeat.
@@ -48,6 +49,8 @@ def synchronous(
     peak_height_perc : float
         Minimum height of the peak expressed as a percentile of the samples in
         the buffer.
+    peak_width : float
+        Minimum peak width expressed in ms.
 
     Returns
     -------
@@ -63,7 +66,7 @@ def synchronous(
     # Create peak detector
     detector = Detector(
         stream_name, ecg_ch_name, duration_buffer=4,
-        peak_height_perc=peak_height_perc)
+        peak_height_perc=peak_height_perc, peak_width=peak_width)
     detector.prefill_buffer()
 
     # Create counter/timers

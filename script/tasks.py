@@ -22,12 +22,14 @@ ecg_ch_name = 'AUX7'
 #%% Synchronous
 
 # Peak detection settings
-peak_height_perc = 97.5
+peak_height_perc = 97.5  # %
+peak_width = 20  # ms
 # Sequence
 sequence = generate_sequence(100, 0, 10, tdef)
 # Task
 sequence_timings = synchronous(
-    trigger, tdef, sequence, stream_name, ecg_ch_name, peak_height_perc)
+    trigger, tdef, sequence, stream_name, ecg_ch_name,
+    peak_height_perc, peak_width)
 
 
 #%% Isochronous

@@ -12,12 +12,13 @@ stream_name = search_ANT_amplifier()
 ecg_ch_name = 'AUX7'
 
 #%% Peak detection
-peak_height_perc = 97.5
+peak_height_perc = 97.5  # %
+peak_width = 20  # ms
 
 #%% Loop
 detector = Detector(
     stream_name, ecg_ch_name, duration_buffer=4,
-    peak_height_perc=peak_height_perc)
+    peak_height_perc=peak_height_perc, peak_width=peak_width)
 detector.prefill_buffer()
 
 counter = 0

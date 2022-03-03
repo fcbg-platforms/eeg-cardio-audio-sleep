@@ -8,11 +8,11 @@ from typing import Union
 from bsl.triggers import TriggerDef
 import numpy as np
 from numpy.typing import ArrayLike
-from psychopy.clock import wait
-from psychopy.sound.backend_ptb import SoundPTB as Sound
+from psychopy.clock import wait, Clock
 import psychtoolbox as ptb
 
 from . import logger
+from .audio import Tone
 from .detector import Detector
 from .utils._checks import _check_type, _check_value
 
@@ -54,12 +54,11 @@ def synchronous(
     sequence_timings : list
         List of timings at which an R-peak occured.
     """
+    # Create sound stimuli
+    sound = Tone(100, frequency=250)
+
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
-
-    # Create sound stimuli
-    sound = Sound(value=250, secs=0.1, stereo=True, volume=1.0, blockSize=32,
-                  preBuffer=-1, hamming=True)
 
     # Create peak detector
     detector = Detector(
@@ -67,8 +66,9 @@ def synchronous(
         peak_height_perc=peak_height_perc)
     detector.prefill_buffer()
 
-    # Create counter
+    # Create counter/timers
     counter = 0
+    timer = Clock()
 
     # Create containers for sequence timings
     sequence_timings = list()
@@ -81,13 +81,15 @@ def synchronous(
         detector.update_loop()
         pos = detector.new_peaks()
         if pos is not None:
+            timer.reset()
+            delay = ptb.GetSecs() - detector.timestamps_buffer[pos]
+            while timer.getTime() < 0.0465 - delay:  # computer-specific target
+                pass
+            # trigger
+            trigger.signal(sequence[counter])
             # sound
             if sequence[counter] == 1:
-                sound.play(when=detector.timestamps_buffer[pos] + 0.05)
-            # trigger
-            wait(ptb.GetSecs() - detector.timestamps_buffer[pos] + 0.05,
-                 hogCPUperiod=1)
-            trigger.signal(sequence[counter])
+                sound.play()
             # next
             sequence_timings.append(detector.timestamps_buffer[pos])
             counter += 1
@@ -126,6 +128,9 @@ def isochronous(
     delay : float
         Delay between 2 stimulus in seconds.
     """
+    # Create sound stimuli
+    sound = Tone(100, frequency=250)
+
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
     _check_type(delay, ('numeric', ), 'delay')
@@ -133,14 +138,7 @@ def isochronous(
         raise ValueError(
             "Argument 'delay' should be a strictly positive number. "
             f"Provided: '{delay}' seconds.")
-    assert 0.2 < delay  # sanity-check
-
-    # Create sound stimuli
-    sound = Sound(value=250, secs=0.1, stereo=True, volume=1.0, blockSize=32,
-                  preBuffer=-1, hamming=True)
-
-    # Remove scheduling from delay
-    delay -= 0.2
+    assert sound.duration < delay  # sanity-check
 
     # Create counter
     counter = 0
@@ -150,15 +148,15 @@ def isochronous(
     wait(0.2, hogCPUperiod=0)
 
     while counter <= len(sequence) - 1:
+        now = ptb.GetSecs()
+        trigger.signal(sequence[counter])
         # stimuli
         if sequence[counter] == 1:
-            sound.play(when=ptb.GetSecs() + 0.2)
-        # trigger
-        wait(0.2, hogCPUperiod=1)
-        trigger.signal(sequence[counter])
+            sound.play()
+        stim_delay = ptb.GetSecs() - now
 
         # next
-        wait(delay)
+        wait(delay - stim_delay)
         counter += 1
 
     wait(0.2, hogCPUperiod=0)
@@ -193,18 +191,17 @@ def asynchronous(
         Array of length BLOCK_SIZE containing the timing at which the stimulus
         was delivered.
     """
+    # Create sound stimuli
+    sound = Tone(100, frequency=250)
+
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
-    sequence_timings = _check_sequence_timings(sequence_timings, sequence, 0.2)
-
-    # Create sound stimuli
-    sound = Sound(value=250, secs=0.1, stereo=True, volume=1.0, blockSize=32,
-                  preBuffer=-1, hamming=True)
+    sequence_timings = _check_sequence_timings(sequence_timings, sequence,
+                                               sound.duration)
 
     # Compute delays
     delays = np.diff(sequence_timings)  # a[i+1] - a[i]
-    delays -= 0.2  # from sound scheduling
-    assert all(0 < delay for delay in delays)  # sanity-check
+    assert all(sound.duration < delay for delay in delays)  # sanity-check
 
     # Create counter
     counter = 0
@@ -214,18 +211,19 @@ def asynchronous(
     wait(0.2, hogCPUperiod=0)
 
     while counter <= len(sequence) - 1:
+        now = ptb.GetSecs()
+        trigger.signal(sequence[counter])
         # stimuli
         if sequence[counter] == 1:
             sound.play(when=ptb.GetSecs() + 0.2)
-        # trigger
-        wait(0.2, hogCPUperiod=1)
-        trigger.signal(sequence[counter])
+        stim_delay = ptb.GetSecs() - now
 
         # next
-        if counter == len(sequence) - 1:
+        if counter != len(sequence) - 1:
+            wait(delays[counter] - stim_delay)
+            counter += 1
+        else:
             break  # no more delays since it was the last stimuli
-        wait(delays[counter])
-        counter += 1
 
     wait(0.2, hogCPUperiod=0)
     trigger.signal(tdef.async_stop)
@@ -300,7 +298,7 @@ def _check_sequence(
 def _check_sequence_timings(
         sequence_timings: ArrayLike,
         sequence: ArrayLike,
-        min_distance: Union[int, float]
+        min_distance: Union[int, float] = 0.1  # sound duration
         ):
     """
     Checks that the sequence timings are valid. Copies the sequence.

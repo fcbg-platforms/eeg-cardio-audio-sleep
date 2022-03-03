@@ -4,8 +4,13 @@ import os
 import logging
 import operator
 from pathlib import Path
+from typing import Union
 
+from bsl.triggers import TriggerDef
 import numpy as np
+from numpy.typing import ArrayLike
+
+from ._logs import logger
 
 
 def _ensure_int(item, item_name=None):
@@ -175,3 +180,80 @@ def _check_verbose(verbose):
             verbose = 'WARNING'
 
     return verbose
+
+
+def _check_tdef(tdef):
+    """
+    Checks that the trigger definition contains all the required keys.
+    """
+    _check_type(tdef, (TriggerDef, ), 'tdef')
+    keys = ('sound', 'omission',
+            'sync_start', 'sync_stop',
+            'iso_start', 'iso_stop',
+            'async_start', 'async_stop',
+            'baseline_start', 'baseline_stop')
+    assert all(hasattr(tdef, attribute) for attribute in keys)
+
+
+def _check_sequence(
+        sequence: ArrayLike,
+        tdef
+        ):
+    """
+    Checks that the sequence is valid.
+    """
+    _check_type(sequence, (list, tuple, np.ndarray), 'sequence')
+    if isinstance(sequence, (list, tuple)):
+        sequence = np.array(sequence)
+    elif len(sequence.shape) != 1:
+        raise ValueError(
+            "Argument 'sequence' should be a 1D iterable and not a "
+            f"{len(sequence.shape)}D iterable. ")
+
+    valids = (tdef.sound, tdef.omission)
+    if any(elt not in valids for elt in sequence):
+        raise ValueError(
+            "Unknown value within 'sequence'. All elements should be among "
+            f"'{valids}'.")
+
+    logger.info('Provided sequence contains %s elements.', sequence.size)
+
+    return sequence
+
+
+def _check_sequence_timings(
+        sequence_timings: ArrayLike,
+        sequence: ArrayLike,
+        min_distance: Union[int, float] = 0.1  # sound duration
+        ):
+    """
+    Checks that the sequence timings are valid.
+    """
+    _check_type(sequence_timings, (list, tuple, np.ndarray),
+                'sequence_timings')
+    if isinstance(sequence_timings, (list, tuple)):
+        sequence_timings = np.array(sequence_timings)
+    elif len(sequence_timings.shape) != 1:
+        raise ValueError(
+            "Argument 'sequence_timings' should be a 1D iterable and not a "
+            f"{len(sequence_timings.shape)}D iterable. ")
+
+    if sequence.size != sequence_timings.size:
+        raise ValueError(
+            "Arguments 'sequence' and 'sequence_timings' did not have the "
+            "same number of elements.")
+
+    if any(elt < 0 for elt in sequence_timings):
+        raise ValueError(
+            "All sequence timings should be strictly positive integers, "
+            "except the first timing equal to 0.")
+
+    if sequence_timings[0] != 0:
+        sequence_timings -= sequence_timings[0]
+
+    if any(elt <= min_distance for elt in np.diff(sequence_timings)):
+        raise ValueError(
+            "All sequence timings should be separated by at least "
+            f"{min_distance} seconds.")
+
+    return sequence_timings

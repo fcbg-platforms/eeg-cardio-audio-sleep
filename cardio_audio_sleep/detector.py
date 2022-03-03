@@ -110,7 +110,7 @@ class Detector:
         """
         Look if new R-peaks have entered the buffer.
         """
-        peaks = self._detect_peak()
+        peaks = self.detect_peak()
         # stop if there is no peak
         if len(peaks) == 0:
             return None
@@ -131,32 +131,49 @@ class Detector:
 
         return peak
 
-    def _detect_peak(self):
+    def detect_peak(self):
         """
         Detect peaks in the ECG buffer.
         """
-        # --------------------- Filter ---------------------
-        # timeit (mean ± std. dev. of 7 runs, 100 loops each)
-        # --------------------------------------------------
-        # System: Windows - AMD 5600X - DDR4 3600 MHz
-        # -------------------------------------------
-        # Data: 512 Hz - 2048 samples
-        # 3.71 ms ± 17.7 µs per loop
-        # ----------------------------
-        # Data: 1024 Hz - 4096 samples
-        # 7.03 ms ± 101 µs per loop
-        # ----------------------------
-        # Data: 2048 Hz - 8192 samples
-        # 13.3 ms ± 44.2 µs per loop
-        # --------------------------------------------------
-        data = filter_data(self._ecg_buffer, self._sample_rate, 1., 15.,
-                           phase='zero')
+        data = self.filter_data()
 
         # peak detection
         height = np.percentile(data, self._peak_height_perc)
         peaks, _ = find_peaks(data, height=height)
 
         return peaks
+
+    def filter_data(self):
+        """
+        Filters the ECG buffer with an acausal filter.
+
+        Timeit
+        ------
+        (mean ± std. dev. of 7 runs, 100 loops each)
+
+        Windows - AMD 5600X - DDR4 3600 MHz
+            - Data: 512 Hz - 2048 samples
+              3.71 ms ± 17.7 µs per loop
+            - Data: 1024 Hz - 4096 samples
+              7.03 ms ± 101 µs per loop
+            - Data: 2048 Hz - 8192 samples
+              13.3 ms ± 44.2 µs per loop
+        """
+        return filter_data(self._ecg_buffer, self._sample_rate, 1., 15.,
+                           phase='zero')
+
+    def detrend_data(self):
+        """
+        Detrend the ECG buffer with a linear trend fit.
+
+        Timeit
+        ------
+        (mean ± std. dev. of 7 runs, 100 loops each)
+        """
+        times = np.linspace(0, self._duration_buffer, self._ecg_buffer.size)
+        z = np.polyfit(times, self._ecg_buffer, 1)
+        linear_fit = z[0] * times + z[1]
+        return self._ecg_buffer - linear_fit
 
     # --------------------------------------------------------------------
     @property

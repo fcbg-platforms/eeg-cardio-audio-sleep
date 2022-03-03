@@ -169,7 +169,7 @@ class Detector:
             - Data: 512 Hz - 2048 samples
               5 ms ± 34 µs per loop
             - Data: 1024 Hz - 4096 samples
-              79.43 ms ± 83.2 µs per loop
+              9.43 ms ± 83.2 µs per loop
             - Data: 2048 Hz - 8192 samples
               18.3 ms ± 102 µs per loop
         """

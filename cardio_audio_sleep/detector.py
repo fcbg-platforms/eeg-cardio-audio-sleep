@@ -158,6 +158,14 @@ class Detector:
               7.03 ms ± 101 µs per loop
             - Data: 2048 Hz - 8192 samples
               13.3 ms ± 44.2 µs per loop
+
+        Linux - i5-4590 - DDR3 1600 MHz
+            - Data: 512 Hz - 2048 samples
+              5 ms ± 34 µs per loop
+            - Data: 1024 Hz - 4096 samples
+              79.43 ms ± 83.2 µs per loop
+            - Data: 2048 Hz - 8192 samples
+              18.3 ms ± 102 µs per loop
         """
         return filter_data(self._ecg_buffer, self._sample_rate, 1., 15.,
                            phase='zero')

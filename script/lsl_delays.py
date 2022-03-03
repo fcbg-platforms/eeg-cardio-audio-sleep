@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 from mne.preprocessing.bads import _find_outliers
 import numpy as np
-from pylsl import local_clock
+import psychtoolbox as ptb
 
 from cardio_audio_sleep import Detector
 from cardio_audio_sleep.utils import search_ANT_amplifier
@@ -27,7 +27,7 @@ while counter <= 100:
     pos = detector.new_peaks()
     if pos is not None:
         # compute where we are relative to the r-peak
-        delay = local_clock() - detector.timestamps_buffer[pos]
+        delay = ptb.GetSecs() - detector.timestamps_buffer[pos]
         delays.append(delay)
         counter += 1
 

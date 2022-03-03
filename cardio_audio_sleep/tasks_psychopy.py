@@ -128,6 +128,7 @@ def isochronous(
     # Create sound stimuli
     sound = Sound(value=250, secs=0.1, stereo=True, volume=1.0, blockSize=32,
                   preBuffer=-1, hamming=True)
+    scheduling_delay = 0.2
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -136,8 +137,8 @@ def isochronous(
         raise ValueError(
             "Argument 'delay' should be a strictly positive number. "
             f"Provided: '{delay}' seconds.")
-    delay -= 0.2  # Remove scheduling from delay
-    assert 0.2 < delay  # sanity-check
+    delay -= scheduling_delay  # Remove scheduling from delay
+    assert scheduling_delay < delay  # sanity-check
 
     # Create counter
     counter = 0
@@ -148,9 +149,9 @@ def isochronous(
 
     while counter <= len(sequence) - 1:
         if sequence[counter] == 1:
-            sound.play(when=ptb.GetSecs() + 0.2)
+            sound.play(when=ptb.GetSecs() + scheduling_delay)
         # trigger
-        wait(0.2, hogCPUperiod=1)
+        wait(scheduling_delay, hogCPUperiod=1)
         trigger.signal(sequence[counter])
 
         # next
@@ -192,15 +193,17 @@ def asynchronous(
     # Create sound stimuli
     sound = Sound(value=250, secs=0.1, stereo=True, volume=1.0, blockSize=32,
                   preBuffer=-1, hamming=True)
+    scheduling_delay = 0.2
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
-    sequence_timings = _check_sequence_timings(sequence_timings, sequence, 0.2)
+    sequence_timings = _check_sequence_timings(sequence_timings, sequence,
+                                               scheduling_delay)
 
     # Compute delays
     delays = np.diff(sequence_timings)  # a[i+1] - a[i]
-    delays -= 0.2  # Remove scheduling from delay
-    assert all(0.2 < delay for delay in delays)  # sanity-check
+    delays -= scheduling_delay  # Remove scheduling from delay
+    assert all(scheduling_delay < delay for delay in delays)  # sanity-check
 
     # Create counter
     counter = 0
@@ -212,9 +215,9 @@ def asynchronous(
     while counter <= len(sequence) - 1:
         # stimuli
         if sequence[counter] == 1:
-            sound.play(when=ptb.GetSecs() + 0.2)
+            sound.play(when=ptb.GetSecs() + scheduling_delay)
         # trigger
-        wait(0.2, hogCPUperiod=1)
+        wait(scheduling_delay, hogCPUperiod=1)
         trigger.signal(sequence[counter])
 
         # next

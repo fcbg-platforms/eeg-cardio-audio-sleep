@@ -105,7 +105,7 @@ def peak_detection_parameters_tuning(
 
     # Slider for width
     width_slider_ax = fig.add_axes([0.1, 0.1, 0.8, 0.03],
-                                        facecolor='lightgoldenrodyellow')
+                                   facecolor='lightgoldenrodyellow')
     width_slider = Slider(width_slider_ax, 'width', 0, 100, valinit=20.)
 
     # Init lines

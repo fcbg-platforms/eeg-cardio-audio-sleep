@@ -160,6 +160,7 @@ fname = r''
 sequence_timings = np.load(fname)
 
 sound_timings = (np.array(sound_onsets) - sound_onsets[0]) / raw.info['sfreq']
+sound_delays = np.diff(sound_timings)
 async_delays = np.diff(sequence_timings)
 f, ax = plt.subplots(1, 1)
-ax.hist(sound_timings - async_delays)
+ax.hist(sound_delays - async_delays)

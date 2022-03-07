@@ -10,8 +10,6 @@ from bsl.triggers import TriggerDef
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ._logs import logger
-
 
 def _ensure_int(item, item_name=None):
     """
@@ -215,8 +213,6 @@ def _check_sequence(
         raise ValueError(
             "Unknown value within 'sequence'. All elements should be among "
             f"'{valids}'.")
-
-    logger.info('Provided sequence contains %s elements.', sequence.size)
 
     return sequence
 

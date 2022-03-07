@@ -82,7 +82,7 @@ def synchronous(
         if pos is not None:
             timer.reset()
             delay = ptb.GetSecs() - detector.timestamps_buffer[pos]
-            while timer.getTime() < 0.0465 - delay:  # computer-specific target
+            while timer.getTime() < 0.04 - delay:  # computer-specific target
                 pass
             # trigger
             trigger.signal(sequence[counter])

@@ -4,8 +4,8 @@ from bsl.triggers import TriggerDef, ParallelPortTrigger
 import numpy as np
 
 from cardio_audio_sleep.tasks import (synchronous, isochronous, asynchronous,
-                                      baseline, generate_sequence)
-from cardio_audio_sleep.utils import search_ANT_amplifier
+                                      baseline)
+from cardio_audio_sleep.utils import search_ANT_amplifier, generate_sequence
 
 
 #%% Triggers

@@ -14,6 +14,7 @@ ecg_ch_name = 'AUX7'
 #%% Peak detection
 peak_height_perc = 97.5  # %
 peak_width = 20  # ms
+n = 30
 
 #%% Loop
 detector = Detector(
@@ -23,7 +24,7 @@ detector.prefill_buffer()
 
 counter = 0
 delays = list()
-while counter <= 100:
+while counter <= n:
     detector.update_loop()
     pos = detector.new_peaks()
     if pos is not None:

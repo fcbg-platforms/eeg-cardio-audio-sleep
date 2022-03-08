@@ -84,7 +84,7 @@ def synchronous(
             if sequence[counter] == 1:
                 sound.play(when=detector.timestamps_buffer[pos] + 0.05)
             # trigger
-            wait(ptb.GetSecs() - detector.timestamps_buffer[pos] + 0.05,
+            wait(0.05 - ptb.GetSecs() + detector.timestamps_buffer[pos],
                  hogCPUperiod=1)
             trigger.signal(sequence[counter])
             # next

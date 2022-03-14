@@ -30,7 +30,7 @@ sequence = generate_sequence(100, 0, 10, tdef)
 # Task
 sequence_timings = synchronous(
     trigger, tdef, sequence, stream_name, ecg_ch_name,
-    peak_height_perc, peak_width)
+    peak_height_perc, peak_prominence, peak_width)
 
 
 #%% Isochronous

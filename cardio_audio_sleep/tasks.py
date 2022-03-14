@@ -86,7 +86,7 @@ def synchronous(
         pos = detector.new_peaks()
         if pos is not None:
             delay = ptb.GetSecs() - detector.timestamps_buffer[pos]
-            wait(0.038 - delay, hogCPUperiod=1)
+            wait(0.038 - delay, hogCPUperiod=1)  # computer specific delay
             # trigger
             trigger.signal(sequence[counter])
             # sound

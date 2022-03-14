@@ -27,14 +27,14 @@ class Detector:
     peak_height_perc : float
         Minimum height of the peak expressed as a percentile of the samples in
         the buffer. Default to 98%.
-    peak_prominence : float
+    peak_prominence : float | None
         Minimum peak prominence as defined by scipy. Default to 700.
-    peak_width : float
-        Minimum peak width expressed in ms. Default to 20 ms.
+    peak_width : float | None
+        Minimum peak width expressed in ms. Default to None.
     """
 
     def __init__(self, stream_name, ecg_ch_name, duration_buffer=4,
-                 peak_height_perc=98, peak_prominence=20, peak_width=20):
+                 peak_height_perc=98, peak_prominence=20, peak_width=None):
         # Check arguments and create StreamReceiver
         self._peak_height_perc = Detector._check_peak_height_perc(
             peak_height_perc)

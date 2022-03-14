@@ -4,13 +4,14 @@ from typing import Union
 
 import numpy as np
 from numpy.typing import ArrayLike
-from psychopy.clock import wait
+from psychopy.clock import wait, Clock
 from psychopy.sound.backend_ptb import SoundPTB as Sound
 import psychtoolbox as ptb
 
 from .detector import Detector
 from .utils._checks import (_check_type, _check_tdef, _check_sequence,
                             _check_sequence_timings)
+from .utils._logs import logger
 
 
 def synchronous(
@@ -94,6 +95,7 @@ def synchronous(
             # next
             sequence_timings.append(detector.timestamps_buffer[pos])
             counter += 1
+            logger.info('Sound %i/%i delivered.', counter, len(sequence))
             # wait for sound to be delivered before updating again
             # and give CPU time to other processes
             wait(0.1, hogCPUperiod=0)
@@ -161,6 +163,7 @@ def isochronous(
         # next
         wait(delay)
         counter += 1
+        logger.info('Sound %i/%i delivered.', counter, len(sequence))
 
     wait(0.2, hogCPUperiod=0)
     trigger.signal(tdef.iso_stop)
@@ -228,6 +231,7 @@ def asynchronous(
         if counter != len(sequence) - 1:
             wait(delays[counter])
             counter += 1
+            logger.info('Sound %i/%i delivered.', counter, len(sequence))
         else:
             break  # no more delays since it was the last stimuli
 
@@ -238,8 +242,8 @@ def asynchronous(
 def baseline(
         trigger,
         tdef,
-        duration: Union[int, float]
-        ):
+        duration: Union[int, float],
+        verbose: bool = True):
     """
     Baseline block corresponding to a resting-state recording.
 
@@ -251,12 +255,38 @@ def baseline(
         Trigger definition instance. Must contain the keys:
             - baseline_start
             - baseline_stop
-    duration : float
+    duration : int
         Duration of the resting-state block in seconds.
+    verbose : bool
+        If True, a timer is logged with the info level every second.
     """
     _check_tdef(tdef)
+    _check_type(duration, ('numeric', ), 'duration')
+    if duration <= 0:
+        raise ValueError(
+            "Argument 'duration' should be a strictly positive number. "
+            f"Provided: '{duration}' seconds.")
+    _check_type(verbose, (bool, ), 'verbose')
+
+    # Variables
+    if verbose:
+        timer = Clock()
+        duration_ = datetime.timedelta(seconds=duration)
+        previous_time_displayed = 0
+
+    # Start trigger
+    trigger.signal(tdef.baseline_start)
 
     # Task loop
-    trigger.signal(tdef.baseline_start)
-    wait(duration)
+    if verbose:
+        timer.reset()
+        while timer.getTime() <= duration:
+            if previous_time_displayed + 1 <= timer.getTime():
+                previous_time_displayed += 1
+                now = datetime.timedelta(seconds=previous_time_displayed)
+                logger.info("Baseline: %s / %s", now, duration_)
+    else:
+        wait(duration)
+
+    # Stop trigger
     trigger.signal(tdef.baseline_stop)

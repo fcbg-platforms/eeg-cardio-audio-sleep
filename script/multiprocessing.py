@@ -25,7 +25,7 @@ if __name__ == '__main__':
         target=isochronous, args=(trigger, tdef, sequence, delay))
     process.start()
 
-    psutil_process = psutil.Process(processed.pid)
+    psutil_process = psutil.Process(process.pid)
     time.sleep(5)
     psutil_process.suspend()
     time.sleep(2)

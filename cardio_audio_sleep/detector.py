@@ -27,16 +27,20 @@ class Detector:
     peak_height_perc : float
         Minimum height of the peak expressed as a percentile of the samples in
         the buffer. Default to 98%.
+    peak_prominence : float
+        Minimum peak prominence as defined by scipy. Default to 700.
     peak_width : float
         Minimum peak width expressed in ms. Default to 20 ms.
     """
 
     def __init__(self, stream_name, ecg_ch_name, duration_buffer=4,
-                 peak_height_perc=98, peak_width=20):
+                 peak_height_perc=98, peak_prominence=20, peak_width=20):
         # Check arguments and create StreamReceiver
         self._peak_height_perc = Detector._check_peak_height_perc(
             peak_height_perc)
         self._peak_width = Detector._check_peak_width(peak_width)
+        self._peak_prominence = Detector._check_peak_prominence(
+            peak_prominence)
         _check_type(stream_name, (str, ), item_name='stream_name')
         _check_type(ecg_ch_name, (str, ), item_name='ecg_ch_name')
         _check_type(duration_buffer, ('numeric', ),
@@ -124,8 +128,18 @@ class Detector:
         # stop if last peak is already treated or keep track
         if self._last_peak is not None:
             if self._timestamps_buffer[peak] - self._last_peak <= 0.25:
+                logger.debug(
+                    'Skipping peak. Found: %.2f - Last: %.2f - Δ: %.2f',
+                    self._timestamps_buffer[peak], self._last_peak,
+                    self._timestamps_buffer[peak] - self._last_peak)
                 return None
-        self._last_peak = self._timestamps_buffer[peak]
+            self._last_peak = self._timestamps_buffer[peak]
+
+        # skip first peak
+        else:
+            logger.debug('First peak found. Skipping.')
+            self._last_peak = self._timestamps_buffer[peak]
+            return None
 
         logger.debug(
             "\n--------------------------------------\n"
@@ -143,9 +157,11 @@ class Detector:
         data = self.detrend_data()
 
         # peak detection
-        height = np.percentile(data, self._peak_height_perc)
-        peaks, _ = find_peaks(data, height=height,
-                              width=self._peak_width_samples)
+        peaks, _ = find_peaks(
+            data,
+            height=np.percentile(data, self._peak_height_perc),
+            width=self._peak_width_samples,
+            prominence=self._peak_prominence)
 
         return peaks
 
@@ -157,7 +173,7 @@ class Detector:
         ------
         (mean ± std. dev. of 7 runs, 100 loops each)
 
-        Windows - AMD 5600X - DDR4 3600 MHz
+        Windows -- AMD 5600X - DDR4 3600 MHz
             - Data: 512 Hz - 2048 samples
               3.71 ms ± 17.7 µs per loop
             - Data: 1024 Hz - 4096 samples
@@ -165,7 +181,7 @@ class Detector:
             - Data: 2048 Hz - 8192 samples
               13.3 ms ± 44.2 µs per loop
 
-        Linux - i5-4590 - DDR3 1600 MHz
+        Linux -- i5-4590 - DDR3 1600 MHz
             - Data: 512 Hz - 2048 samples
               5 ms ± 34 µs per loop
             - Data: 1024 Hz - 4096 samples
@@ -184,7 +200,7 @@ class Detector:
         ------
         (mean ± std. dev. of 7 runs, 1000 loops each)
 
-        Linux - i5-4590 - DDR3 1600 MHz
+        Linux -- i5-4590 - DDR3 1600 MHz
             - Data: 1024 Hz - 4096 samples
               366 µs ± 707 ns per loop
         """
@@ -249,6 +265,11 @@ class Detector:
         """The minimum peak width in samples."""
         return self._peak_width
 
+    @property
+    def peak_prominence(self):
+        """The peak prominence."""
+        return self._peak_prominence
+
     # --------------------------------------------------------------------
     @staticmethod
     def _check_peak_height_perc(peak_height_perc):
@@ -268,7 +289,9 @@ class Detector:
     @staticmethod
     def _check_peak_width(peak_width):
         """Checks argument 'peak_width'."""
-        _check_type(peak_width, ('numeric', ), item_name='peak_width')
+        _check_type(peak_width, ('numeric', None), item_name='peak_width')
+        if peak_width is None:
+            return None
         if peak_width <= 0:
             raise ValueError(
                 "Argument 'peak_width' must be a strictly positive "
@@ -278,4 +301,20 @@ class Detector:
     @staticmethod
     def _convert_peak_width_to_samples(peak_width, fs):
         """Convert a peak width from ms to samples."""
-        return math.ceil(peak_width / 1000 * fs)
+        if peak_width is None:
+            return None
+        else:
+            return math.ceil(peak_width / 1000 * fs)
+
+    @staticmethod
+    def _check_peak_prominence(peak_prominence):
+        """Checks argument 'peak_prominence'."""
+        _check_type(peak_prominence, ('numeric', None),
+                    item_name='peak_prominence')
+        if peak_prominence is None:
+            return None
+        if peak_prominence <= 0:
+            raise ValueError(
+                "Argument 'peak_prominence' must be a strictly positive "
+                f"number. Provided: '{peak_prominence}'.")
+        return float(peak_prominence)

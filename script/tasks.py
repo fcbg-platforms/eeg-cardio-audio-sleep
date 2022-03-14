@@ -23,7 +23,8 @@ ecg_ch_name = 'AUX7'
 
 # Peak detection settings
 peak_height_perc = 97.5  # %
-peak_width = 20  # ms
+peak_prominence = 500
+peak_width = None  # ms | None
 # Sequence
 sequence = generate_sequence(100, 0, 10, tdef)
 # Task

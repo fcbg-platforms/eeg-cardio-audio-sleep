@@ -1,5 +1,6 @@
 """Tasks functions."""
 
+import datetime
 from typing import Union
 
 import numpy as np
@@ -11,6 +12,7 @@ from .audio import Tone
 from .detector import Detector
 from .utils._checks import (_check_type, _check_tdef, _check_sequence,
                             _check_sequence_timings)
+from .utils._logs import logger
 
 
 def synchronous(
@@ -71,7 +73,6 @@ def synchronous(
 
     # Create counter/timers
     counter = 0
-    timer = Clock()
 
     # Create containers for sequence timings
     sequence_timings = list()
@@ -84,10 +85,8 @@ def synchronous(
         detector.update_loop()
         pos = detector.new_peaks()
         if pos is not None:
-            timer.reset()
             delay = ptb.GetSecs() - detector.timestamps_buffer[pos]
-            while timer.getTime() < 0.04 - delay:  # computer-specific target
-                pass
+            wait(0.038 - delay, hogCPUperiod=1)
             # trigger
             trigger.signal(sequence[counter])
             # sound
@@ -238,7 +237,7 @@ def asynchronous(
 def baseline(
         trigger,
         tdef,
-        duration: Union[int, float]
+        duration: Union[int, float],
         verbose: bool = True):
     """
     Baseline block corresponding to a resting-state recording.

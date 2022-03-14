@@ -13,13 +13,15 @@ ecg_ch_name = 'AUX7'
 
 #%% Peak detection
 peak_height_perc = 97.5  # %
-peak_width = 20  # ms
+peak_prominence = 500
+peak_width = None  # ms | None
 n = 30
 
 #%% Loop
 detector = Detector(
     stream_name, ecg_ch_name, duration_buffer=4,
-    peak_height_perc=peak_height_perc, peak_width=peak_width)
+    peak_height_perc=peak_height_perc, peak_prominence=peak_prominence,
+    peak_width=peak_width)
 detector.prefill_buffer()
 
 counter = 0
@@ -45,5 +47,5 @@ bins = np.arange(min(delays) - resolution / 2, max(delays) + resolution / 2,
 
 #%% Plot
 f, ax = plt.subplots(1, 1)
-ax.set_title('LSL delays (ms)')
+ax.set_title('Detection delays (ms)')
 ax.hist(delays, bins=bins)

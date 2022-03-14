@@ -20,7 +20,8 @@ def synchronous(
         stream_name: str,
         ecg_ch_name: str,
         peak_height_perc: Union[int, float],
-        peak_width: Union[int, float],
+        peak_prominence: Union[int, float, None],
+        peak_width: Union[int, float, None],
         ):
     """
     Synchronous block where sounds are sync to the heartbeat.
@@ -45,8 +46,10 @@ def synchronous(
     peak_height_perc : float
         Minimum height of the peak expressed as a percentile of the samples in
         the buffer.
-    peak_width : float
-        Minimum peak width expressed in ms.
+    peak_prominence : float | None
+        Minimum peak prominence as defined by scipy.
+    peak_width : float | None
+        Minimum peak width expressed in ms. Default to None.
 
     Returns
     -------
@@ -62,7 +65,8 @@ def synchronous(
     # Create peak detector
     detector = Detector(
         stream_name, ecg_ch_name, duration_buffer=4,
-        peak_height_perc=peak_height_perc, peak_width=peak_width)
+        peak_height_perc=peak_height_perc, peak_prominence=peak_prominence,
+        peak_width=peak_width)
     detector.prefill_buffer()
 
     # Create counter/timers
@@ -92,6 +96,7 @@ def synchronous(
             # next
             sequence_timings.append(detector.timestamps_buffer[pos])
             counter += 1
+            logger.info('Sound %i/%i delivered.', counter, len(sequence))
             # wait for sound to be delivered before updating again
             # and give CPU time to other processes
             wait(0.1, hogCPUperiod=0)
@@ -157,6 +162,7 @@ def isochronous(
         # next
         wait(delay - stim_delay)
         counter += 1
+        logger.info('Sound %i/%i delivered.', counter, len(sequence))
 
     wait(0.2, hogCPUperiod=0)
     trigger.signal(tdef.iso_stop)
@@ -221,6 +227,7 @@ def asynchronous(
         if counter != len(sequence) - 1:
             wait(delays[counter] - stim_delay)
             counter += 1
+            logger.info('Sound %i/%i delivered.', counter, len(sequence))
         else:
             break  # no more delays since it was the last stimuli
 
@@ -232,7 +239,7 @@ def baseline(
         trigger,
         tdef,
         duration: Union[int, float]
-        ):
+        verbose: bool = True):
     """
     Baseline block corresponding to a resting-state recording.
 
@@ -244,12 +251,38 @@ def baseline(
         Trigger definition instance. Must contain the keys:
             - baseline_start
             - baseline_stop
-    duration : float
+    duration : int
         Duration of the resting-state block in seconds.
+    verbose : bool
+        If True, a timer is logged with the info level every second.
     """
     _check_tdef(tdef)
+    _check_type(duration, ('numeric', ), 'duration')
+    if duration <= 0:
+        raise ValueError(
+            "Argument 'duration' should be a strictly positive number. "
+            f"Provided: '{duration}' seconds.")
+    _check_type(verbose, (bool, ), 'verbose')
+
+    # Variables
+    if verbose:
+        timer = Clock()
+        duration_ = datetime.timedelta(seconds=duration)
+        previous_time_displayed = 0
+
+    # Start trigger
+    trigger.signal(tdef.baseline_start)
 
     # Task loop
-    trigger.signal(tdef.baseline_start)
-    wait(duration)
+    if verbose:
+        timer.reset()
+        while timer.getTime() <= duration:
+            if previous_time_displayed + 1 <= timer.getTime():
+                previous_time_displayed += 1
+                now = datetime.timedelta(seconds=previous_time_displayed)
+                logger.info("Baseline: %s / %s", now, duration_)
+    else:
+        wait(duration)
+
+    # Stop trigger
     trigger.signal(tdef.baseline_stop)

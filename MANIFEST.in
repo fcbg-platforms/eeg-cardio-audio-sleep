@@ -1,1 +1,1 @@
-recursive-include cardio_audio_sleep/config *
+include cardio_audio_sleep/config/triggers.ini

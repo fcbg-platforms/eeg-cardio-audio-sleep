@@ -1,12 +1,11 @@
 import math
-from pathlib import Path
 
-from bsl.triggers import TriggerDef
 import mne
 from matplotlib import pyplot as plt
 import numpy as np
 from scipy.signal import find_peaks, hilbert
 
+from cardio_audio_sleep.config import load_triggers
 from cardio_audio_sleep.io import read_raw
 from cardio_audio_sleep.utils import match_positions
 
@@ -21,8 +20,7 @@ raw = read_raw(fname)
 raw.pick_channels(['TRIGGER', 'Sound', 'ECG'])
 
 #%% Triggers
-directory = Path(__file__).parent.parent / 'cardio_audio_sleep' / 'config'
-tdef = TriggerDef(directory / 'triggers.ini')
+tdef = load_triggers()
 start = tdef.sync_start
 stop = tdef.sync_stop
 

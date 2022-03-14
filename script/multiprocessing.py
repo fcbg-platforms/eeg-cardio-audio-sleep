@@ -1,19 +1,19 @@
 """Test for suspending and resuming a process."""
 
-import time
 import multiprocessing as mp
+import time
 
-from bsl.triggers import TriggerDef, ParallelPortTrigger
+from bsl.triggers import ParallelPortTrigger
 import psutil
 
+from cardio_audio_sleep.config import load_triggers
 from cardio_audio_sleep.tasks import isochronous
 from cardio_audio_sleep.utils import search_ANT_amplifier, generate_sequence
 
 
 if __name__ == '__main__':
     trigger = ParallelPortTrigger('/dev/parport0')
-    directory = Path(__file__).parent.parent / 'cardio_audio_sleep' / 'config'
-    tdef = TriggerDef(directory / 'triggers.ini')
+    tdef = load_triggers()
 
     stream_name = search_ANT_amplifier()
     ecg_ch_name = 'AUX7'

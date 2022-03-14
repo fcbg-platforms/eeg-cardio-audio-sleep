@@ -1,8 +1,7 @@
-from pathlib import Path
-
-from bsl.triggers import TriggerDef, ParallelPortTrigger
+from bsl.triggers import ParallelPortTrigger
 import numpy as np
 
+from cardio_audio_sleep.config import load_triggers
 from cardio_audio_sleep.tasks import (synchronous, isochronous, asynchronous,
                                       baseline)
 from cardio_audio_sleep.utils import search_ANT_amplifier, generate_sequence
@@ -10,8 +9,7 @@ from cardio_audio_sleep.utils import search_ANT_amplifier, generate_sequence
 
 #%% Triggers
 trigger = ParallelPortTrigger('/dev/parport0')
-directory = Path(__file__).parent.parent / 'cardio_audio_sleep' / 'config'
-tdef = TriggerDef(directory / 'triggers.ini')
+tdef = load_triggers()
 
 
 #%% LSL Streams

@@ -1,3 +1,3 @@
 """Configuration module."""
 
-from .config import load_triggers  # noqa: F401
+from .config import load_config, load_triggers  # noqa: F401

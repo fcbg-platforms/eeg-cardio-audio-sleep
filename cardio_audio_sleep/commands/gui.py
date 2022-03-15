@@ -3,6 +3,7 @@ from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QWidget, QMainWindow, QPushButton, QLabel
 
 from .. import logger
+from ..utils import generate_blocks_sequence
 
 
 class GUI(QMainWindow):
@@ -12,6 +13,13 @@ class GUI(QMainWindow):
         super().__init__()
         self.load_ui()
         self.connect_signals_to_slots()
+
+        # Block generation
+        self.all_blocks = list()
+        for k in range(3):
+            block = generate_blocks_sequence(self.all_blocks)
+            self.all_blocks.append(block)
+            self.blocks[k+2].btype = block
 
     # -------------------------------------------------------------------------
     def load_ui(self):
@@ -30,7 +38,7 @@ class GUI(QMainWindow):
             block = Block(self.central_widget, '')
             block.setGeometry(QRect(50 + 145 * k, 20, 120, 80))
             block.setAlignment(Qt.AlignCenter)
-            block.setObjectName(f"block{k+1}")
+            block.setObjectName(f"block{k}")
             self.blocks.append(block)
 
         # Add labels
@@ -75,6 +83,14 @@ class GUI(QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         logger.debug('UI loaded.')
+
+    # -------------------------------------------------------------------------
+    def generate_blocks(self):
+        """
+        Generate the next block based on previous blocks.
+        """
+        block = generate_blocks_sequence(self.all_blocks)
+        self.all_blocks.append(block)
 
     # -------------------------------------------------------------------------
     def connect_signals_to_slots(self):
@@ -128,12 +144,12 @@ class Block(QLabel):
 
         # Set text/font/alignment
         self.setText(self._btype)
-        self.setFont(QFont("Arial", 18))
+        self.setFont(QFont("Arial", 14))
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Set background color
+        self.setAutoFillBackground(True)
         if self.colors[self._btype] is not None:
-            self.setAutoFillBackground(True)
             palette = self.palette()
             palette.setColor(QPalette.Window, QColor(self.colors[self._btype]))
             self.setPalette(palette)

@@ -17,7 +17,7 @@
    <string>Cardio-Audio-Sleep experiment</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QLabel" name="block1">
+   <widget class="QLabel" name="block0">
     <property name="geometry">
      <rect>
       <x>50</x>
@@ -106,7 +106,7 @@
      <string>Stop</string>
     </property>
    </widget>
-   <widget class="QLabel" name="block2">
+   <widget class="QLabel" name="block1">
     <property name="geometry">
      <rect>
       <x>195</x>
@@ -122,7 +122,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="block3">
+   <widget class="QLabel" name="block2">
     <property name="enabled">
      <bool>true</bool>
     </property>
@@ -141,7 +141,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="block4">
+   <widget class="QLabel" name="block3">
     <property name="geometry">
      <rect>
       <x>485</x>
@@ -157,7 +157,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="block5">
+   <widget class="QLabel" name="block4">
     <property name="geometry">
      <rect>
       <x>630</x>

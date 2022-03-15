@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QSize, Qt, QRect
+from PyQt5.QtCore import QSize, Qt, QRect, pyqtSlot
 from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QWidget, QMainWindow, QPushButton, QLabel
 
@@ -14,7 +14,7 @@ class GUI(QMainWindow):
         self.load_ui()
         self.connect_signals_to_slots()
 
-        # Block generation
+        # block generation
         self.all_blocks = list()
         for k in range(3):
             block = generate_blocks_sequence(self.all_blocks)
@@ -98,18 +98,21 @@ class GUI(QMainWindow):
         self.pushButton_pause.clicked.connect(self.pushButton_pause_clicked)
         self.pushButton_stop.clicked.connect(self.pushButton_stop_clicked)
 
+    @pyqtSlot()
     def pushButton_start_clicked(self):
         logger.debug('Start requested.')
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)
 
+    @pyqtSlot()
     def pushButton_pause_clicked(self):
         logger.debug('Pause requested.')
         self.pushButton_start.setEnabled(True)
         self.pushButton_pause.setEnabled(False)
         self.pushButton_stop.setEnabled(True)
 
+    @pyqtSlot()
     def pushButton_stop_clicked(self):
         logger.debug('Stop requested.')
         self.pushButton_start.setEnabled(False)
@@ -135,7 +138,8 @@ class Block(QLabel):
         'synchronous': 'blue',
         'isochronous': 'red',
         'asynchronous': 'grey',
-        '': None}
+        '': None
+        }
 
     def __init__(self, parent, btype):
         super().__init__(parent)

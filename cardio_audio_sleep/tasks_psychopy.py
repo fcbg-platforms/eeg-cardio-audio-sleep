@@ -1,6 +1,7 @@
 """Tasks functions."""
 
 import datetime
+from multiprocessing import Queue
 from typing import Union
 
 import numpy as np
@@ -24,6 +25,7 @@ def synchronous(
         peak_height_perc: Union[int, float],
         peak_prominence: Union[int, float, None],
         peak_width: Union[int, float, None],
+        queue: Union[Queue, None] = None,
         ):
     """
     Synchronous block where sounds are sync to the heartbeat.
@@ -52,6 +54,9 @@ def synchronous(
         Minimum peak prominence as defined by scipy.
     peak_width : float | None
         Minimum peak width expressed in ms. Default to None.
+    queue : Queue
+        Queue where the sequence_timings are stored. If None, this argument is
+        ignored.
 
     Returns
     -------
@@ -103,6 +108,9 @@ def synchronous(
 
     wait(0.2, hogCPUperiod=0)
     trigger.signal(tdef.sync_stop)
+
+    if queue is not None:
+        queue.put(sequence_timings)
 
     return sequence_timings
 

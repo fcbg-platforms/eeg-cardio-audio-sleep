@@ -1,16 +1,48 @@
-from PyQt5.QtCore import QSize, Qt, QRect, pyqtSlot
+import multiprocessing as mp
+
+from bsl.triggers import ParallelPortTrigger
+import numpy as np
+import psutil
+from PyQt5.QtCore import QSize, Qt, QRect, pyqtSlot, QTimer
 from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QWidget, QMainWindow, QPushButton, QLabel
 
 from .. import logger
-from ..utils import generate_blocks_sequence
+from ..config import load_triggers, load_config
+from ..tasks import (baseline, synchronous, isochronous, asynchronous,
+                     inter_block)
+from ..utils import (generate_blocks_sequence, generate_sequence,
+                     search_ANT_amplifier)
 
 
 class GUI(QMainWindow):
-    """Application window and layout."""
+    """Application window and layout.
 
-    def __init__(self):
+    Parameters
+    ----------
+    ecg_ch_name : str
+        Name of the ECG channel.
+    peak_height_perc : float
+        Minimum height of the peak expressed as a percentile of the samples in
+        the buffer.
+    peak_prominence : float | None
+        Minimum peak prominence as defined by scipy.
+    peak_width : float | None
+        Minimum peak width expressed in ms. Default to None.
+    """
+
+    def __init__(self, ecg_ch_name, peak_height_perc, peak_prominence,
+                 peak_width):
         super().__init__()
+
+        # define mp Queue
+        self.queue = mp.Queue()
+
+        # load configuration
+        self.load_config(ecg_ch_name, peak_height_perc, peak_prominence,
+                         peak_width)
+
+        # load GUI
         self.load_ui()
         self.connect_signals_to_slots()
 
@@ -20,6 +52,36 @@ class GUI(QMainWindow):
             block = generate_blocks_sequence(self.all_blocks)
             self.all_blocks.append(block)
             self.blocks[k+2].btype = block
+
+        # define Qt Timer
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update)
+
+    def load_config(self, ecg_ch_name, peak_height_perc, peak_prominence,
+                    peak_width):
+        self.config = load_config()
+        self.tdef = load_triggers()
+        self.trigger = ParallelPortTrigger('/dev/parport0')
+        stream_name = search_ANT_amplifier()
+
+        # Create task mapping
+        self.task_mapping = {
+            'baseline': baseline,
+            'synchronous': synchronous,
+            'isochronous': isochronous,
+            'asynchronous': asynchronous
+            }
+
+        # Create args
+        self.args_mapping = {
+            'baseline': (self.trigger, self.tdef,
+                         self.config['baseline']['duration']),
+            'synchronous': (self.trigger, self.tdef, None, stream_name,
+                            ecg_ch_name, peak_height_perc, peak_prominence,
+                            peak_width, self.queue),
+            'isochronous': (self.trigger, self.tdef, None, None),
+            'asynchronous': (self.trigger, self.tdef, None, None)
+            }
 
     # -------------------------------------------------------------------------
     def load_ui(self):
@@ -65,13 +127,14 @@ class GUI(QMainWindow):
         self.pushButton_start.setEnabled(True)
         self.pushButton_start.setGeometry(QRect(25, 150, 240, 32))
         self.pushButton_start.setObjectName("pushButton_start")
-        self.pushButton_start.setText("Start/Resume")
+        self.pushButton_start.setText("Start")
 
         self.pushButton_pause = QPushButton(self.central_widget)
         self.pushButton_pause.setEnabled(False)
         self.pushButton_pause.setGeometry(QRect(280, 150, 240, 32))
         self.pushButton_pause.setObjectName("pushButton_pause")
         self.pushButton_pause.setText("Pause")
+        self.pushButton_pause.setCheckable(True)
 
         self.pushButton_stop = QPushButton(self.central_widget)
         self.pushButton_stop.setEnabled(False)
@@ -85,12 +148,65 @@ class GUI(QMainWindow):
         logger.debug('UI loaded.')
 
     # -------------------------------------------------------------------------
-    def generate_blocks(self):
-        """
-        Generate the next block based on previous blocks.
-        """
-        block = generate_blocks_sequence(self.all_blocks)
-        self.all_blocks.append(block)
+    def update(self):
+        """Update loop called every timer tick checking if the task is still
+        on going or if we can schedule the next block."""
+        self.process.join(timeout=0.25)  # blocks 0.2 second
+        if not self.process.is_alive():
+            if self.process_block_name == 'synchronous':
+                self.sequence_timings = self.queue.get()
+            if self.process_block_name == 'inter-block':
+                self.start_inter_block()
+            else:
+                self.start_new_block()
+
+    def start_new_block(self, first=False):
+        """Starts a new block. If this is the first block run, initialization
+        correctly placed the initial 3 blocks. Else, we start by rolling the
+        blocks. Arguments must be determined depending on the block played."""
+        if not first:  # roll blocks
+            for k, block in enumerate(self.blocks):
+                if k == len(self.blocks) - 1:
+                    block.btype = generate_blocks_sequence(self.all_blocks)
+                    self.all_blocks.append(block)
+                else:
+                    block.btype = self.blocks[k+1].btype
+
+        # determine arguments
+        btype = self.blocks[2].btype
+        if btype == 'baseline':
+            args = self.args_mapping[btype]
+        else:
+            args = list(self.args_mapping[btype])
+            args[2] = generate_sequence(
+                self.config[btype]['n_stimuli'],
+                self.config[btype]['n_omissions'],
+                self.config[btype]['edge_perc'],
+                self.tdef)
+
+            if btype == 'isochronous':
+                args[3] = np.median(np.diff(self.sequence_timings))
+                logger.info('Delay for isochronous: %.2f (s).', args[3])
+            if btype == 'asynchronous':
+                args[3] = self.sequence_timings
+                logger.info('Average delay for asynchronous: %.2f (s).',
+                            np.median(np.diff(self.sequence_timings)))
+
+        # start new process
+        self.process = mp.Process(
+            target=self.task_mapping[self.blocks[2].btype], args=tuple(args))
+        self.process.start()
+        self.psutil_process = psutil.Process(self.process.pid)
+        self.process_block_name = btype
+
+    def start_inter_block(self):
+        """Start an inter-block process that waits for a fix duration."""
+        self.process = mp.Process(
+            target=inter_block,
+            args=(self.config['block']['inter_block'], True))
+        self.process.start()
+        self.psutil_process = psutil.Process(self.process.pid)
+        self.process_block_name = 'inter-block'
 
     # -------------------------------------------------------------------------
     def connect_signals_to_slots(self):
@@ -105,12 +221,33 @@ class GUI(QMainWindow):
         self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)
 
+        # Launch first block
+        self.start_new_block(first=True)
+
+        # Start timer
+        self.timer.start(500)  # 2s
+
     @pyqtSlot()
     def pushButton_pause_clicked(self):
-        logger.debug('Pause requested.')
-        self.pushButton_start.setEnabled(True)
-        self.pushButton_pause.setEnabled(False)
+        self.pushButton_start.setEnabled(False)
+        self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)
+
+        # change text on button
+        if self.pushButton_pause.isChecked():
+            logger.debug('Pause requested.')
+            self.pushButton_pause.setText("Resume")
+            try:
+                self.psutil_process.suspend()
+            except psutil.NoSuchProcess:
+                logger.warning('No process found to suspend.')
+        else:
+            logger.debug('Resume requested.')
+            self.pushButton_pause.setText("Pause")
+            try:
+                self.psutil_process.resume()
+            except psutil.NoSuchProcess:
+                logger.warning('No process found to resume.')
 
     @pyqtSlot()
     def pushButton_stop_clicked(self):
@@ -118,6 +255,10 @@ class GUI(QMainWindow):
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(False)
         self.pushButton_stop.setEnabled(False)
+        self.timer.stop()
+        self.process.join(1)
+        if self.process.is_alive():
+            self.process.kill()
 
 
 class Block(QLabel):
@@ -169,6 +310,7 @@ class Block(QLabel):
         # Set text
         self.setText(self._btype)
         # Set background color
-        palette = self.palette()
-        palette.setColor(QPalette.Window, QColor(self.colors[self._btype]))
-        self.setPalette(palette)
+        if self.colors[self._btype] is not None:
+            palette = self.palette()
+            palette.setColor(QPalette.Window, QColor(self.colors[self._btype]))
+            self.setPalette(palette)

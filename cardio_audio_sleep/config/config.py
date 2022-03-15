@@ -94,9 +94,9 @@ def load_config():
     config = {
         'block': block,
         'baseline': baseline,
-        'sync': synchronous,
-        'iso': isochronous,
-        'async': asynchronous
+        'synchronous': synchronous,
+        'isochronous': isochronous,
+        'asynchronous': asynchronous
         }
 
     return config

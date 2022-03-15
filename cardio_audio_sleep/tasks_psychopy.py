@@ -291,3 +291,42 @@ def baseline(
 
     # Stop trigger
     trigger.signal(tdef.baseline_stop)
+
+
+def inter_block(
+        duration: Union[int, float],
+        verbose: bool = True
+        ):
+    """
+    Inter-block task-like to wait a specific duration.
+
+    Parameters
+    ----------
+    duration : int
+        Duration of the inter-block in seconds.
+    verbose : bool
+        If True, a timer is logged with the info level every second.
+    """
+    _check_type(duration, ('numeric', ), 'duration')
+    if duration <= 0:
+        raise ValueError(
+            "Argument 'duration' should be a strictly positive number. "
+            f"Provided: '{duration}' seconds.")
+    _check_type(verbose, (bool, ), 'verbose')
+
+    # Variables
+    if verbose:
+        timer = Clock()
+        duration_ = datetime.timedelta(seconds=duration)
+        previous_time_displayed = 0
+
+    # Task loop
+    if verbose:
+        timer.reset()
+        while timer.getTime() <= duration:
+            if previous_time_displayed + 1 <= timer.getTime():
+                previous_time_displayed += 1
+                now = datetime.timedelta(seconds=previous_time_displayed)
+                logger.info("Inter-block: %s / %s", now, duration_)
+    else:
+        wait(duration)

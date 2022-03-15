@@ -38,13 +38,13 @@ class GUI(QMainWindow):
         past.setGeometry(QRect(50, 115, 265, 20))
         past.setAlignment(Qt.AlignCenter)
         past.setObjectName("past")
-        past.setText("Past")
+        past.setText("Previous blocks")
 
         future = QLabel(self.central_widget)
         future.setGeometry(QRect(485, 115, 265, 20))
         future.setAlignment(Qt.AlignCenter)
         future.setObjectName("future")
-        future.setText("Future")
+        future.setText("Next blocks")
 
         current = QLabel(self.central_widget)
         current.setGeometry(QRect(340, 115, 120, 20))
@@ -119,7 +119,7 @@ class Block(QLabel):
         'synchronous': 'blue',
         'isochronous': 'red',
         'asynchronous': 'grey',
-        '': 'white'}
+        '': None}
 
     def __init__(self, parent, btype):
         super().__init__(parent)
@@ -132,10 +132,11 @@ class Block(QLabel):
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Set background color
-        self.setAutoFillBackground(True)
-        palette = self.palette()
-        palette.setColor(QPalette.Window, QColor(self.colors[self._btype]))
-        self.setPalette(palette)
+        if self.colors[self._btype] is not None:
+            self.setAutoFillBackground(True)
+            palette = self.palette()
+            palette.setColor(QPalette.Window, QColor(self.colors[self._btype]))
+            self.setPalette(palette)
 
     @property
     def btype(self):

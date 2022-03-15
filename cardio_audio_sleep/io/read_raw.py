@@ -19,7 +19,7 @@ def read_raw(fname):
 
     # AUX channels
     names_mapping = dict()
-    types_mapping =dict()
+    types_mapping = dict()
     if 'AUX3' in raw.ch_names:
         names_mapping['AUX3'] = 'Sound'
         types_mapping['Sound'] = 'misc'

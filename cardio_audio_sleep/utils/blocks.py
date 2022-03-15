@@ -16,10 +16,6 @@ def generate_blocks_sequence(previous_blocks):
         return 'baseline'  # Start with baseline
     elif len(previous_blocks) == 1:
         return 'synchronous'  # Followed by synchronous
-    elif len(previous_blocks) == 2:
-        return random.choice(('isochronous', 'asynchronous'))  # only 2 options
-    elif len(previous_blocks) == 3:
-        return tuple(set(options) - set(previous_blocks))[0]
 
     # Above that, look by group of 4
     idx = len(previous_blocks) % 4

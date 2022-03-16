@@ -1,12 +1,11 @@
 """Tasks functions."""
 
-import datetime
 from multiprocessing import Queue
 from typing import Union
 
 import numpy as np
 from numpy.typing import ArrayLike
-from psychopy.clock import wait, Clock
+from psychopy.clock import wait
 from psychopy.sound.backend_ptb import SoundPTB as Sound
 import psychtoolbox as ptb
 
@@ -246,95 +245,3 @@ def asynchronous(
 
     wait(0.2, hogCPUperiod=0)
     trigger.signal(tdef.async_stop)
-
-
-def baseline(
-        trigger,
-        tdef,
-        duration: Union[int, float],
-        verbose: bool = True):
-    """
-    Baseline block corresponding to a resting-state recording.
-
-    Parameters
-    ----------
-    trigger : Trigger
-        A BSL trigger instance.
-    tdef : TriggerDef
-        Trigger definition instance. Must contain the keys:
-            - baseline_start
-            - baseline_stop
-    duration : int
-        Duration of the resting-state block in seconds.
-    verbose : bool
-        If True, a timer is logged with the info level every second.
-    """
-    _check_tdef(tdef)
-    _check_type(duration, ('numeric', ), 'duration')
-    if duration <= 0:
-        raise ValueError(
-            "Argument 'duration' should be a strictly positive number. "
-            f"Provided: '{duration}' seconds.")
-    _check_type(verbose, (bool, ), 'verbose')
-
-    # Variables
-    if verbose:
-        timer = Clock()
-        duration_ = datetime.timedelta(seconds=duration)
-        previous_time_displayed = 0
-
-    # Start trigger
-    trigger.signal(tdef.baseline_start)
-
-    # Task loop
-    if verbose:
-        timer.reset()
-        while timer.getTime() <= duration:
-            if previous_time_displayed + 1 <= timer.getTime():
-                previous_time_displayed += 1
-                now = datetime.timedelta(seconds=previous_time_displayed)
-                logger.info("Baseline: %s / %s", now, duration_)
-    else:
-        wait(duration)
-
-    # Stop trigger
-    trigger.signal(tdef.baseline_stop)
-
-
-def inter_block(
-        duration: Union[int, float],
-        verbose: bool = True
-        ):
-    """
-    Inter-block task-like to wait a specific duration.
-
-    Parameters
-    ----------
-    duration : int
-        Duration of the inter-block in seconds.
-    verbose : bool
-        If True, a timer is logged with the info level every second.
-    """
-    _check_type(duration, ('numeric', ), 'duration')
-    if duration <= 0:
-        raise ValueError(
-            "Argument 'duration' should be a strictly positive number. "
-            f"Provided: '{duration}' seconds.")
-    _check_type(verbose, (bool, ), 'verbose')
-
-    # Variables
-    if verbose:
-        timer = Clock()
-        duration_ = datetime.timedelta(seconds=duration)
-        previous_time_displayed = 0
-
-    # Task loop
-    if verbose:
-        timer.reset()
-        while timer.getTime() <= duration:
-            if previous_time_displayed + 1 <= timer.getTime():
-                previous_time_displayed += 1
-                now = datetime.timedelta(seconds=previous_time_displayed)
-                logger.info("Inter-block: %s / %s", now, duration_)
-    else:
-        wait(duration)

@@ -6,7 +6,7 @@ from typing import Union
 
 import numpy as np
 from numpy.typing import ArrayLike
-from psychopy.clock import wait, Clock
+from psychopy.clock import wait
 import psychtoolbox as ptb
 
 from .audio import Tone
@@ -272,25 +272,20 @@ def baseline(
             f"Provided: '{duration}' seconds.")
     _check_type(verbose, (bool, ), 'verbose')
 
-    # Variables
-    if verbose:
-        timer = Clock()
-        duration_ = datetime.timedelta(seconds=duration)
-        previous_time_displayed = 0
-
     # Start trigger
     trigger.signal(tdef.baseline_start)
 
-    # Task loop
-    if verbose:
-        timer.reset()
-        while timer.getTime() <= duration:
-            if previous_time_displayed + 1 <= timer.getTime():
-                previous_time_displayed += 1
-                now = datetime.timedelta(seconds=previous_time_displayed)
-                logger.info("Baseline: %s / %s", now, duration_)
-    else:
-        wait(duration)
+    duration_ = datetime.timedelta(seconds=duration)
+
+    # Counts second instead of using a clock. Less precise, but compatible
+    # with a process interruption.
+    counter = 0
+    while counter < duration:
+        counter += 1
+        wait(1, hogCPUperiod=0)
+        if verbose:
+            now = datetime.timedelta(seconds=counter)
+            logger.info("Inter-block: %s / %s", now, duration_)
 
     # Stop trigger
     trigger.signal(tdef.baseline_stop)
@@ -317,19 +312,14 @@ def inter_block(
             f"Provided: '{duration}' seconds.")
     _check_type(verbose, (bool, ), 'verbose')
 
-    # Variables
-    if verbose:
-        timer = Clock()
-        duration_ = datetime.timedelta(seconds=duration)
-        previous_time_displayed = 0
+    duration_ = datetime.timedelta(seconds=duration)
 
-    # Task loop
-    if verbose:
-        timer.reset()
-        while timer.getTime() <= duration:
-            if previous_time_displayed + 1 <= timer.getTime():
-                previous_time_displayed += 1
-                now = datetime.timedelta(seconds=previous_time_displayed)
-                logger.info("Inter-block: %s / %s", now, duration_)
-    else:
-        wait(duration)
+    # Counts second instead of using a clock. Less precise, but compatible
+    # with a process interruption.
+    counter = 0
+    while counter < duration:
+        counter += 1
+        wait(1, hogCPUperiod=0)
+        if verbose:
+            now = datetime.timedelta(seconds=counter)
+            logger.info("Inter-block: %s / %s", now, duration_)

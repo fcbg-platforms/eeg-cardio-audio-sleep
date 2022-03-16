@@ -13,7 +13,7 @@ def load_triggers():
     tdef : TriggerDef
         Trigger definitiopn containing: sound, omission, sync_start, sync_stop,
         iso_start, iso_stop, async_start, async_stop, baseline_start and
-        baseline_stop
+        baseline_stop, pause and resume.
     """
     directory = Path(__file__).parent
     tdef = TriggerDef(directory / 'triggers.ini')
@@ -28,8 +28,9 @@ def load_triggers():
         'async_start',
         'async_stop',
         'baseline_start',
-        'baseline_stop'
-        )
+        'baseline_stop',
+        'pause',
+        'resume')
     for key in keys:
         if not hasattr(tdef, key):
             raise ValueError(

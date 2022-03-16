@@ -101,6 +101,8 @@ class GUI(QMainWindow):
             block.setGeometry(QRect(50 + 145 * k, 20, 120, 80))
             block.setAlignment(Qt.AlignCenter)
             block.setObjectName(f"block{k}")
+            if k in (0, 1):  # disable block 0 and 1 (past)
+                block.setEnabled(False)
             self.blocks.append(block)
 
         # Add labels
@@ -151,14 +153,14 @@ class GUI(QMainWindow):
     def update(self):
         """Update loop called every timer tick checking if the task is still
         on going or if we can schedule the next block."""
-        self.process.join(timeout=0.25)  # blocks 0.2 second
+        self.process.join(timeout=0.2)  # blocks 0.2 second
         if not self.process.is_alive():
             if self.process_block_name == 'synchronous':
                 self.sequence_timings = self.queue.get()
             if self.process_block_name == 'inter-block':
-                self.start_inter_block()
-            else:
                 self.start_new_block()
+            else:
+                self.start_inter_block()
 
     def start_new_block(self, first=False):
         """Starts a new block. If this is the first block run, initialization
@@ -225,7 +227,7 @@ class GUI(QMainWindow):
         self.start_new_block(first=True)
 
         # Start timer
-        self.timer.start(500)  # 2s
+        self.timer.start(2000)
 
     @pyqtSlot()
     def pushButton_pause_clicked(self):
@@ -237,17 +239,21 @@ class GUI(QMainWindow):
         if self.pushButton_pause.isChecked():
             logger.debug('Pause requested.')
             self.pushButton_pause.setText("Resume")
+            self.timer.stop()
             try:
                 self.psutil_process.suspend()
             except psutil.NoSuchProcess:
                 logger.warning('No process found to suspend.')
+            self.trigger.signal(self.tdef.pause)
         else:
             logger.debug('Resume requested.')
             self.pushButton_pause.setText("Pause")
+            self.timer.start(2000)
             try:
                 self.psutil_process.resume()
             except psutil.NoSuchProcess:
                 logger.warning('No process found to resume.')
+            self.trigger.signal(self.tdef.resume)
 
     @pyqtSlot()
     def pushButton_stop_clicked(self):

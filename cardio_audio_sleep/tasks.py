@@ -9,8 +9,6 @@ from numpy.typing import ArrayLike
 from psychopy.clock import wait
 import psychtoolbox as ptb
 
-from .audio import Tone
-from .detector import Detector
 from .utils._checks import (_check_type, _check_tdef, _check_sequence,
                             _check_sequence_timings)
 from .utils._logs import logger
@@ -63,6 +61,9 @@ def synchronous(
     sequence_timings : list
         List of timings at which an R-peak occured.
     """
+    from .audio import Tone
+    from .detector import Detector
+
     # Create sound stimuli
     sound = Tone(100, frequency=250)
 
@@ -139,6 +140,8 @@ def isochronous(
     delay : float
         Delay between 2 stimulus in seconds.
     """
+    from .audio import Tone
+
     # Create sound stimuli
     sound = Tone(100, frequency=250)
 
@@ -203,6 +206,8 @@ def asynchronous(
         Array of length BLOCK_SIZE containing the timing at which the stimulus
         was delivered.
     """
+    from .audio import Tone
+
     # Create sound stimuli
     sound = Tone(100, frequency=250)
 
@@ -285,7 +290,7 @@ def baseline(
         wait(1, hogCPUperiod=0)
         if verbose:
             now = datetime.timedelta(seconds=counter)
-            logger.info("Inter-block: %s / %s", now, duration_)
+            logger.info("Baseline: %s / %s", now, duration_)
 
     # Stop trigger
     trigger.signal(tdef.baseline_stop)

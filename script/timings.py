@@ -26,9 +26,12 @@ stop = tdef.sync_stop
 
 #%% Events
 events = mne.find_events(raw, stim_channel='TRIGGER')
-tmin = events[0][0] / raw.info['sfreq'] if events[0][2] == start else None
-tmax = events[-1][0] / raw.info['sfreq'] if events[-1][2] == stop else None
-raw.crop(tmin, tmax, include_tmax=True)
+try:
+    tmin = events[np.where(events[:, 2] == start)[0][0], 0] / raw.info['sfreq']
+    tmax = events[np.where(events[:, 2] == stop)[0][0], 0] / raw.info['sfreq']
+    raw.crop(tmin, tmax, include_tmax=True)
+except IndexError:
+    pass
 
 events = mne.find_events(raw, stim_channel='TRIGGER')
 events = np.array([ev[0] for ev in events if ev[2] != start and ev[2] != stop])

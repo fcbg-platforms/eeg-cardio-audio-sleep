@@ -4,3 +4,4 @@ matplotlib
 bsl>=0.4.0
 sounddevice  # required for non-psychopy sound package
 psychopy==2021.2.3
+psutil

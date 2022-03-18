@@ -55,14 +55,14 @@ def read_raw(fname):
     # Set annotations
     events = mne.find_events(raw, stim_channel='TRIGGER')
     tdef = load_triggers()
+
+    # Block start/stop
     blocks = {
         'Synchronous': (tdef.sync_start, tdef.sync_stop),
         'Isochronous': (tdef.iso_start, tdef.iso_stop),
         'Asynchornous': (tdef.async_start, tdef.async_stop),
         'Baseline': (tdef.baseline_start, tdef.baseline_stop),
         }
-
-    # Block start/stop
     for block, (tdef_start, tdef_stop) in blocks.items():
         starts = np.sort(np.where(events[:, 2] == tdef_start)[0])
         stops = np.sort(np.where(events[:, 2] == tdef_stop)[0])
@@ -88,13 +88,10 @@ def read_raw(fname):
 
     # Sounds/Omissions
     duration = 0.1  # TODO: to be changed when sounds are better defined.
-    sounds = np.where(events[:, 2] == tdef.sound)[0]
-    onsets = [events[start, 0] / raw.info['sfreq'] for start in sounds]
-    annotations = mne.Annotations(onsets, duration, 'Sound')
-    raw.set_annotations(raw.annotations + annotations)
-    omissions = np.where(events[:, 2] == tdef.omission)[0]
-    onsets = [events[start, 0] / raw.info['sfreq'] for start in omissions]
-    annotations = mne.Annotations(onsets, duration, 'Omission')
-    raw.set_annotations(raw.annotations + annotations)
+    for name, event in (('Sound', tdef.sound), ('Omission', tdef.omission)):
+        stim = np.where(events[:, 2] == event)[0]
+        onsets = [events[start, 0] / raw.info['sfreq'] for start in stim]
+        annotations = mne.Annotations(onsets, duration, name)
+        raw.set_annotations(raw.annotations + annotations)
 
     return raw

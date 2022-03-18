@@ -79,12 +79,12 @@ def read_raw(fname):
     pause = np.sort(np.where(events[:, 2] == tdef.pause)[0])
     resume = np.sort(np.where(events[:, 2] == tdef.resume)[0])
     if pause.shape == resume.shape:  # TODO: Consider mismatch
-         onsets = [events[start, 0] / raw.info['sfreq']
-                   for start in pause]
-         durations = [(events[stop, 0] - events[start, 0]) / raw.info['sfreq']
-                      for start, stop in zip(pause, resume)]
-         annotations = mne.Annotations(onsets, durations, 'Pause')
-         raw.set_annotations(raw.annotations + annotations)
+        onsets = [events[start, 0] / raw.info['sfreq']
+                  for start in pause]
+        durations = [(events[stop, 0] - events[start, 0]) / raw.info['sfreq']
+                     for start, stop in zip(pause, resume)]
+        annotations = mne.Annotations(onsets, durations, 'Pause')
+        raw.set_annotations(raw.annotations + annotations)
 
     # Sounds/Omissions
     duration = 0.1  # TODO: to be changed when sounds are better defined.

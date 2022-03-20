@@ -83,7 +83,7 @@ def read_raw(fname):
                   for start in pause]
         durations = [(events[stop, 0] - events[start, 0]) / raw.info['sfreq']
                      for start, stop in zip(pause, resume)]
-        annotations = mne.Annotations(onsets, durations, 'Pause')
+        annotations = mne.Annotations(onsets, durations, 'BAD_Pause')
         raw.set_annotations(raw.annotations + annotations)
 
     # Sounds/Omissions

@@ -170,7 +170,7 @@ class GUI(QMainWindow):
             for k, block in enumerate(self.blocks):
                 if k == len(self.blocks) - 1:
                     block.btype = generate_blocks_sequence(self.all_blocks)
-                    self.all_blocks.append(block)
+                    self.all_blocks.append(block.btype)
                 else:
                     block.btype = self.blocks[k+1].btype
 

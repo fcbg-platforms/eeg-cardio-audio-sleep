@@ -105,7 +105,7 @@ def synchronous(
             # and give CPU time to other processes
             wait(0.1, hogCPUperiod=0)
 
-    wait(0.2, hogCPUperiod=0)
+    wait(1, hogCPUperiod=0)
     trigger.signal(tdef.sync_stop)
 
     if queue is not None:
@@ -173,7 +173,7 @@ def isochronous(
         counter += 1
         logger.info('Sound %i/%i delivered.', counter, len(sequence))
 
-    wait(0.2, hogCPUperiod=0)
+    wait(1, hogCPUperiod=0)
     trigger.signal(tdef.iso_stop)
 
 
@@ -243,5 +243,5 @@ def asynchronous(
         else:
             break  # no more delays since it was the last stimuli
 
-    wait(0.2, hogCPUperiod=0)
+    wait(1, hogCPUperiod=0)
     trigger.signal(tdef.async_stop)

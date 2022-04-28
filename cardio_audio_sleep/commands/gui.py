@@ -63,6 +63,9 @@ class GUI(QMainWindow):
             self.all_blocks.append(block)
             self.blocks[k+2].btype = block
 
+        # placeholder for the last valid sequence for async blocks
+        self.last_valid_timings = None
+
         # define Qt Timer
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update)
@@ -205,7 +208,15 @@ class GUI(QMainWindow):
                 args[3] = np.median(np.diff(self.sequence_timings))
                 logger.info('Delay for isochronous: %.2f (s).', args[3])
             if btype == 'asynchronous':
-                args[3] = generate_async_timings(self.sequence_timings)
+                timings, valid = generate_async_timings(self.sequence_timings)
+                if valid:
+                    self.last_valid_timings = timings
+                    args[3] = timings
+                elif not valid and self.last_valid_timings is None:
+                    args[3] = timings
+                else:
+                    np.random.shuffle(self.last_valid_timings)
+                    args[3] = self.last_valid_timings
                 logger.info('Average delay for asynchronous: %.2f (s).',
                             np.median(np.diff(args[3])))
 

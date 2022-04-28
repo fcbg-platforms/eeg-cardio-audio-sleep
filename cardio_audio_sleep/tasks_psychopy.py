@@ -1,7 +1,7 @@
 """Tasks functions."""
 
 from multiprocessing import Queue
-from typing import Union
+from typing import Union, Optional
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -22,10 +22,10 @@ def synchronous(
         stream_name: str,
         ecg_ch_name: str,
         peak_height_perc: Union[int, float],
-        peak_prominence: Union[int, float, None],
-        peak_width: Union[int, float, None],
-        queue: Union[Queue, None] = None,
-        ):
+        peak_prominence: Optional[Union[int, float]],
+        peak_width: Optional[Union[int, float]],
+        queue: Optional[Queue] = None,
+        ) -> list:
     """
     Synchronous block where sounds are sync to the heartbeat.
 

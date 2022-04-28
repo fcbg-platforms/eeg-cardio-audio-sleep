@@ -1,7 +1,7 @@
 import random
 
 
-def generate_blocks_sequence(previous_blocks):
+def generate_blocks_sequence(previous_blocks: list) -> str:
     """
     Creates a valid block sequence.
 
@@ -9,6 +9,11 @@ def generate_blocks_sequence(previous_blocks):
     ----------
     previous_blocks : list
         List of previously generated blocks
+
+    Returns
+    -------
+    block : str
+        The next block selected among the options.
     """
     options = ('baseline', 'synchronous', 'isochronous', 'asynchronous')
 

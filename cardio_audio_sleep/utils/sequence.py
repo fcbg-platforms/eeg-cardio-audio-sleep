@@ -4,6 +4,7 @@ import random
 from typing import Union
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ._checks import _check_type, _check_value
 from ._logs import logger
@@ -16,7 +17,7 @@ def generate_sequence(
         tdef,
         max_iter: int = 500,
         on_diverge: str = 'warn',
-        ):
+        ) -> NDArray[int]:
     """
     Creates a valid sequence.
     - 300 sounds / block

@@ -1,4 +1,5 @@
 import math
+from typing import Union, Optional
 
 from bsl import StreamReceiver
 from bsl.utils import Timer
@@ -33,8 +34,15 @@ class Detector:
         Minimum peak width expressed in ms. Default to None.
     """
 
-    def __init__(self, stream_name, ecg_ch_name, duration_buffer=4,
-                 peak_height_perc=98, peak_prominence=20, peak_width=None):
+    def __init__(
+            self,
+            stream_name: str,
+            ecg_ch_name: str,
+            duration_buffer: float = 4.,
+            peak_height_perc: float = 98.,
+            peak_prominence: Optional[float] = 20.,
+            peak_width: Optional[float] = None,
+            ):
         # Check arguments and create StreamReceiver
         self._peak_height_perc = Detector._check_peak_height_perc(
             peak_height_perc)
@@ -272,7 +280,7 @@ class Detector:
 
     # --------------------------------------------------------------------
     @staticmethod
-    def _check_peak_height_perc(peak_height_perc):
+    def _check_peak_height_perc(peak_height_perc: Union[int, float]):
         """Checks argument 'peak_height_perc'."""
         _check_type(peak_height_perc, ('numeric', ),
                     item_name='peak_height_perc')
@@ -287,7 +295,7 @@ class Detector:
         return float(peak_height_perc)
 
     @staticmethod
-    def _check_peak_width(peak_width):
+    def _check_peak_width(peak_width: Optional[Union[int, float]]):
         """Checks argument 'peak_width'."""
         _check_type(peak_width, ('numeric', None), item_name='peak_width')
         if peak_width is None:
@@ -299,7 +307,7 @@ class Detector:
         return float(peak_width)
 
     @staticmethod
-    def _convert_peak_width_to_samples(peak_width, fs):
+    def _convert_peak_width_to_samples(peak_width: Optional[float], fs: float):
         """Convert a peak width from ms to samples."""
         if peak_width is None:
             return None
@@ -307,7 +315,7 @@ class Detector:
             return math.ceil(peak_width / 1000 * fs)
 
     @staticmethod
-    def _check_peak_prominence(peak_prominence):
+    def _check_peak_prominence(peak_prominence: Optional[Union[int, float]]):
         """Checks argument 'peak_prominence'."""
         _check_type(peak_prominence, ('numeric', None),
                     item_name='peak_prominence')

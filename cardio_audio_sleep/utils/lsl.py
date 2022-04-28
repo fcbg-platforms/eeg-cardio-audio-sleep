@@ -3,7 +3,7 @@ from bsl.utils.lsl import list_lsl_streams, search_lsl
 from ._logs import logger
 
 
-def search_ANT_amplifier():
+def search_ANT_amplifier() -> str:
     """Looks for ANT Neuro amplifier on the LSL network.
 
     Returns

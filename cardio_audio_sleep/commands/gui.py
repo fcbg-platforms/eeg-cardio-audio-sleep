@@ -13,7 +13,7 @@ from ..config import load_triggers, load_config
 from ..tasks import (baseline, synchronous, isochronous, asynchronous,
                      inter_block)
 from ..utils import (generate_blocks_sequence, generate_sequence,
-                     search_ANT_amplifier)
+                     generate_async_timings, search_ANT_amplifier)
 
 
 class GUI(QMainWindow):
@@ -205,9 +205,9 @@ class GUI(QMainWindow):
                 args[3] = np.median(np.diff(self.sequence_timings))
                 logger.info('Delay for isochronous: %.2f (s).', args[3])
             if btype == 'asynchronous':
-                args[3] = self.sequence_timings
+                args[3] = generate_async_timings(self.sequence_timings)
                 logger.info('Average delay for asynchronous: %.2f (s).',
-                            np.median(np.diff(self.sequence_timings)))
+                            np.median(np.diff(args[3])))
 
         # start new process
         self.process = mp.Process(

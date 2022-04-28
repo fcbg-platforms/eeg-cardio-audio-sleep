@@ -1,6 +1,7 @@
 from itertools import cycle
 import math
 import time
+from typing import Optional, Tuple
 
 from bsl import StreamReceiver
 from matplotlib import pyplot as plt
@@ -15,9 +16,9 @@ from .utils._checks import _check_type, _check_value
 
 def peak_detection_parameters_tuning(
         ecg_ch_name: str,
-        stream_name: str = None,
+        stream_name: Optional[str] = None,
         duration_buffer: float = 4.
-        ):
+        ) -> Tuple[float, Optional[float], Optional[float]]:
     """
     GUI to tune the height and width parameter of the R-peak detector.
 

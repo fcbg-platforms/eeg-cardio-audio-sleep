@@ -1,8 +1,12 @@
-from mne.preprocessing import _find_outliers
+from mne.preprocessing.bads import _find_outliers
 import numpy as np
+from numpy.typing import NDArray
 
 
-def generate_async_timings(sequence_timings: list, zscore: float = 4.0):
+def generate_async_timings(
+        sequence_timings: list,
+        zscore: float = 4.0,
+        ) -> NDArray[float]:
     """
     Given the sequence of timings of a synchronous block, generate the sequence
     of timings for the future asynchronous block(s).
@@ -16,6 +20,11 @@ def generate_async_timings(sequence_timings: list, zscore: float = 4.0):
         List of timings at which an R-peak occured.
     zscore : float
         The value above which a feature is classified as outlier.
+
+    Returns
+    -------
+    sequence_timings : array
+        List of timings at which a stimuli occurs for the asynchronous blocks.
     """
     n = len(sequence_timings)
     diff = np.diff(sequence_timings)
@@ -23,7 +32,7 @@ def generate_async_timings(sequence_timings: list, zscore: float = 4.0):
     valids = diff[~outliers]
     # generate sequence of 'n-1' valid inter-stimulus delays
     delays = np.random.choice(valids, size=n-1, replace=True)
-    timings = [0]
-    for delay in delays:
-        timings.append(timings[-1] + delay)
+    timings = np.zeros((n, ))
+    for k, delay in enumerate(delays):
+        timings[k+1] = timings[-1] + delay
     return timings

@@ -1,4 +1,5 @@
 import multiprocessing as mp
+from typing import Optional
 
 from bsl.triggers import ParallelPortTrigger
 import numpy as np
@@ -31,16 +32,25 @@ class GUI(QMainWindow):
         Minimum peak width expressed in ms. Default to None.
     """
 
-    def __init__(self, ecg_ch_name, peak_height_perc, peak_prominence,
-                 peak_width):
+    def __init__(
+            self,
+            ecg_ch_name: str,
+            peak_height_perc: float,
+            peak_prominence: Optional[float],
+            peak_width: Optional[float],
+            ):
         super().__init__()
 
         # define mp Queue
         self.queue = mp.Queue()
 
         # load configuration
-        self.load_config(ecg_ch_name, peak_height_perc, peak_prominence,
-                         peak_width)
+        self.load_config(
+            ecg_ch_name,
+            peak_height_perc,
+            peak_prominence,
+            peak_width,
+            )
 
         # load GUI
         self.load_ui()
@@ -57,8 +67,13 @@ class GUI(QMainWindow):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update)
 
-    def load_config(self, ecg_ch_name, peak_height_perc, peak_prominence,
-                    peak_width):
+    def load_config(
+            self,
+            ecg_ch_name: str,
+            peak_height_perc: float,
+            peak_prominence: Optional[float],
+            peak_width: Optional[float],
+            ):
         self.config = load_config()
         self.tdef = load_triggers()
         self.trigger = ParallelPortTrigger('/dev/parport0')
@@ -80,7 +95,7 @@ class GUI(QMainWindow):
                             ecg_ch_name, peak_height_perc, peak_prominence,
                             peak_width, self.queue),
             'isochronous': (self.trigger, self.tdef, None, None),
-            'asynchronous': (self.trigger, self.tdef, None, None)
+            'asynchronous': (self.trigger, self.tdef, None, None),
             }
 
     # -------------------------------------------------------------------------
@@ -162,7 +177,7 @@ class GUI(QMainWindow):
             else:
                 self.start_inter_block()
 
-    def start_new_block(self, first=False):
+    def start_new_block(self, first: bool = False):
         """Starts a new block. If this is the first block run, initialization
         correctly placed the initial 3 blocks. Else, we start by rolling the
         blocks. Arguments must be determined depending on the block played."""
@@ -285,10 +300,10 @@ class Block(QLabel):
         'synchronous': 'blue',
         'isochronous': 'red',
         'asynchronous': 'grey',
-        '': None
+        '': None,
         }
 
-    def __init__(self, parent, btype):
+    def __init__(self, parent: QWidget, btype: str):
         super().__init__(parent)
         assert btype in self.colors  # sanity-check
         self._btype = btype
@@ -310,7 +325,7 @@ class Block(QLabel):
         return self._btype
 
     @btype.setter
-    def btype(self, btype):
+    def btype(self, btype: str):
         assert btype in self.colors  # sanity-check
         self._btype = btype
         # Set text

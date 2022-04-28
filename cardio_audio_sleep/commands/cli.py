@@ -25,7 +25,7 @@ def input_peak_height_perc():
                 'between 0 and 100 (%).')
             attempt += 1
     else:
-        raise RuntimeError('Too many erroneous answer provided.')
+        raise RuntimeError('Too many erroneous answers provided.')
 
     return value
 
@@ -50,7 +50,7 @@ def input_peak_prominence():
                 'float.')
             attempt += 1
     else:
-        raise RuntimeError('Too many erroneous answer provided.')
+        raise RuntimeError('Too many erroneous answers provided.')
 
     return value
 
@@ -75,6 +75,6 @@ def input_peak_width():
                 'float.')
             attempt += 1
     else:
-        raise RuntimeError('Too many erroneous answer provided.')
+        raise RuntimeError('Too many erroneous answers provided.')
 
     return value

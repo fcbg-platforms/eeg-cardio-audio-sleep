@@ -9,9 +9,9 @@ from numpy.typing import ArrayLike
 from psychopy.clock import wait
 import psychtoolbox as ptb
 
+from . import logger
 from .utils._checks import (_check_type, _check_tdef, _check_sequence,
                             _check_sequence_timings)
-from .utils._logs import logger
 
 
 def synchronous(

@@ -5,6 +5,7 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from ._checks import _check_type
+from .. import logger
 
 
 def generate_async_timings(
@@ -54,6 +55,11 @@ def generate_async_timings(
     if valids.size == 0:  # should never happen
         return None, False
     valid = 100 * valids.size / (n-1) < valid_perc
+    if not valid:
+        logger.warning(
+            "Asynchronous timing sequence generation has dropped %s / %s "
+            "inter-stimulus delays, dropping below the %s threshold.",
+            valids.size, n-1, valid_perc)
     # generate sequence of 'n-1' valid inter-stimulus delays
     delays = np.random.choice(valids, size=n-1, replace=True)
     timings = np.zeros((n, ))

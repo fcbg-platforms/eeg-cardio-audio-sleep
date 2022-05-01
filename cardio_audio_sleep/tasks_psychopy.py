@@ -9,10 +9,10 @@ from psychopy.clock import wait
 from psychopy.sound.backend_ptb import SoundPTB as Sound
 import psychtoolbox as ptb
 
+from . import logger
 from .detector import Detector
 from .utils._checks import (_check_type, _check_tdef, _check_sequence,
                             _check_sequence_timings)
-from .utils._logs import logger
 
 
 def synchronous(

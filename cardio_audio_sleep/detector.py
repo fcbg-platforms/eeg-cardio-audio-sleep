@@ -8,8 +8,8 @@ from bsl.utils import Timer
 from mne.filter import filter_data
 from scipy.signal import find_peaks
 
-from . import logger
 from .utils._checks import _check_type, _check_value
+from .utils._logs import logger
 
 
 class Detector:

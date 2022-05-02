@@ -3,7 +3,7 @@ from typing import Optional
 
 import numpy as np
 import psutil
-from bsl.triggers import ParallelPortTrigger
+from bsl.triggers import MockTrigger, ParallelPortTrigger
 from PyQt5.QtCore import QRect, QSize, Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import QColor, QFont, QPalette
 from PyQt5.QtWidgets import QLabel, QMainWindow, QPushButton, QWidget
@@ -86,9 +86,12 @@ class GUI(QMainWindow):
         peak_prominence: Optional[float],
         peak_width: Optional[float],
     ):
-        self.config = load_config()
+        self.config, trigger_type = load_config()
         self.tdef = load_triggers()
-        self.trigger = ParallelPortTrigger("/dev/parport0")
+        if trigger_type == "lpt":
+            self.trigger = ParallelPortTrigger("/dev/parport0")
+        elif trigger_type == "mock":
+            self.trigger = MockTrigger()
         stream_name = search_ANT_amplifier()
 
         # Create task mapping

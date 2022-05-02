@@ -3,6 +3,8 @@ from pathlib import Path
 
 from bsl.triggers import TriggerDef
 
+from ..utils._checks import _check_value
+
 
 def load_triggers():
     """
@@ -48,17 +50,27 @@ def load_config():
     Returns
     -------
     config : dict
-
     """
     directory = Path(__file__).parent
     config = ConfigParser(inline_comment_prefixes=("#", ";"))
     config.optionxform = str
     config.read(str(directory / "config.ini"))
 
-    keys = ("block", "baseline", "synchronous", "isochronous", "asynchronous")
+    keys = (
+        "trigger",
+        "block",
+        "baseline",
+        "synchronous",
+        "isochronous",
+        "asynchronous",
+    )
     for key in keys:
         if not config.has_section(key):
             raise ValueError(f"Key '{key}' is missing from configuration.")
+
+    # Retrieve trigger type
+    trigger = config["trigger"]["type"]
+    _check_value(trigger, ("lpt", "mock"), "trigger")
 
     # Convert all to int
     block = {key: int(value) for key, value in dict(config["block"]).items()}
@@ -102,4 +114,4 @@ def load_config():
         "asynchronous": asynchronous,
     }
 
-    return config
+    return config, trigger

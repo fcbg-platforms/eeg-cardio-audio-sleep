@@ -4,8 +4,8 @@ import numpy as np
 from mne.preprocessing.bads import _find_outliers
 from numpy.typing import ArrayLike, NDArray
 
-from .. import logger
 from ._checks import _check_type
+from ._logs import logger
 
 
 def generate_async_timings(

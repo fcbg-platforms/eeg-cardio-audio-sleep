@@ -9,9 +9,9 @@ from matplotlib import pyplot as plt
 from matplotlib.widgets import Button, Slider
 from scipy.signal import find_peaks
 
-from . import logger
 from .utils import search_ANT_amplifier
 from .utils._checks import _check_type, _check_value
+from .utils._logs import logger
 
 
 def peak_detection_parameters_tuning(

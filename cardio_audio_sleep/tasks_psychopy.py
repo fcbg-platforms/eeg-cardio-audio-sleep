@@ -187,11 +187,11 @@ def isochronous(trigger, tdef, sequence: ArrayLike, delay: Union[int, float]):
         # trigger
         wait(scheduling_delay, hogCPUperiod=1)
         trigger.signal(sequence[counter])
+        logger.info("Sound %i/%i delivered.", counter + 1, len(sequence))
 
         # next
         wait(delay)
         counter += 1
-        logger.info("Sound %i/%i delivered.", counter, len(sequence))
 
     wait(1, hogCPUperiod=0)
     trigger.signal(tdef.iso_stop)
@@ -259,12 +259,12 @@ def asynchronous(
         # trigger
         wait(scheduling_delay, hogCPUperiod=1)
         trigger.signal(sequence[counter])
+        logger.info("Sound %i/%i delivered.", counter + 1, len(sequence))
 
         # next
         if counter != len(sequence) - 1:
             wait(delays[counter])
             counter += 1
-            logger.info("Sound %i/%i delivered.", counter, len(sequence))
         else:
             break  # no more delays since it was the last stimuli
 

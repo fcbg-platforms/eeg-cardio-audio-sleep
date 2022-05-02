@@ -1,5 +1,6 @@
 numpy
 scipy
+mne
 matplotlib
 bsl==0.4.0
 sounddevice  # required for non-psychopy sound package

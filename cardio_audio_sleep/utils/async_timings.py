@@ -10,7 +10,7 @@ from ._logs import logger
 
 def generate_async_timings(
     sequence_timings: ArrayLike,
-    zscore: float = 4.0,
+    zscore: float = 2.0,
     valid_perc: float = 60,
 ) -> Tuple[Optional[NDArray[float]], bool]:
     """
@@ -54,15 +54,17 @@ def generate_async_timings(
     n = len(sequence_timings)
     diff = np.diff(sequence_timings)
     outliers = _find_outliers(diff, threshold=zscore, max_iter=3)
-    valids = diff[~outliers]
+    mask = np.zeros(diff.size, dtype=bool)
+    mask[outliers] = True
+    valids = diff[~mask]
     if valids.size == 0:  # should never happen
         return None, False
-    valid = 100 * valids.size / (n - 1) < valid_perc
+    valid = valid_perc < 100 * valids.size / (n - 1)
     if not valid:
         logger.warning(
             "Asynchronous timing sequence generation has dropped %s / %s "
             "inter-stimulus delays, dropping below the %s threshold.",
-            valids.size,
+            n - 1 - valids.size,
             n - 1,
             valid_perc,
         )
@@ -70,5 +72,5 @@ def generate_async_timings(
     delays = np.random.choice(valids, size=n - 1, replace=True)
     timings = np.zeros((n,))
     for k, delay in enumerate(delays):
-        timings[k + 1] = timings[-1] + delay
+        timings[k + 1] = timings[k] + delay
     return timings, valid

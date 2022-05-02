@@ -1,18 +1,18 @@
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
-from mne.preprocessing.bads import _find_outliers
 import numpy as np
+from mne.preprocessing.bads import _find_outliers
 from numpy.typing import ArrayLike, NDArray
 
-from ._checks import _check_type
 from .. import logger
+from ._checks import _check_type
 
 
 def generate_async_timings(
-        sequence_timings: ArrayLike,
-        zscore: float = 4.0,
-        valid_perc: float = 60,
-        ) -> Tuple[Optional[NDArray[float]], bool]:
+    sequence_timings: ArrayLike,
+    zscore: float = 4.0,
+    valid_perc: float = 60,
+) -> Tuple[Optional[NDArray[float]], bool]:
     """
     Given the sequence of timings of a synchronous block, generate the sequence
     of timings for the future asynchronous block(s).
@@ -39,14 +39,17 @@ def generate_async_timings(
         True if the number of valid inter-stimulus delay is above the
         valid_perc threshold.
     """
-    _check_type(sequence_timings, (list, tuple, np.ndarray),
-                'sequence_timings')
-    _check_type(zscore, ('numeric', ), 'zscore')
-    _check_type(valid_perc, ('numeric', ), 'valid_perc')
+    _check_type(
+        sequence_timings, (list, tuple, np.ndarray), "sequence_timings"
+    )
+    _check_type(zscore, ("numeric",), "zscore")
+    _check_type(valid_perc, ("numeric",), "valid_perc")
     if valid_perc < 0 or 100 < valid_perc:
-        raise ValueError("Argument 'valid_perc' should represent a percentage "
-                         f"between 0 and 100. Provided '{valid_perc}'% is not "
-                         "valid.")
+        raise ValueError(
+            "Argument 'valid_perc' should represent a percentage "
+            f"between 0 and 100. Provided '{valid_perc}'% is not "
+            "valid."
+        )
 
     n = len(sequence_timings)
     diff = np.diff(sequence_timings)
@@ -54,15 +57,18 @@ def generate_async_timings(
     valids = diff[~outliers]
     if valids.size == 0:  # should never happen
         return None, False
-    valid = 100 * valids.size / (n-1) < valid_perc
+    valid = 100 * valids.size / (n - 1) < valid_perc
     if not valid:
         logger.warning(
             "Asynchronous timing sequence generation has dropped %s / %s "
             "inter-stimulus delays, dropping below the %s threshold.",
-            valids.size, n-1, valid_perc)
+            valids.size,
+            n - 1,
+            valid_perc,
+        )
     # generate sequence of 'n-1' valid inter-stimulus delays
-    delays = np.random.choice(valids, size=n-1, replace=True)
-    timings = np.zeros((n, ))
+    delays = np.random.choice(valids, size=n - 1, replace=True)
+    timings = np.zeros((n,))
     for k, delay in enumerate(delays):
-        timings[k+1] = timings[-1] + delay
+        timings[k + 1] = timings[-1] + delay
     return timings, valid

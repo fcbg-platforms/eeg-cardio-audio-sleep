@@ -1,20 +1,23 @@
-from bsl.triggers import ParallelPortTrigger
 import numpy as np
+from bsl.triggers import ParallelPortTrigger
 
 from cardio_audio_sleep.config import load_triggers
-from cardio_audio_sleep.tasks import (synchronous, isochronous, asynchronous,
-                                      baseline)
-from cardio_audio_sleep.utils import search_ANT_amplifier, generate_sequence
-
+from cardio_audio_sleep.tasks import (
+    asynchronous,
+    baseline,
+    isochronous,
+    synchronous,
+)
+from cardio_audio_sleep.utils import generate_sequence, search_ANT_amplifier
 
 #%% Triggers
-trigger = ParallelPortTrigger('/dev/parport0')
+trigger = ParallelPortTrigger("/dev/parport0")
 tdef = load_triggers()
 
 
 #%% LSL Streams
 stream_name = search_ANT_amplifier()
-ecg_ch_name = 'AUX7'
+ecg_ch_name = "AUX7"
 
 
 #%% Synchronous
@@ -27,8 +30,15 @@ peak_width = None  # ms | None
 sequence = generate_sequence(100, 0, 10, tdef)
 # Task
 sequence_timings = synchronous(
-    trigger, tdef, sequence, stream_name, ecg_ch_name,
-    peak_height_perc, peak_prominence, peak_width)
+    trigger,
+    tdef,
+    sequence,
+    stream_name,
+    ecg_ch_name,
+    peak_height_perc,
+    peak_prominence,
+    peak_width,
+)
 
 
 #%% Isochronous

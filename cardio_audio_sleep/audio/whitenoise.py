@@ -4,8 +4,8 @@ White Noise sound.
 
 import numpy as np
 
-from ._sound import _Sound
 from ..utils._docs import fill_doc
+from ._sound import _Sound
 
 
 @fill_doc
@@ -22,7 +22,7 @@ class WhiteNoise(_Sound):
 
     def __init__(self, volume, sample_rate=44100, duration=0.1):
         self._rng = np.random.default_rng()
-        self.name = 'whitenoise'
+        self.name = "whitenoise"
         super().__init__(volume, sample_rate, duration)
 
     def _set_signal(self):
@@ -30,7 +30,7 @@ class WhiteNoise(_Sound):
         Sets the signal to output.
         """
         # mean: 0, sigma: 0.33
-        wn_arr = self._rng.normal(loc=0, scale=1/3, size=self._time_arr.size)
+        wn_arr = self._rng.normal(loc=0, scale=1 / 3, size=self._time_arr.size)
 
         self._signal[:, 0] = wn_arr * 0.1 * self._volume[0] / 100
         if len(self._volume) == 2:

@@ -5,21 +5,26 @@ Inspired from mne.utils.docs.py by Eric Larson <larson.eric.d@gmail.com>
 """
 import sys
 
-
 # ------------------------- Documentation dictionary -------------------------
 docdict = dict()
 
 # ----------------------------------- audio ----------------------------------
-docdict['audio_volume'] = """
+docdict[
+    "audio_volume"
+] = """
 volume : list | int | float
     If an int or a float is provided, the sound will use only one channel
     (mono). If a 2-length sequence is provided, the sound will use 2
     channels (stereo). Volume of each channel is given between 0 and 100.
     For stereo, the volume is given as [L, R]."""
-docdict['audio_sample_rate'] = """
+docdict[
+    "audio_sample_rate"
+] = """
 sample_rate : int
     Sampling frequency of the sound. The default is 44100 kHz."""
-docdict['audio_duration'] = """
+docdict[
+    "audio_duration"
+] = """
 duration : float
     Duration of the sound. The default is 0.1 second."""
 
@@ -51,21 +56,22 @@ def fill_doc(f):
     try:
         indented = docdict_indented[indent_count]
     except KeyError:
-        indent = ' ' * indent_count
+        indent = " " * indent_count
         docdict_indented[indent_count] = indented = dict()
 
         for name, docstr in docdict.items():
-            lines = [indent + line if k != 0 else line
-                     for k, line in enumerate(docstr.strip().splitlines())]
-            indented[name] = '\n'.join(lines)
+            lines = [
+                indent + line if k != 0 else line
+                for k, line in enumerate(docstr.strip().splitlines())
+            ]
+            indented[name] = "\n".join(lines)
 
     try:
         f.__doc__ = docstring % indented
     except (TypeError, ValueError, KeyError) as exp:
         funcname = f.__name__
-        funcname = docstring.split('\n')[0] if funcname is None else funcname
-        raise RuntimeError('Error documenting %s:\n%s'
-                           % (funcname, str(exp)))
+        funcname = docstring.split("\n")[0] if funcname is None else funcname
+        raise RuntimeError("Error documenting %s:\n%s" % (funcname, str(exp)))
 
     return f
 
@@ -130,12 +136,14 @@ def copy_doc(source):
     >>> print(B.m1.__doc__)
     Docstring for m1 this gets appended
     """
+
     def wrapper(func):
         if source.__doc__ is None or len(source.__doc__) == 0:
-            raise ValueError('Cannot copy docstring: docstring was empty.')
+            raise ValueError("Cannot copy docstring: docstring was empty.")
         doc = source.__doc__
         if func.__doc__ is not None:
             doc += func.__doc__
         func.__doc__ = doc
         return func
+
     return wrapper

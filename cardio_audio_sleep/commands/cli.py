@@ -21,24 +21,27 @@ def input_peak_height_perc():
             break
         except Exception:
             logger.warning(
-                'The peak height percentage parameter must be a float '
-                'between 0 and 100 (%).')
+                "The peak height percentage parameter must be a float "
+                "between 0 and 100 (%)."
+            )
             attempt += 1
     else:
-        raise RuntimeError('Too many erroneous answers provided.')
+        raise RuntimeError("Too many erroneous answers provided.")
 
     return value
 
 
 def input_peak_prominence():
     """Input function for peak detection settings prominence."""
-    msg = "[IN] Input the peak prominence parameter (use None to disable):" + \
-        "\n>>> "
+    msg = (
+        "[IN] Input the peak prominence parameter (use None to disable):"
+        + "\n>>> "
+    )
     attempt = 1
     while attempt <= RETRIES:
         try:
             value = input(msg)
-            if value.lower().strip() == 'none':
+            if value.lower().strip() == "none":
                 return None
             else:
                 value = float(value.strip())
@@ -46,24 +49,26 @@ def input_peak_prominence():
                 break
         except Exception:
             logger.warning(
-                'The peak prominence parameter must be a strictly positive '
-                'float.')
+                "The peak prominence parameter must be a strictly positive "
+                "float."
+            )
             attempt += 1
     else:
-        raise RuntimeError('Too many erroneous answers provided.')
+        raise RuntimeError("Too many erroneous answers provided.")
 
     return value
 
 
 def input_peak_width():
     """Input function for peak detection settings width."""
-    msg = "[IN] Input the peak width parameter (use None to disable):" + \
-        "\n>>> "
+    msg = (
+        "[IN] Input the peak width parameter (use None to disable):" + "\n>>> "
+    )
     attempt = 1
     while attempt <= RETRIES:
         try:
             value = input(msg)
-            if value.lower().strip() == 'none':
+            if value.lower().strip() == "none":
                 return None
             else:
                 value = float(value.strip())
@@ -71,10 +76,11 @@ def input_peak_width():
                 break
         except Exception:
             logger.warning(
-                'The peak width parameter must be a strictly positive '
-                'float.')
+                "The peak width parameter must be a strictly positive "
+                "float."
+            )
             attempt += 1
     else:
-        raise RuntimeError('Too many erroneous answers provided.')
+        raise RuntimeError("Too many erroneous answers provided.")
 
     return value

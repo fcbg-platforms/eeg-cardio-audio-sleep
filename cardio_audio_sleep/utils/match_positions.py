@@ -25,15 +25,16 @@ def match_positions(x: ArrayLike, y: ArrayLike, threshold: int):
     idy : array
         Indices from positions in Y close to a position in X.
     """
-    _check_type(x, (list, tuple, np.ndarray), 'x')
-    _check_type(y, (list, tuple, np.ndarray), 'y')
-    _check_type(threshold, ('int', ), 'threshold')
+    _check_type(x, (list, tuple, np.ndarray), "x")
+    _check_type(y, (list, tuple, np.ndarray), "y")
+    _check_type(threshold, ("int",), "threshold")
     x = np.array(x)
     y = np.array(y)
     if threshold <= 0:
         raise ValueError(
             "Argument 'threshold' must be a strictly positive integer. "
-            f"Provided: '{threshold}'.")
+            f"Provided: '{threshold}'."
+        )
 
     d = np.repeat(x, y.shape[0]).reshape(x.shape[0], y.shape[0])
     d -= y

@@ -4,9 +4,9 @@ Pure tone sound.
 
 import numpy as np
 
-from ._sound import _Sound
-from ..utils._docs import fill_doc
 from ..utils._checks import _check_type
+from ..utils._docs import fill_doc
+from ._sound import _Sound
 
 
 @fill_doc
@@ -28,14 +28,14 @@ class Tone(_Sound):
 
     def __init__(self, volume, sample_rate=44100, duration=0.1, frequency=440):
         self._frequency = Tone._check_frequency(frequency)
-        self.name = 'tone'
+        self.name = "tone"
         super().__init__(volume, sample_rate, duration)
 
     def _set_signal(self):
         """
         Sets the signal to output.
         """
-        tone_arr = np.sin(2*np.pi*self._frequency*self._time_arr)
+        tone_arr = np.sin(2 * np.pi * self._frequency * self._time_arr)
 
         self._signal[:, 0] = tone_arr * self._volume[0] / 100
         if len(self._volume) == 2:
@@ -47,7 +47,7 @@ class Tone(_Sound):
         """
         Checks if the frequency is positive.
         """
-        _check_type(frequency, ('numeric', ), item_name='frequency')
+        _check_type(frequency, ("numeric",), item_name="frequency")
         assert 0 < frequency
         return frequency
 

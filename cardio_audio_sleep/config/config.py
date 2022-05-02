@@ -16,25 +16,27 @@ def load_triggers():
         baseline_stop, pause and resume.
     """
     directory = Path(__file__).parent
-    tdef = TriggerDef(directory / 'triggers.ini')
+    tdef = TriggerDef(directory / "triggers.ini")
 
     keys = (
-        'sound',
-        'omission',
-        'sync_start',
-        'sync_stop',
-        'iso_start',
-        'iso_stop',
-        'async_start',
-        'async_stop',
-        'baseline_start',
-        'baseline_stop',
-        'pause',
-        'resume')
+        "sound",
+        "omission",
+        "sync_start",
+        "sync_stop",
+        "iso_start",
+        "iso_stop",
+        "async_start",
+        "async_stop",
+        "baseline_start",
+        "baseline_stop",
+        "pause",
+        "resume",
+    )
     for key in keys:
         if not hasattr(tdef, key):
             raise ValueError(
-                f"Key '{key}' is missing from trigger definition.")
+                f"Key '{key}' is missing from trigger definition."
+            )
 
     return tdef
 
@@ -49,55 +51,55 @@ def load_config():
 
     """
     directory = Path(__file__).parent
-    config = ConfigParser(inline_comment_prefixes=('#', ';'))
+    config = ConfigParser(inline_comment_prefixes=("#", ";"))
     config.optionxform = str
-    config.read(str(directory / 'config.ini'))
+    config.read(str(directory / "config.ini"))
 
-    keys = (
-        'block',
-        'baseline',
-        'synchronous',
-        'isochronous',
-        'asynchronous'
-        )
+    keys = ("block", "baseline", "synchronous", "isochronous", "asynchronous")
     for key in keys:
         if not config.has_section(key):
-            raise ValueError(
-                f"Key '{key}' is missing from configuration.")
+            raise ValueError(f"Key '{key}' is missing from configuration.")
 
     # Convert all to int
-    block = {key: int(value)
-             for key, value in dict(config['block']).items()}
-    baseline = {key: int(value)
-                for key, value in dict(config['baseline']).items()}
-    synchronous = {key: int(value)
-                   for key, value in dict(config['synchronous']).items()}
-    isochronous = {key: int(value)
-                   for key, value in dict(config['isochronous']).items()}
-    asynchronous = {key: int(value)
-                    for key, value in dict(config['asynchronous']).items()}
+    block = {key: int(value) for key, value in dict(config["block"]).items()}
+    baseline = {
+        key: int(value) for key, value in dict(config["baseline"]).items()
+    }
+    synchronous = {
+        key: int(value) for key, value in dict(config["synchronous"]).items()
+    }
+    isochronous = {
+        key: int(value) for key, value in dict(config["isochronous"]).items()
+    }
+    asynchronous = {
+        key: int(value) for key, value in dict(config["asynchronous"]).items()
+    }
 
     # Check keys
-    assert 'inter_block' in block
-    assert 'duration' in baseline
-    assert all(key in synchronous
-               for key in ('n_stimuli', 'n_omissions', 'edge_perc'))
-    assert all(key in isochronous
-               for key in ('n_stimuli', 'n_omissions', 'edge_perc'))
-    assert all(key in asynchronous
-               for key in ('n_stimuli', 'n_omissions', 'edge_perc'))
+    assert "inter_block" in block
+    assert "duration" in baseline
+    assert all(
+        key in synchronous for key in ("n_stimuli", "n_omissions", "edge_perc")
+    )
+    assert all(
+        key in isochronous for key in ("n_stimuli", "n_omissions", "edge_perc")
+    )
+    assert all(
+        key in asynchronous
+        for key in ("n_stimuli", "n_omissions", "edge_perc")
+    )
 
     # Overwrite edge_perc with float
-    synchronous['edge_perc'] = config['synchronous'].getfloat('edge_perc')
-    isochronous['edge_perc'] = config['isochronous'].getfloat('edge_perc')
-    asynchronous['edge_perc'] = config['asynchronous'].getfloat('edge_perc')
+    synchronous["edge_perc"] = config["synchronous"].getfloat("edge_perc")
+    isochronous["edge_perc"] = config["isochronous"].getfloat("edge_perc")
+    asynchronous["edge_perc"] = config["asynchronous"].getfloat("edge_perc")
 
     config = {
-        'block': block,
-        'baseline': baseline,
-        'synchronous': synchronous,
-        'isochronous': isochronous,
-        'asynchronous': asynchronous
-        }
+        "block": block,
+        "baseline": baseline,
+        "synchronous": synchronous,
+        "isochronous": isochronous,
+        "asynchronous": asynchronous,
+    }
 
     return config

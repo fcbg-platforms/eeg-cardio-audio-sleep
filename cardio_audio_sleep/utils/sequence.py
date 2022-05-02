@@ -1,6 +1,6 @@
-from itertools import groupby
 import math
 import random
+from itertools import groupby
 from typing import Union
 
 import numpy as np
@@ -11,13 +11,13 @@ from ._logs import logger
 
 
 def generate_sequence(
-        size: int,
-        omissions: int,
-        edge_perc: Union[int, float],
-        tdef,
-        max_iter: int = 500,
-        on_diverge: str = 'warn',
-        ) -> NDArray[int]:
+    size: int,
+    omissions: int,
+    edge_perc: Union[int, float],
+    tdef,
+    max_iter: int = 500,
+    on_diverge: str = "warn",
+) -> NDArray[int]:
     """
     Creates a valid sequence.
     - 300 sounds / block
@@ -46,27 +46,31 @@ def generate_sequence(
         RuntimeError when the randomization does not converge within the
         maximum number of iteration allowed.
     """
-    _check_type(size, ('int', ), 'size')
-    _check_type(omissions, ('int', ), 'omissions')
-    _check_type(edge_perc, ('numeric', ), 'edge_perc')
-    _check_type(max_iter, ('int', ), 'max_iter')
-    _check_value(on_diverge, ('warn', 'raise'), 'on_diverge')
+    _check_type(size, ("int",), "size")
+    _check_type(omissions, ("int",), "omissions")
+    _check_type(edge_perc, ("numeric",), "edge_perc")
+    _check_type(max_iter, ("int",), "max_iter")
+    _check_value(on_diverge, ("warn", "raise"), "on_diverge")
     if size <= 0:
         raise ValueError(
             "Argument 'size' must be a strictly positive integer. "
-            f"Provided: '{size}'.")
+            f"Provided: '{size}'."
+        )
     if omissions < 0:
         raise ValueError(
             "Argument 'omissions' must be a strictly positive integer. "
-            f"Provided: '{omissions}'.")
+            f"Provided: '{omissions}'."
+        )
     if not (0 <= edge_perc <= 100):
         raise ValueError(
             "Argument 'edge_perc' must be a valid percentage between 0 and "
-            f"100. Provided {edge_perc}%.")
+            f"100. Provided {edge_perc}%."
+        )
     if max_iter <= 0:
         raise ValueError(
             "Argument 'max_iter' must be a strictly positive integer. "
-            f"Provided: '{max_iter}'.")
+            f"Provided: '{max_iter}'."
+        )
 
     n_edge = math.ceil(edge_perc * size / 100)
     start = [tdef.sound] * n_edge
@@ -78,14 +82,15 @@ def generate_sequence(
     while True:
         groups = [(n, list(group)) for n, group in groupby(middle)]
 
-        if all(len(group[1]) == 1
-               for group in groups if group[0] == tdef.omission):
+        if all(
+            len(group[1]) == 1 for group in groups if group[0] == tdef.omission
+        ):
             converged = True
             break
 
         if max_iter < iter_:
             msg = "Randomize sequence generation could not converge."
-            if on_diverge == 'warn':
+            if on_diverge == "warn":
                 logger.warning(msg)
                 converged = False
             else:
@@ -97,19 +102,24 @@ def generate_sequence(
                 continue
 
             # find the longest group of TRIGGERS['sound']
-            idx = np.argmax([len(g) if n == tdef.sound else 0
-                             for n, g in groups])
-            pos_sound = sum(len(g) for k, (_, g) in enumerate(groups)
-                            if k < idx)
+            idx = np.argmax(
+                [len(g) if n == tdef.sound else 0 for n, g in groups]
+            )
+            pos_sound = sum(
+                len(g) for k, (_, g) in enumerate(groups) if k < idx
+            )
             pos_sound = pos_sound + len(groups[idx][1]) // 2  # center
 
             # find position of current group
-            pos_omission = sum(len(g) for k, (_, g) in enumerate(groups)
-                               if k < i)
+            pos_omission = sum(
+                len(g) for k, (_, g) in enumerate(groups) if k < i
+            )
 
             # swap first element from omissions with center of group of sounds
-            middle[pos_sound], middle[pos_omission] = \
-                middle[pos_omission], middle[pos_sound]
+            middle[pos_sound], middle[pos_omission] = (
+                middle[pos_omission],
+                middle[pos_sound],
+            )
 
             break
 
@@ -117,10 +127,13 @@ def generate_sequence(
 
     # sanity-check
     if converged:
-        assert all(len(group) == 1
-                   for n, group in groups if n == tdef.omission)
-        assert not any(middle[i-1] == middle[i] == tdef.omission
-                       for i in range(1, len(middle)))
+        assert all(
+            len(group) == 1 for n, group in groups if n == tdef.omission
+        )
+        assert not any(
+            middle[i - 1] == middle[i] == tdef.omission
+            for i in range(1, len(middle))
+        )
 
     end = [tdef.sound] * n_edge
     return np.array(start + middle + end)

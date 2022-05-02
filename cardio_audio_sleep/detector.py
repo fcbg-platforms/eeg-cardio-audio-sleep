@@ -1,11 +1,11 @@
 import math
-from typing import Union, Optional
+from typing import Optional, Union
 
+import numpy as np
+import psychtoolbox as ptb
 from bsl import StreamReceiver
 from bsl.utils import Timer
 from mne.filter import filter_data
-import numpy as np
-import psychtoolbox as ptb
 from scipy.signal import find_peaks
 
 from . import logger
@@ -35,47 +35,57 @@ class Detector:
     """
 
     def __init__(
-            self,
-            stream_name: str,
-            ecg_ch_name: str,
-            duration_buffer: float = 4.,
-            peak_height_perc: float = 98.,
-            peak_prominence: Optional[float] = 20.,
-            peak_width: Optional[float] = None,
-            ):
+        self,
+        stream_name: str,
+        ecg_ch_name: str,
+        duration_buffer: float = 4.0,
+        peak_height_perc: float = 98.0,
+        peak_prominence: Optional[float] = 20.0,
+        peak_width: Optional[float] = None,
+    ):
         # Check arguments and create StreamReceiver
         self._peak_height_perc = Detector._check_peak_height_perc(
-            peak_height_perc)
+            peak_height_perc
+        )
         self._peak_width = Detector._check_peak_width(peak_width)
         self._peak_prominence = Detector._check_peak_prominence(
-            peak_prominence)
-        _check_type(stream_name, (str, ), item_name='stream_name')
-        _check_type(ecg_ch_name, (str, ), item_name='ecg_ch_name')
-        _check_type(duration_buffer, ('numeric', ),
-                    item_name='duration_buffer')
+            peak_prominence
+        )
+        _check_type(stream_name, (str,), item_name="stream_name")
+        _check_type(ecg_ch_name, (str,), item_name="ecg_ch_name")
+        _check_type(duration_buffer, ("numeric",), item_name="duration_buffer")
         if duration_buffer <= 0.2:
             raise ValueError(
                 "Argument 'duration_buffer' must be strictly larger than 0.2. "
-                f"Provided: '{duration_buffer}' seconds.")
-        self._sr = StreamReceiver(bufsize=0.2, winsize=0.2,
-                                  stream_name=stream_name)
+                f"Provided: '{duration_buffer}' seconds."
+            )
+        self._sr = StreamReceiver(
+            bufsize=0.2, winsize=0.2, stream_name=stream_name
+        )
         if len(self._sr.streams) == 0:
             raise ValueError(
-                'The StreamReceiver did not connect to any streams.')
+                "The StreamReceiver did not connect to any streams."
+            )
         self._stream_name = stream_name
-        _check_value(ecg_ch_name, self._sr.streams[stream_name].ch_list,
-                     item_name='ecg_ch_name')
+        _check_value(
+            ecg_ch_name,
+            self._sr.streams[stream_name].ch_list,
+            item_name="ecg_ch_name",
+        )
 
         # Infos from stream
         self._sample_rate = int(
-            self._sr.streams[self._stream_name].sample_rate)
-        self._ecg_channel_idx = \
-            self._sr.streams[self._stream_name].ch_list.index(ecg_ch_name)
+            self._sr.streams[self._stream_name].sample_rate
+        )
+        self._ecg_channel_idx = self._sr.streams[
+            self._stream_name
+        ].ch_list.index(ecg_ch_name)
 
         # Variables
         self._duration_buffer = float(duration_buffer)
         self._duration_buffer_samples = math.ceil(
-            self._duration_buffer*self._sample_rate)
+            self._duration_buffer * self._sample_rate
+        )
 
         # Buffers
         self._timestamps_buffer = np.zeros(self._duration_buffer_samples)
@@ -84,19 +94,23 @@ class Detector:
         # R-Peak detectors
         self._last_peak = None
         self._peak_width_samples = Detector._convert_peak_width_to_samples(
-            self._peak_width, self._sample_rate)
-        logger.info('R-peak detector with sample rate %s Hz initialized.',
-                    self._sample_rate)
+            self._peak_width, self._sample_rate
+        )
+        logger.info(
+            "R-peak detector with sample rate %s Hz initialized.",
+            self._sample_rate,
+        )
 
     def prefill_buffer(self):
         """Prefill an entire buffer before starting to avoid any
         discontinuities in the ECG buffer."""
-        logger.info('Filling an entire buffer of %s seconds..',
-                    self._duration_buffer)
+        logger.info(
+            "Filling an entire buffer of %s seconds..", self._duration_buffer
+        )
         timer = Timer()
         while timer.sec() <= self._duration_buffer:
             self.update_loop()
-        logger.info('Buffer pre-filled, ready to start!')
+        logger.info("Buffer pre-filled, ready to start!")
 
     def update_loop(self):
         """
@@ -112,9 +126,11 @@ class Detector:
 
         # generate timestamps from local clock
         now = ptb.GetSecs()
-        times = np.arange(now - (n - 1) / self._sample_rate,
-                          now + 1 / self._sample_rate,
-                          1 / self._sample_rate)
+        times = np.arange(
+            now - (n - 1) / self._sample_rate,
+            now + 1 / self._sample_rate,
+            1 / self._sample_rate,
+        )
 
         # shape (samples, )
         self._ecg_buffer = np.roll(self._ecg_buffer, -n)
@@ -137,15 +153,17 @@ class Detector:
         if self._last_peak is not None:
             if self._timestamps_buffer[peak] - self._last_peak <= 0.25:
                 logger.debug(
-                    'Skipping peak. Found: %.2f - Last: %.2f - Δ: %.2f',
-                    self._timestamps_buffer[peak], self._last_peak,
-                    self._timestamps_buffer[peak] - self._last_peak)
+                    "Skipping peak. Found: %.2f - Last: %.2f - Δ: %.2f",
+                    self._timestamps_buffer[peak],
+                    self._last_peak,
+                    self._timestamps_buffer[peak] - self._last_peak,
+                )
                 return None
             self._last_peak = self._timestamps_buffer[peak]
 
         # skip first peak
         else:
-            logger.debug('First peak found. Skipping.')
+            logger.debug("First peak found. Skipping.")
             self._last_peak = self._timestamps_buffer[peak]
             return None
 
@@ -154,7 +172,8 @@ class Detector:
             "R-Peak has entered the buffer:\n"
             "Δ buffer-peak: %.4f\n"
             "--------------------------------------\n",
-            self._timestamps_buffer[-1] - self._timestamps_buffer[peak])
+            self._timestamps_buffer[-1] - self._timestamps_buffer[peak],
+        )
 
         return peak
 
@@ -169,7 +188,8 @@ class Detector:
             data,
             height=np.percentile(data, self._peak_height_perc),
             width=self._peak_width_samples,
-            prominence=self._peak_prominence)
+            prominence=self._peak_prominence,
+        )
 
         return peaks
 
@@ -197,8 +217,9 @@ class Detector:
             - Data: 2048 Hz - 8192 samples
               18.3 ms ± 102 µs per loop
         """
-        return filter_data(self._ecg_buffer, self._sample_rate, 1., 15.,
-                           phase='zero')
+        return filter_data(
+            self._ecg_buffer, self._sample_rate, 1.0, 15.0, phase="zero"
+        )
 
     def detrend_data(self):
         """
@@ -282,28 +303,32 @@ class Detector:
     @staticmethod
     def _check_peak_height_perc(peak_height_perc: Union[int, float]):
         """Checks argument 'peak_height_perc'."""
-        _check_type(peak_height_perc, ('numeric', ),
-                    item_name='peak_height_perc')
+        _check_type(
+            peak_height_perc, ("numeric",), item_name="peak_height_perc"
+        )
         if peak_height_perc <= 0:
             raise ValueError(
                 "Argument 'peak_height_perc' must be a strictly positive "
-                f"number. Provided: '{peak_height_perc}%'.")
+                f"number. Provided: '{peak_height_perc}%'."
+            )
         if 100 <= peak_height_perc:
             raise ValueError(
                 "Argument 'peak_height_perc' must be a percentage between "
-                f"0 and 100 excluded. Provided '{peak_height_perc}%'.")
+                f"0 and 100 excluded. Provided '{peak_height_perc}%'."
+            )
         return float(peak_height_perc)
 
     @staticmethod
     def _check_peak_width(peak_width: Optional[Union[int, float]]):
         """Checks argument 'peak_width'."""
-        _check_type(peak_width, ('numeric', None), item_name='peak_width')
+        _check_type(peak_width, ("numeric", None), item_name="peak_width")
         if peak_width is None:
             return None
         if peak_width <= 0:
             raise ValueError(
                 "Argument 'peak_width' must be a strictly positive "
-                f"number. Provided: '{peak_width}%'.")
+                f"number. Provided: '{peak_width}%'."
+            )
         return float(peak_width)
 
     @staticmethod
@@ -317,12 +342,14 @@ class Detector:
     @staticmethod
     def _check_peak_prominence(peak_prominence: Optional[Union[int, float]]):
         """Checks argument 'peak_prominence'."""
-        _check_type(peak_prominence, ('numeric', None),
-                    item_name='peak_prominence')
+        _check_type(
+            peak_prominence, ("numeric", None), item_name="peak_prominence"
+        )
         if peak_prominence is None:
             return None
         if peak_prominence <= 0:
             raise ValueError(
                 "Argument 'peak_prominence' must be a strictly positive "
-                f"number. Provided: '{peak_prominence}'.")
+                f"number. Provided: '{peak_prominence}'."
+            )
         return float(peak_prominence)

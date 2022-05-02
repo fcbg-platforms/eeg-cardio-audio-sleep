@@ -6,8 +6,8 @@ from pathlib import Path
 from scipy.io import wavfile
 from scipy.signal import resample
 
-from ._sound import _Sound
 from ..utils._checks import _check_type
+from ._sound import _Sound
 
 
 class Sound(_Sound):
@@ -25,24 +25,29 @@ class Sound(_Sound):
 
         _original_sample_rate, _original_signal = wavfile.read(self._fname)
         self._original_sample_rate = _Sound._check_sample_rate(
-            _original_sample_rate)
+            _original_sample_rate
+        )
         self._original_signal = Sound._check_signal(_original_signal)
         self._original_duration = Sound._compute_duration(
-            self._original_signal, self._original_sample_rate)
+            self._original_signal, self._original_sample_rate
+        )
 
         _volume = Sound._compute_volume(self._original_signal)
         self._trim_samples = None
         super().__init__(
-            _volume, self._original_sample_rate, self._original_duration)
+            _volume, self._original_sample_rate, self._original_duration
+        )
 
     def _set_signal(self):
         """
         Sets the signal to output.
         """
         assert len(self._signal.shape) in (1, 2)
-        slc = slice(None, self._trim_samples) \
-            if len(self._original_signal.shape) == 1 \
+        slc = (
+            slice(None, self._trim_samples)
+            if len(self._original_signal.shape) == 1
             else (slice(None, self._trim_samples), slice(None))
+        )
         self._signal = self._original_signal[slc]
 
     def trim(self, duration):
@@ -60,7 +65,8 @@ class Sound(_Sound):
         """
         self._sample_rate = _Sound._check_sample_rate(sample_rate)
         self._signal = resample(
-            self._signal, int(self._sample_rate * self._duration), axis=0)
+            self._signal, int(self._sample_rate * self._duration), axis=0
+        )
 
     def reset(self):
         """
@@ -77,9 +83,9 @@ class Sound(_Sound):
         """
         Cheks if the file is supported and exists.
         """
-        SUPPORTED = ('.wav')
+        SUPPORTED = ".wav"
 
-        _check_type(fname, ('path-like', ))
+        _check_type(fname, ("path-like",))
         fname = Path(fname)
         assert fname.suffix in SUPPORTED and fname.exists()
         return fname

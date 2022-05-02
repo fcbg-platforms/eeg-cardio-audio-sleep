@@ -2,29 +2,33 @@
 
 import datetime
 from multiprocessing import Queue
-from typing import Union, Optional
+from typing import Optional, Union
 
 import numpy as np
+import psychtoolbox as ptb
 from numpy.typing import ArrayLike
 from psychopy.clock import wait
-import psychtoolbox as ptb
 
 from . import logger
-from .utils._checks import (_check_type, _check_tdef, _check_sequence,
-                            _check_sequence_timings)
+from .utils._checks import (
+    _check_sequence,
+    _check_sequence_timings,
+    _check_tdef,
+    _check_type,
+)
 
 
 def synchronous(
-        trigger,
-        tdef,
-        sequence: ArrayLike,
-        stream_name: str,
-        ecg_ch_name: str,
-        peak_height_perc: Union[int, float],
-        peak_prominence: Optional[Union[int, float]],
-        peak_width: Optional[Union[int, float]],
-        queue: Optional[Queue] = None,
-        ) -> list:
+    trigger,
+    tdef,
+    sequence: ArrayLike,
+    stream_name: str,
+    ecg_ch_name: str,
+    peak_height_perc: Union[int, float],
+    peak_prominence: Optional[Union[int, float]],
+    peak_width: Optional[Union[int, float]],
+    queue: Optional[Queue] = None,
+) -> list:
     """
     Synchronous block where sounds are sync to the heartbeat.
 
@@ -72,9 +76,13 @@ def synchronous(
 
     # Create peak detector
     detector = Detector(
-        stream_name, ecg_ch_name, duration_buffer=4,
-        peak_height_perc=peak_height_perc, peak_prominence=peak_prominence,
-        peak_width=peak_width)
+        stream_name,
+        ecg_ch_name,
+        duration_buffer=4,
+        peak_height_perc=peak_height_perc,
+        peak_prominence=peak_prominence,
+        peak_width=peak_width,
+    )
     detector.prefill_buffer()
 
     # Create counter/timers
@@ -101,7 +109,7 @@ def synchronous(
             # next
             sequence_timings.append(detector.timestamps_buffer[pos])
             counter += 1
-            logger.info('Sound %i/%i delivered.', counter, len(sequence))
+            logger.info("Sound %i/%i delivered.", counter, len(sequence))
             # wait for sound to be delivered before updating again
             # and give CPU time to other processes
             wait(0.1, hogCPUperiod=0)
@@ -115,12 +123,7 @@ def synchronous(
     return sequence_timings
 
 
-def isochronous(
-        trigger,
-        tdef,
-        sequence: ArrayLike,
-        delay: Union[int, float]
-        ):
+def isochronous(trigger, tdef, sequence: ArrayLike, delay: Union[int, float]):
     """
     Isochronous block where sounds are delivered at a fix interval.
 
@@ -147,11 +150,12 @@ def isochronous(
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
-    _check_type(delay, ('numeric', ), 'delay')
+    _check_type(delay, ("numeric",), "delay")
     if delay <= 0:
         raise ValueError(
             "Argument 'delay' should be a strictly positive number. "
-            f"Provided: '{delay}' seconds.")
+            f"Provided: '{delay}' seconds."
+        )
     assert sound.duration < delay  # sanity-check
 
     # Create counter
@@ -172,18 +176,15 @@ def isochronous(
         # next
         wait(delay - stim_delay)
         counter += 1
-        logger.info('Sound %i/%i delivered.', counter, len(sequence))
+        logger.info("Sound %i/%i delivered.", counter, len(sequence))
 
     wait(1, hogCPUperiod=0)
     trigger.signal(tdef.iso_stop)
 
 
 def asynchronous(
-        trigger,
-        tdef,
-        sequence: ArrayLike,
-        sequence_timings: ArrayLike
-        ):
+    trigger, tdef, sequence: ArrayLike, sequence_timings: ArrayLike
+):
     """
     Asynchronous block where sounds repeat a sequence from a synchronous task.
     Omissions are randomized (compared to the synchronous task they are
@@ -213,8 +214,9 @@ def asynchronous(
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
-    sequence_timings = _check_sequence_timings(sequence_timings, sequence,
-                                               sound.duration)
+    sequence_timings = _check_sequence_timings(
+        sequence_timings, sequence, sound.duration
+    )
 
     # Compute delays
     delays = np.diff(sequence_timings)  # a[i+1] - a[i]
@@ -239,7 +241,7 @@ def asynchronous(
         if counter != len(sequence) - 1:
             wait(delays[counter] - stim_delay)
             counter += 1
-            logger.info('Sound %i/%i delivered.', counter, len(sequence))
+            logger.info("Sound %i/%i delivered.", counter, len(sequence))
         else:
             break  # no more delays since it was the last stimuli
 
@@ -247,12 +249,7 @@ def asynchronous(
     trigger.signal(tdef.async_stop)
 
 
-def baseline(
-        trigger,
-        tdef,
-        duration: Union[int, float],
-        verbose: bool = True
-        ):
+def baseline(trigger, tdef, duration: Union[int, float], verbose: bool = True):
     """
     Baseline block corresponding to a resting-state recording.
 
@@ -270,12 +267,13 @@ def baseline(
         If True, a timer is logged with the info level every second.
     """
     _check_tdef(tdef)
-    _check_type(duration, ('numeric', ), 'duration')
+    _check_type(duration, ("numeric",), "duration")
     if duration <= 0:
         raise ValueError(
             "Argument 'duration' should be a strictly positive number. "
-            f"Provided: '{duration}' seconds.")
-    _check_type(verbose, (bool, ), 'verbose')
+            f"Provided: '{duration}' seconds."
+        )
+    _check_type(verbose, (bool,), "verbose")
 
     # Start trigger
     trigger.signal(tdef.baseline_start)
@@ -296,10 +294,7 @@ def baseline(
     trigger.signal(tdef.baseline_stop)
 
 
-def inter_block(
-        duration: Union[int, float],
-        verbose: bool = True
-        ):
+def inter_block(duration: Union[int, float], verbose: bool = True):
     """
     Inter-block task-like to wait a specific duration.
 
@@ -310,12 +305,13 @@ def inter_block(
     verbose : bool
         If True, a timer is logged with the info level every second.
     """
-    _check_type(duration, ('numeric', ), 'duration')
+    _check_type(duration, ("numeric",), "duration")
     if duration <= 0:
         raise ValueError(
             "Argument 'duration' should be a strictly positive number. "
-            f"Provided: '{duration}' seconds.")
-    _check_type(verbose, (bool, ), 'verbose')
+            f"Provided: '{duration}' seconds."
+        )
+    _check_type(verbose, (bool,), "verbose")
 
     duration_ = datetime.timedelta(seconds=duration)
 

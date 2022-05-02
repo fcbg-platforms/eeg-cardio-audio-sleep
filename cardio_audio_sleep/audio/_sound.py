@@ -7,8 +7,8 @@ import numpy as np
 import sounddevice as sd
 from scipy.io import wavfile
 
-from ..utils._docs import fill_doc
 from ..utils._checks import _check_type
+from ..utils._docs import fill_doc
 
 
 @fill_doc
@@ -29,7 +29,8 @@ class _Sound(ABC):
         self._sample_rate = _Sound._check_sample_rate(sample_rate)
         self._duration = _Sound._check_duration(duration)
         self._time_arr = np.linspace(
-            0, duration, int(duration*sample_rate), endpoint=True)
+            0, duration, int(duration * sample_rate), endpoint=True
+        )
         # [:, 0] for left and [:, 1] for right
         self._signal = np.zeros(shape=(self._time_arr.size, len(self._volume)))
 
@@ -78,8 +79,9 @@ class _Sound(ABC):
             - 2 numbers in a 2-item iterable for stereo.
         Checks that the volume value is between [0, 100].
         """
-        _check_type(volume, (int, float, list, tuple, np.ndarray),
-                    item_name='volume')
+        _check_type(
+            volume, (int, float, list, tuple, np.ndarray), item_name="volume"
+        )
         if isinstance(volume, (int, float)):
             volume = [volume]
         assert len(volume) in (1, 2)
@@ -93,7 +95,7 @@ class _Sound(ABC):
         """
         Checks if the sample rate is a positive integer.
         """
-        _check_type(sample_rate, ('numeric', ), item_name='sample_rate')
+        _check_type(sample_rate, ("numeric",), item_name="sample_rate")
         assert 0 < sample_rate
         return sample_rate
 
@@ -102,7 +104,7 @@ class _Sound(ABC):
         """
         Checks if the duration is positive.
         """
-        _check_type(duration, ('numeric', ), item_name='duration')
+        _check_type(duration, ("numeric",), item_name="duration")
         assert 0 < duration
         return duration
 
@@ -131,8 +133,11 @@ class _Sound(ABC):
     def sample_rate(self, sample_rate):
         self._sample_rate = _Sound._check_sample_rate(sample_rate)
         self._time_arr = np.linspace(
-            0, self._duration,
-            int(self._duration*self._sample_rate), endpoint=True)
+            0,
+            self._duration,
+            int(self._duration * self._sample_rate),
+            endpoint=True,
+        )
         self._signal = np.zeros(shape=(self._time_arr.size, len(self._volume)))
         self._set_signal()
 
@@ -147,8 +152,11 @@ class _Sound(ABC):
     def duration(self, duration):
         self._duration = _Sound._check_duration(duration)
         self._time_arr = np.linspace(
-            0, self._duration,
-            int(self._duration*self._sample_rate), endpoint=True)
+            0,
+            self._duration,
+            int(self._duration * self._sample_rate),
+            endpoint=True,
+        )
         self._signal = np.zeros(shape=(self._time_arr.size, len(self._volume)))
         self._set_signal()
 

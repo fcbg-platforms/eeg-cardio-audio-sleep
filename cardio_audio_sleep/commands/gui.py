@@ -242,7 +242,8 @@ class GUI(QMainWindow):
                     else:
                         logger.error(
                             "The asynchronous timings could not be generated! "
-                            "Using the synchronous timing sequence instead.")
+                            "Using the synchronous timing sequence instead."
+                        )
                         args[3] = self.sequence_timings
                 else:
                     delays = np.diff(self.last_valid_timings)

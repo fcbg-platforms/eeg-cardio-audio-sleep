@@ -237,10 +237,20 @@ class GUI(QMainWindow):
                     self.last_valid_timings = timings
                     args[3] = timings
                 elif not valid and self.last_valid_timings is None:
-                    args[3] = timings
+                    if timings is not None:
+                        args[3] = timings
+                    else:
+                        logger.error(
+                            "The asynchronous timings could not be generated! "
+                            "Using the synchronous timing sequence instead.")
+                        args[3] = self.sequence_timings
                 else:
-                    np.random.shuffle(self.last_valid_timings)
-                    args[3] = self.last_valid_timings
+                    delays = np.diff(self.last_valid_timings)
+                    np.random.shuffle(delays)
+                    timings = np.zeros((delays.size + 1,))
+                    for k, delay in enumerate(delays):
+                        timings[k + 1] = timings[k] + delay
+                    args[3] = timings
                 logger.info(
                     "Average delay for asynchronous: %.2f (s).",
                     np.median(np.diff(args[3])),

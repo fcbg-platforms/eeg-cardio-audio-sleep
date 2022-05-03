@@ -86,7 +86,7 @@ setup(
     project_urls={
         'Documentation': 'https://github.com/mscheltienne/cardio-audio-sleep',
         'Source': 'https://github.com/mscheltienne/cardio-audio-sleep',
-        'Tracker': 'https://github.com/mscheltienne/cardio-audio-sleep/issues'
+        'Tracker': 'https://github.com/mscheltienne/cardio-audio-sleep/issues',
         },
     platforms='any',
     python_requires='>=3.7',
@@ -95,7 +95,8 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'cas = cardio_audio_sleep.commands.main:run'
+            'cas = cardio_audio_sleep.commands.main:cas',
+            'pds = cardio_audio_sleep.commands.main:pds',
             ]
         }
     )

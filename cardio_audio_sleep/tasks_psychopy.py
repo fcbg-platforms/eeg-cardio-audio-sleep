@@ -68,7 +68,7 @@ def synchronous(
     """
     # Create sound stimuli
     sound = Sound(
-        value=250,
+        value=1000,
         secs=0.1,
         stereo=True,
         volume=1.0,
@@ -153,7 +153,7 @@ def isochronous(trigger, tdef, sequence: ArrayLike, delay: Union[int, float]):
     """
     # Create sound stimuli
     sound = Sound(
-        value=250,
+        value=1000,
         secs=0.1,
         stereo=True,
         volume=1.0,
@@ -224,7 +224,7 @@ def asynchronous(
     """
     # Create sound stimuli
     sound = Sound(
-        value=250,
+        value=1000,
         secs=0.1,
         stereo=True,
         volume=1.0,

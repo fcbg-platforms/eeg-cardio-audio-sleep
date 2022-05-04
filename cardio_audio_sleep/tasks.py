@@ -69,7 +69,7 @@ def synchronous(
     from .detector import Detector
 
     # Create sound stimuli
-    sound = Tone(100, frequency=250)
+    sound = Tone(100, frequency=1000)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -146,7 +146,7 @@ def isochronous(trigger, tdef, sequence: ArrayLike, delay: Union[int, float]):
     from .audio import Tone
 
     # Create sound stimuli
-    sound = Tone(100, frequency=250)
+    sound = Tone(100, frequency=1000)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -210,7 +210,7 @@ def asynchronous(
     from .audio import Tone
 
     # Create sound stimuli
-    sound = Tone(100, frequency=250)
+    sound = Tone(100, frequency=1000)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)

@@ -1,58 +1,81 @@
 import mne
 import numpy as np
+from mne.io import BaseRaw
 
 from ..config import load_triggers
 
 
-def read_raw(fname):
+def map_aux(
+    raw: BaseRaw,
+    *,
+    sound: str = "AUX3",
+    ecg: str = "AUX7",
+    veog: str = "EOG",
+    heog: str = "AUX8",
+    emg: str = "AUX9",
+    respiration: str = "AUX10",
+) -> BaseRaw:
     """
-    Read raw FIF file and set channels.
+    Map the AUX channels correctly (in-place).
 
     Parameters
     ----------
-    fname : file-like
-        Path to the -raw.fif file to load.
+    raw : Raw
+    sound : str
+        Name of the sound auxiliary channel.
+    ecg : str
+        Name of the ECG auxiliary channel.
+    veog : str
+        Name of the vertical EOG channel (inc. on the cap layout).
+    heog : str
+        Name of the horizontal EOG auxiliary channel.
+    emg : str
+        Name of the EMG auxiliary channel.
+    respiration : str
+        Name of the respiration belt auxiliary channel.
 
     Returns
     -------
     raw : Raw
-        MNE raw instance.
     """
-    raw = mne.io.read_raw_fif(fname, preload=True)
-
-    # AUX channels
     names_mapping = dict()
     types_mapping = dict()
-    if "AUX3" in raw.ch_names:
-        names_mapping["AUX3"] = "Sound"
+    if sound in raw.ch_names:
+        names_mapping[sound] = "Sound"
         types_mapping["Sound"] = "misc"
-    if "AUX7" in raw.ch_names:
-        names_mapping["AUX7"] = "ECG"
+    if ecg in raw.ch_names:
+        names_mapping[ecg] = "ECG"
         types_mapping["ECG"] = "ecg"
+    if veog in raw.ch_names:
+        names_mapping[veog] = "vEOG"
+        types_mapping["vEOG"] = "eog"
+    if heog in raw.ch_names:
+        names_mapping[heog] = "hEOG"
+        types_mapping["hEOG"] = "eog"
+    if emg in raw.ch_names:
+        names_mapping[emg] = "EMG"
+        types_mapping["EMG"] = "emg"
+    if respiration in raw.ch_names:
+        names_mapping[respiration] = "Respiration"
+        types_mapping["Respiration"] = "misc"
 
     raw.rename_channels(names_mapping)
     raw.set_channel_types(types_mapping)
+    return raw
 
-    # Old eego LSL plugin has upper case channel names
-    mapping = {
-        "FP1": "Fp1",
-        "FPZ": "Fpz",
-        "FP2": "Fp2",
-        "FZ": "Fz",
-        "CZ": "Cz",
-        "PZ": "Pz",
-        "POZ": "POz",
-        "FCZ": "FCz",
-        "OZ": "Oz",
-        "FPz": "Fpz",
-    }
-    for key, value in mapping.items():
-        try:
-            mne.rename_channels(raw.info, {key: value})
-        except Exception:
-            pass
 
-    # Set annotations
+def add_annotations_from_events(raw: BaseRaw) -> BaseRaw:
+    """
+    Add annotations from events.
+
+    Parameters
+    ----------
+    raw : Raw
+
+    Returns
+    -------
+    raw : Raw
+    """
     events = mne.find_events(raw, stim_channel="TRIGGER")
     tdef = load_triggers()
 

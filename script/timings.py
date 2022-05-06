@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from scipy.signal import find_peaks, hilbert
 
 from cardio_audio_sleep.config import load_triggers
-from cardio_audio_sleep.io import read_raw
+from cardio_audio_sleep.io import read_raw_fif
 from cardio_audio_sleep.utils import match_positions
 
 #%% Sound
@@ -15,7 +15,7 @@ detection_threshold = 88  # in %
 
 #%% Load
 fname = r""
-raw = read_raw(fname)
+raw = read_raw_fif(fname)
 raw.pick_channels(["TRIGGER", "Sound", "ECG"])
 
 #%% Triggers

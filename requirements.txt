@@ -7,3 +7,4 @@ sounddevice  # required for non-psychopy sound package
 psychopy==2021.2.3
 psutil
 PyQt5
+pyxdf

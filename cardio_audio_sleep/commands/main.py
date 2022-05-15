@@ -1,8 +1,13 @@
 import argparse
+import time
 
+from bsl.triggers import ParallelPortTrigger
+from bsl.utils.lsl import list_lsl_streams
 from PyQt5.QtWidgets import QApplication
 
-from .. import peak_detection_parameters_tuning
+from .. import logger, peak_detection_parameters_tuning
+from ..config import load_triggers
+from ..utils import search_ANT_amplifier
 from .cli import (
     input_ecg_ch_name,
     input_peak_height_perc,
@@ -67,3 +72,63 @@ def pds():
     print(f"Prominence   ->  {prominence}")
     print(f"Width:       ->  {width}")
     print("-----------------------------------------")
+
+
+def test():
+    """Run test on the LSL stream and triggers."""
+    error = False
+    # look for the LSL stream
+    logger.info("Looking for ANT LSL stream..")
+    try:
+        stream_name = search_ANT_amplifier()
+        logger.info("ANT LSL stream found!")
+    except RuntimeError:
+        error = True
+        logger.error(
+            "ANT LSL stream could not be found. Is the amplifier "
+            "correctly connected and the LSL app started?"
+        )
+
+    # check the sampling rate
+    stream_names, stream_infos = list_lsl_streams(ignore_markers=True)
+    idx = stream_names.index(stream_name)
+    sinfo = stream_infos[idx]
+    if sinfo.nominal_srate() == 1024:
+        logger.info(
+            "ANT LSL stream sampling rate is correctly set at 1024 Hz."
+        )
+    else:
+        error = True
+        logger.error(
+            "ANT LSL stream sampling rate is not correctly set! "
+            "Currently %s Hz, while 1024 Hz is expected!",
+            sinfo.nominal_srate(),
+        )
+
+    # check the trigger
+    try:
+        trigger = ParallelPortTrigger("/dev/parport0")
+    except Exception:
+        error = True
+        logger.error(
+            "Could not initialize the parallel port trigger. Is the LPT cable "
+            "correctly connected and does '/dev/parport0' exist?"
+        )
+
+    if error:
+        logger.info(
+            "Something went wrong.. please check the setup! "
+            "Aborting further tests.."
+        )
+        return None
+
+    # check the trigger pins
+    logger.info(
+        "Testing all the triggers. Please look at a StreamViewer and "
+        "confirm that each value is correctly displayed."
+    )
+    tdef = load_triggers()
+    for value in tdef.by_value:
+        logger.info("Testing trigger %i..", value)
+        trigger.signal(value)
+        time.sleep(0.5)

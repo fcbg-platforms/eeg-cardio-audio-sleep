@@ -5,27 +5,28 @@ from bsl.triggers import ParallelPortTrigger
 from bsl.utils.lsl import list_lsl_streams
 from PyQt5.QtWidgets import QApplication
 
-from .. import logger, peak_detection_parameters_tuning
+from .. import logger, peak_detection_parameters_tuning, set_log_level
 from ..config import load_triggers
 from ..utils import search_ANT_amplifier
-from .cli import (
-    input_ecg_ch_name,
-    input_peak_height_perc,
-    input_peak_prominence,
-    input_peak_width,
-)
+from .cli import input_ecg_ch_name
 from .gui import GUI
 
 
 def cas():
     """Entrypoint for cas <command> usage."""
+    parser = argparse.ArgumentParser(
+        prog="CAS", description="Cardio-Audio-Sleep GUI"
+    )
+    parser.add_argument(
+        "--verbosity", help="enable debug logs", action="store_true"
+    )
+    args = parser.parse_args()
+    set_log_level("DEBUG" if args.verbosity else "INFO")
+
     ecg_ch_name = input_ecg_ch_name()
-    peak_height_perc = input_peak_height_perc()
-    peak_prominence = input_peak_prominence()
-    peak_width = input_peak_width()
 
     app = QApplication([])
-    window = GUI(ecg_ch_name, peak_height_perc, peak_prominence, peak_width)
+    window = GUI(ecg_ch_name)
     window.show()
     app.exec()
 

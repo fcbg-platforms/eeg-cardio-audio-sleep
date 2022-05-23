@@ -1,5 +1,4 @@
 import multiprocessing as mp
-from typing import Optional
 
 import numpy as np
 import psutil
@@ -41,37 +40,25 @@ class GUI(QMainWindow):
     ----------
     ecg_ch_name : str
         Name of the ECG channel.
-    peak_height_perc : float
-        Minimum height of the peak expressed as a percentile of the samples in
-        the buffer.
-    peak_prominence : float | None
-        Minimum peak prominence as defined by scipy.
-    peak_width : float | None
-        Minimum peak width expressed in ms. Default to None.
     """
 
     def __init__(
         self,
         ecg_ch_name: str,
-        peak_height_perc: float,
-        peak_prominence: Optional[float],
-        peak_width: Optional[float],
     ):
         super().__init__()
 
         # define mp Queue
         self.queue = mp.Queue()
 
+        # defaults for the peak detection
+        defaults = dict(height=97., prominence=500., width=None)
+
         # load configuration
-        self.load_config(
-            ecg_ch_name,
-            peak_height_perc,
-            peak_prominence,
-            peak_width,
-        )
+        self.load_config(ecg_ch_name, defaults)
 
         # load GUI
-        self.load_ui()
+        self.load_ui(defaults)
         self.connect_signals_to_slots()
 
         # block generation
@@ -91,9 +78,7 @@ class GUI(QMainWindow):
     def load_config(
         self,
         ecg_ch_name: str,
-        peak_height_perc: float,
-        peak_prominence: Optional[float],
-        peak_width: Optional[float],
+        defaults: dict,
     ):
         self.config, trigger_type = load_config()
         self.tdef = load_triggers()
@@ -113,28 +98,28 @@ class GUI(QMainWindow):
 
         # Create args
         self.args_mapping = {
-            "baseline": (
+            "baseline": [
                 self.trigger,
                 self.tdef,
                 self.config["baseline"]["duration"],
-            ),
-            "synchronous": (
+            ],
+            "synchronous": [
                 self.trigger,
                 self.tdef,
-                None,
+                None,  # sequence
                 stream_name,
                 ecg_ch_name,
-                peak_height_perc,
-                peak_prominence,
-                peak_width,
+                defaults['height'],
+                defaults['prominence'],
+                defaults['width'],
                 self.queue,
-            ),
-            "isochronous": (self.trigger, self.tdef, None, None),
-            "asynchronous": (self.trigger, self.tdef, None, None),
+            ],
+            "isochronous": [self.trigger, self.tdef, None, None],
+            "asynchronous": [self.trigger, self.tdef, None, None],
         }
 
     # -------------------------------------------------------------------------
-    def load_ui(self):
+    def load_ui(self, defaults):
         # Main window
         self.setWindowTitle("Cardio-Audio-Sleep experiment")
         self.setFixedSize(QSize(800, 300))
@@ -199,6 +184,7 @@ class GUI(QMainWindow):
         )
         self.doubleSpinBox_height.setMinimum(0.0)
         self.doubleSpinBox_height.setMaximum(100.0)
+        self.doubleSpinBox_height.setProperty("value", defaults['height'])
         self.doubleSpinBox_height.setObjectName("doubleSpinBox_height")
 
         self.doubleSpinBox_prominence = QDoubleSpinBox(self.central_widget)
@@ -209,6 +195,7 @@ class GUI(QMainWindow):
         self.doubleSpinBox_prominence.setMinimum(400.0)
         self.doubleSpinBox_prominence.setMaximum(3000.0)
         self.doubleSpinBox_prominence.setSingleStep(25.0)
+        self.doubleSpinBox_prominence.setProperty("value", defaults['prominence'])
         self.doubleSpinBox_prominence.setObjectName("doubleSpinBox_prominence")
 
         self.doubleSpinBox_width = QDoubleSpinBox(self.central_widget)
@@ -216,8 +203,9 @@ class GUI(QMainWindow):
         self.doubleSpinBox_width.setSizePolicy(
             GUI._sizePolicy(self.doubleSpinBox_width)
         )
-        self.doubleSpinBox_height.setMinimum(0.0)
-        self.doubleSpinBox_height.setMaximum(50.0)
+        self.doubleSpinBox_width.setMinimum(0.0)
+        self.doubleSpinBox_width.setMaximum(50.0)
+        self.doubleSpinBox_width.setProperty("value", defaults['width'])
         self.doubleSpinBox_width.setObjectName("doubleSpinBox_width")
 
         self.pushButton_prominence = QPushButton(self.central_widget)
@@ -227,6 +215,8 @@ class GUI(QMainWindow):
         )
         self.pushButton_prominence.setObjectName("pushButton_prominence")
         self.pushButton_prominence.setText("Disable")
+        self.pushButton_prominence.setCheckable(True)
+        self.pushButton_prominence.setChecked(False)
 
         self.pushButton_width = QPushButton(self.central_widget)
         self.pushButton_width.setGeometry(QRect(660, 262, 113, 28))
@@ -235,6 +225,8 @@ class GUI(QMainWindow):
         )
         self.pushButton_width.setObjectName("pushButton_width")
         self.pushButton_width.setText("Disable")
+        self.pushButton_width.setCheckable(True)
+        self.pushButton_width.setChecked(False)
 
         # Add peak detection settings labels
         GUI._add_label(self, 420, 194, 120, 28, "height", "Height")
@@ -363,7 +355,7 @@ class GUI(QMainWindow):
         if btype == "baseline":
             args = self.args_mapping[btype]
         else:
-            args = list(self.args_mapping[btype])
+            args = self.args_mapping[btype]
             args[2] = generate_sequence(
                 self.config[btype]["n_stimuli"],
                 self.config[btype]["n_omissions"],
@@ -423,6 +415,10 @@ class GUI(QMainWindow):
         self.pushButton_start.clicked.connect(self.pushButton_start_clicked)
         self.pushButton_pause.clicked.connect(self.pushButton_pause_clicked)
         self.pushButton_stop.clicked.connect(self.pushButton_stop_clicked)
+        self.pushButton_prominence.clicked.connect(
+            self.pushButton_prominence_clicked
+        )
+        self.pushButton_width.clicked.connect(self.pushButton_width_clicked)
 
     @pyqtSlot()
     def pushButton_start_clicked(self):
@@ -473,6 +469,34 @@ class GUI(QMainWindow):
         self.process.join(1)
         if self.process.is_alive():
             self.process.kill()
+
+    @pyqtSlot()
+    def pushButton_prominence_clicked(self):
+        state = self.doubleSpinBox_prominence.isEnabled()
+        self.doubleSpinBox_prominence.setEnabled(not state)
+        self.pushButton_prominence.setChecked(state)
+        if state:
+            self.args_mapping["synchronous"][6] = None
+            logger.debug("Disabling prominence.")
+        else:
+            value = self.doubleSpinBox_prominence.value()
+            self.args_mapping["synchronous"][6] = value
+            logger.debug("Setting prominence to %.2f", value)
+
+    @pyqtSlot()
+    def pushButton_width_clicked(self):
+        state = self.doubleSpinBox_width.isEnabled()
+        self.doubleSpinBox_width.setEnabled(not state)
+        self.pushButton_width.setChecked(state)
+        if state:
+            self.args_mapping["synchronous"][7] = None
+            logger.debug("Disabling width.")
+        else:
+            value = self.doubleSpinBox_width.value()
+            self.args_mapping["synchronous"][
+                7
+            ] = self.doubleSpinBox_width.value()
+            logger.debug("Setting width to %.2f", value)
 
 
 class Block(QLabel):

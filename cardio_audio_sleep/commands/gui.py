@@ -245,15 +245,6 @@ class GUI(QMainWindow):
         GUI._add_label(self, 420, 228, 120, 28, "prominence", "Prominence")
         GUI._add_label(self, 420, 262, 120, 28, "width", "Width")
 
-        # Add peak detection GUI button
-        self.pushButton_detection_gui = QPushButton(self.central_widget)
-        self.pushButton_detection_gui.setGeometry(QRect(230, 208, 151, 68))
-        self.pushButton_detection_gui.setSizePolicy(
-            GUI._sizePolicy(self.pushButton_detection_gui)
-        )
-        self.pushButton_detection_gui.setObjectName("pushButton_detection_gui")
-        self.pushButton_detection_gui.setText("Detection GUI")
-
         # Add volume controls
         self.dial_volume = QDial(self.central_widget)
         self.dial_volume.setGeometry(QRect(25, 210, 70, 68))
@@ -425,6 +416,18 @@ class GUI(QMainWindow):
         self.psutil_process = psutil.Process(self.process.pid)
         self.process_block_name = "inter-block"
 
+    def _update_volume(self, volume):
+        """Update the volume setting."""
+        self.args_mapping["synchronous"][8] = volume
+        self.args_mapping["isochronous"][4] = volume
+        self.args_mapping["asynchronous"][4] = volume
+
+        logger.debug("Setting the volume to %.2f", volume)
+
+    def _update_peak_detection_settings(self, height, prominence, width):
+        """Update the peak detection settings."""
+        pass
+
     # -------------------------------------------------------------------------
     def connect_signals_to_slots(self):
         self.pushButton_start.clicked.connect(self.pushButton_start_clicked)
@@ -432,14 +435,6 @@ class GUI(QMainWindow):
         self.pushButton_stop.clicked.connect(self.pushButton_stop_clicked)
 
         # detection settings
-        self.pushButton_prominence.clicked.connect(
-            self.pushButton_prominence_clicked
-        )
-        self.pushButton_width.clicked.connect(self.pushButton_width_clicked)
-        self.pushButton_detection_gui.clicked.connect(
-            self.pushButton_detection_gui_clicked
-        )
-
         self.doubleSpinBox_height.valueChanged.connect(
             self.doubleSpinBox_valueChanged
         )
@@ -449,6 +444,10 @@ class GUI(QMainWindow):
         self.doubleSpinBox_width.valueChanged.connect(
             self.doubleSpinBox_valueChanged
         )
+        self.pushButton_prominence.clicked.connect(
+            self.pushButton_prominence_clicked
+        )
+        self.pushButton_width.clicked.connect(self.pushButton_width_clicked)
 
         # volume
         self.doubleSpinBox_volume.valueChanged.connect(
@@ -556,10 +555,6 @@ class GUI(QMainWindow):
         )
 
     @pyqtSlot()
-    def pushButton_detection_gui_clicked(self):
-        pass
-
-    @pyqtSlot()
     def doubleSpinBox_volume_valueChanged(self):
         volume = self.doubleSpinBox_volume.value()
         self.dial_volume.setProperty("value", volume)
@@ -570,13 +565,6 @@ class GUI(QMainWindow):
         volume = self.dial_volume.value()
         self.doubleSpinBox_volume.setProperty("value", volume)
         self._update_volume(volume)
-
-    def _update_volume(self, volume):
-        self.args_mapping["synchronous"][8] = volume
-        self.args_mapping["isochronous"][4] = volume
-        self.args_mapping["asynchronous"][4] = volume
-
-        logger.debug("Setting the volume to %.2f", volume)
 
 
 class Block(QLabel):

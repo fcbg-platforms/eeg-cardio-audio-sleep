@@ -18,10 +18,10 @@ def cas():
         prog="CAS", description="Cardio-Audio-Sleep GUI"
     )
     parser.add_argument(
-        "--verbosity", help="enable debug logs", action="store_true"
+        "--verbose", help="enable debug logs", action="store_true"
     )
     args = parser.parse_args()
-    set_log_level("DEBUG" if args.verbosity else "INFO")
+    set_log_level("DEBUG" if args.verbose else "INFO")
 
     ecg_ch_name = input_ecg_ch_name()
 

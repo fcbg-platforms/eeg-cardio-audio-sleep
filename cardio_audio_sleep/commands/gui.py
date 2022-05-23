@@ -6,7 +6,16 @@ import psutil
 from bsl.triggers import MockTrigger, ParallelPortTrigger
 from PyQt5.QtCore import QRect, QSize, Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import QColor, QFont, QPalette
-from PyQt5.QtWidgets import QLabel, QMainWindow, QPushButton, QWidget
+from PyQt5.QtWidgets import (
+    QDial,
+    QDoubleSpinBox,
+    QFrame,
+    QLabel,
+    QMainWindow,
+    QPushButton,
+    QSizePolicy,
+    QWidget,
+)
 
 from .. import logger
 from ..config import load_config, load_triggers
@@ -128,7 +137,8 @@ class GUI(QMainWindow):
     def load_ui(self):
         # Main window
         self.setWindowTitle("Cardio-Audio-Sleep experiment")
-        self.setFixedSize(QSize(800, 200))
+        self.setFixedSize(QSize(800, 300))
+        self.setSizePolicy(GUI._sizePolicy(self))
         self.setContextMenuPolicy(Qt.NoContextMenu)
 
         # Main widget
@@ -140,41 +150,34 @@ class GUI(QMainWindow):
         for k in range(5):
             block = Block(self.central_widget, "")
             block.setGeometry(QRect(50 + 145 * k, 20, 120, 80))
+            block.setSizePolicy(GUI._sizePolicy(block))
             block.setAlignment(Qt.AlignCenter)
             block.setObjectName(f"block{k}")
             if k in (0, 1):  # disable block 0 and 1 (past)
                 block.setEnabled(False)
             self.blocks.append(block)
 
-        # Add labels
-        past = QLabel(self.central_widget)
-        past.setGeometry(QRect(50, 115, 265, 20))
-        past.setAlignment(Qt.AlignCenter)
-        past.setObjectName("past")
-        past.setText("Previous blocks")
+        # Add block labels
+        GUI._add_label(self, 50, 115, 265, 20, "past", "Previous blocks")
+        GUI._add_label(self, 340, 115, 120, 20, "current", "Current")
+        GUI._add_label(self, 485, 115, 265, 20, "future", "Next blocks")
 
-        future = QLabel(self.central_widget)
-        future.setGeometry(QRect(485, 115, 265, 20))
-        future.setAlignment(Qt.AlignCenter)
-        future.setObjectName("future")
-        future.setText("Next blocks")
-
-        current = QLabel(self.central_widget)
-        current.setGeometry(QRect(340, 115, 120, 20))
-        current.setAlignment(Qt.AlignCenter)
-        current.setObjectName("current")
-        current.setText("Current")
-
-        # Add push buttons
+        # Add start/pause/stop push buttons
         self.pushButton_start = QPushButton(self.central_widget)
         self.pushButton_start.setEnabled(True)
         self.pushButton_start.setGeometry(QRect(25, 150, 240, 32))
+        self.pushButton_start.setSizePolicy(
+            GUI._sizePolicy(self.pushButton_start)
+        )
         self.pushButton_start.setObjectName("pushButton_start")
         self.pushButton_start.setText("Start")
 
         self.pushButton_pause = QPushButton(self.central_widget)
         self.pushButton_pause.setEnabled(False)
         self.pushButton_pause.setGeometry(QRect(280, 150, 240, 32))
+        self.pushButton_pause.setSizePolicy(
+            GUI._sizePolicy(self.pushButton_pause)
+        )
         self.pushButton_pause.setObjectName("pushButton_pause")
         self.pushButton_pause.setText("Pause")
         self.pushButton_pause.setCheckable(True)
@@ -182,13 +185,153 @@ class GUI(QMainWindow):
         self.pushButton_stop = QPushButton(self.central_widget)
         self.pushButton_stop.setEnabled(False)
         self.pushButton_stop.setGeometry(QRect(535, 150, 240, 32))
+        self.pushButton_stop.setSizePolicy(
+            GUI._sizePolicy(self.pushButton_stop)
+        )
         self.pushButton_stop.setObjectName("pushButton_stop")
         self.pushButton_stop.setText("Stop")
+
+        # Add peak detection settings
+        self.doubleSpinBox_height = QDoubleSpinBox(self.central_widget)
+        self.doubleSpinBox_height.setGeometry(QRect(540, 194, 100, 28))
+        self.doubleSpinBox_height.setSizePolicy(
+            GUI._sizePolicy(self.doubleSpinBox_height)
+        )
+        self.doubleSpinBox_height.setMinimum(0.0)
+        self.doubleSpinBox_height.setMaximum(100.0)
+        self.doubleSpinBox_height.setObjectName("doubleSpinBox_height")
+
+        self.doubleSpinBox_prominence = QDoubleSpinBox(self.central_widget)
+        self.doubleSpinBox_prominence.setGeometry(QRect(540, 228, 100, 28))
+        self.doubleSpinBox_prominence.setSizePolicy(
+            GUI._sizePolicy(self.doubleSpinBox_prominence)
+        )
+        self.doubleSpinBox_prominence.setMinimum(400.0)
+        self.doubleSpinBox_prominence.setMaximum(3000.0)
+        self.doubleSpinBox_prominence.setSingleStep(25.0)
+        self.doubleSpinBox_prominence.setObjectName("doubleSpinBox_prominence")
+
+        self.doubleSpinBox_width = QDoubleSpinBox(self.central_widget)
+        self.doubleSpinBox_width.setGeometry(QRect(540, 262, 100, 28))
+        self.doubleSpinBox_width.setSizePolicy(
+            GUI._sizePolicy(self.doubleSpinBox_width)
+        )
+        self.doubleSpinBox_height.setMinimum(0.0)
+        self.doubleSpinBox_height.setMaximum(50.0)
+        self.doubleSpinBox_width.setObjectName("doubleSpinBox_width")
+
+        self.pushButton_prominence = QPushButton(self.central_widget)
+        self.pushButton_prominence.setGeometry(QRect(660, 228, 113, 28))
+        self.pushButton_prominence.setSizePolicy(
+            GUI._sizePolicy(self.pushButton_prominence)
+        )
+        self.pushButton_prominence.setObjectName("pushButton_prominence")
+        self.pushButton_prominence.setText("Disable")
+
+        self.pushButton_width = QPushButton(self.central_widget)
+        self.pushButton_width.setGeometry(QRect(660, 262, 113, 28))
+        self.pushButton_width.setSizePolicy(
+            GUI._sizePolicy(self.pushButton_width)
+        )
+        self.pushButton_width.setObjectName("pushButton_width")
+        self.pushButton_width.setText("Disable")
+
+        # Add peak detection settings labels
+        GUI._add_label(self, 420, 194, 120, 28, "height", "Height")
+        GUI._add_label(self, 420, 228, 120, 28, "prominence", "Prominence")
+        GUI._add_label(self, 420, 262, 120, 28, "width", "Width")
+
+        # Add peak detection GUI button
+        self.pushButton_detection_gui = QPushButton(self.central_widget)
+        self.pushButton_detection_gui.setGeometry(QRect(230, 208, 151, 68))
+        self.pushButton_detection_gui.setSizePolicy(
+            GUI._sizePolicy(self.pushButton_detection_gui)
+        )
+        self.pushButton_detection_gui.setObjectName("pushButton_detection_gui")
+        self.pushButton_detection_gui.setText("Detection GUI")
+
+        # Add volume controls
+        self.dial_volume = QDial(self.central_widget)
+        self.dial_volume.setGeometry(QRect(25, 210, 70, 68))
+        self.dial_volume.setSizePolicy(GUI._sizePolicy(self.dial_volume))
+        self.dial_volume.setMinimum(0)
+        self.dial_volume.setMaximum(100)
+        self.dial_volume.setObjectName("dial_volume")
+
+        self.doubleSpinBox_volume = QDoubleSpinBox(self.central_widget)
+        self.doubleSpinBox_volume.setGeometry(QRect(110, 245, 80, 24))
+        self.doubleSpinBox_volume.setSizePolicy(
+            GUI._sizePolicy(self.doubleSpinBox_volume)
+        )
+        self.doubleSpinBox_volume.setMinimum(0.0)
+        self.doubleSpinBox_volume.setMaximum(100.0)
+        self.doubleSpinBox_volume.setObjectName("doubleSpinBox_volume")
+
+        GUI._add_label(self, 110, 215, 60, 30, "volume", "Volume")
+
+        # Add separation lines
+        GUI._add_line(self, 0, 178, 800, 20, "line1", "h")
+        GUI._add_line(self, 200, 188, 20, 112, "line2", "v")
 
         # Set central widget
         self.setCentralWidget(self.central_widget)
 
         logger.debug("UI loaded.")
+
+    @staticmethod
+    def _add_label(
+        window: QMainWindow,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        name: str,
+        text: str,
+    ) -> QLabel:
+        """Add a fix label to the window."""
+        label = QLabel(window.central_widget)
+        label.setGeometry(QRect(x, y, w, h))
+        label.setSizePolicy(GUI._sizePolicy(label))
+        label.setAutoFillBackground(True)
+        label.setAlignment(Qt.AlignCenter)
+        label.setObjectName(name)
+        label.setText(text)
+        return label
+
+    @staticmethod
+    def _add_line(
+        window: QMainWindow,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        name: str,
+        orientation: str,
+    ) -> QFrame:
+        """Add a line."""
+        line = QFrame(window.central_widget)
+        line.setGeometry(QRect(x, y, w, h))
+        line.setSizePolicy(GUI._sizePolicy(line))
+        if orientation == "h":
+            line.setFrameShape(QFrame.HLine)
+        elif orientation == "v":
+            line.setFrameShape(QFrame.VLine)
+        else:
+            raise ValueError(
+                f"A line orientation should be 'h' or 'v', not '{orientation}'."
+            )
+        line.setFrameShadow(QFrame.Sunken)
+        line.setObjectName(name)
+        return line
+
+    @staticmethod
+    def _sizePolicy(widget: QWidget):
+        """A fixed size policy."""
+        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(widget.sizePolicy().hasHeightForWidth())
+        return sizePolicy
 
     # -------------------------------------------------------------------------
     def update(self):
@@ -371,7 +514,7 @@ class Block(QLabel):
             self.setPalette(palette)
 
     @property
-    def btype(self):
+    def btype(self) -> str:
         return self._btype
 
     @btype.setter

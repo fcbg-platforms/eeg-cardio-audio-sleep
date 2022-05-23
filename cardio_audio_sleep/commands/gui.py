@@ -421,7 +421,9 @@ class GUI(QMainWindow):
             self.pushButton_prominence_clicked
         )
         self.pushButton_width.clicked.connect(self.pushButton_width_clicked)
-        self.pushButton_detection_gui.connect(self.pushButton_detection_gui_clicked)
+        self.pushButton_detection_gui.connect(
+            self.pushButton_detection_gui_clicked
+        )
 
         self.doubleSpinBox_height.valueChanged.connect(
             self.doubleSpinBox_valueChanged

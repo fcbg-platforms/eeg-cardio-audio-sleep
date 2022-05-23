@@ -49,7 +49,7 @@ class GUI(QMainWindow):
         self.queue = mp.Queue()
 
         # defaults for the peak detection
-        defaults = dict(height=97.0, prominence=500.0, width=None)
+        defaults = dict(height=97.0, prominence=500.0, width=None, volume=0)
 
         # load configuration
         self.load_config(ecg_ch_name, defaults)
@@ -109,10 +109,23 @@ class GUI(QMainWindow):
                 defaults["height"],
                 defaults["prominence"],
                 defaults["width"],
+                defaults["volume"],
                 self.queue,
             ],
-            "isochronous": [self.trigger, self.tdef, None, None],
-            "asynchronous": [self.trigger, self.tdef, None, None],
+            "isochronous": [
+                self.trigger,
+                self.tdef,
+                None,
+                None,
+                defaults["volume"],
+            ],
+            "asynchronous": [
+                self.trigger,
+                self.tdef,
+                None,
+                None,
+                defaults["volume"],
+            ],
         }
 
     # -------------------------------------------------------------------------
@@ -247,6 +260,7 @@ class GUI(QMainWindow):
         self.dial_volume.setSizePolicy(GUI._sizePolicy(self.dial_volume))
         self.dial_volume.setMinimum(0)
         self.dial_volume.setMaximum(100)
+        self.dial_volume.setProperty("value", defaults["volume"])
         self.dial_volume.setObjectName("dial_volume")
 
         self.doubleSpinBox_volume = QDoubleSpinBox(self.central_widget)
@@ -256,6 +270,7 @@ class GUI(QMainWindow):
         )
         self.doubleSpinBox_volume.setMinimum(0.0)
         self.doubleSpinBox_volume.setMaximum(100.0)
+        self.doubleSpinBox_volume.setProperty("value", defaults["volume"])
         self.doubleSpinBox_volume.setObjectName("doubleSpinBox_volume")
 
         GUI._add_label(self, 110, 215, 60, 30, "volume", "Volume")
@@ -547,14 +562,21 @@ class GUI(QMainWindow):
     @pyqtSlot()
     def doubleSpinBox_volume_valueChanged(self):
         volume = self.doubleSpinBox_volume.value()
-        # update dial
         self.dial_volume.setProperty("value", volume)
+        self._update_volume(volume)
 
     @pyqtSlot()
     def dial_volume_valueChanged(self):
         volume = self.dial_volume.value()
-        # update SpinBox
         self.doubleSpinBox_volume.setProperty("value", volume)
+        self._update_volume(volume)
+
+    def _update_volume(self, volume):
+        self.args_mapping["synchronous"][8] = volume
+        self.args_mapping["isochronous"][4] = volume
+        self.args_mapping["asynchronous"][4] = volume
+
+        logger.debug("Setting the volume to %.2f", volume)
 
 
 class Block(QLabel):

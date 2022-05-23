@@ -2,7 +2,7 @@
 
 import datetime
 from multiprocessing import Queue
-from typing import Optional, Union
+from typing import Optional
 
 import numpy as np
 import psychtoolbox as ptb

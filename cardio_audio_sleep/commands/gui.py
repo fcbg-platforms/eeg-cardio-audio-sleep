@@ -42,10 +42,7 @@ class GUI(QMainWindow):
         Name of the ECG channel.
     """
 
-    def __init__(
-        self,
-        ecg_ch_name: str,
-    ):
+    def __init__(self, ecg_ch_name: str):
         super().__init__()
 
         # define mp Queue
@@ -119,7 +116,7 @@ class GUI(QMainWindow):
         }
 
     # -------------------------------------------------------------------------
-    def load_ui(self, defaults):
+    def load_ui(self, defaults: dict):
         # Main window
         self.setWindowTitle("Cardio-Audio-Sleep experiment")
         self.setFixedSize(QSize(800, 300))
@@ -312,7 +309,8 @@ class GUI(QMainWindow):
             line.setFrameShape(QFrame.VLine)
         else:
             raise ValueError(
-                f"A line orientation should be 'h' or 'v', not '{orientation}'."
+                "A line orientation should be 'h' or 'v'. "
+                f"Provided: '{orientation}'."
             )
         line.setFrameShadow(QFrame.Sunken)
         line.setObjectName(name)
@@ -417,10 +415,25 @@ class GUI(QMainWindow):
         self.pushButton_start.clicked.connect(self.pushButton_start_clicked)
         self.pushButton_pause.clicked.connect(self.pushButton_pause_clicked)
         self.pushButton_stop.clicked.connect(self.pushButton_stop_clicked)
+
+        # detection settings
         self.pushButton_prominence.clicked.connect(
             self.pushButton_prominence_clicked
         )
         self.pushButton_width.clicked.connect(self.pushButton_width_clicked)
+        self.pushButton_detection_gui.connect(self.pushButton_detection_gui_clicked)
+
+        self.doubleSpinBox_height.valueChanged.connect(
+            self.doubleSpinBox_valueChanged
+        )
+        self.doubleSpinBox_prominence.valueChanged.connect(
+            self.doubleSpinBox_valueChanged
+        )
+        self.doubleSpinBox_width.valueChanged.connect(
+            self.doubleSpinBox_valueChanged
+        )
+
+        # volume
 
     @pyqtSlot()
     def pushButton_start_clicked(self):
@@ -499,6 +512,31 @@ class GUI(QMainWindow):
                 7
             ] = self.doubleSpinBox_width.value()
             logger.debug("Setting width to %.2f", value)
+
+    @pyqtSlot()
+    def doubleSpinBox_valueChanged(self):
+        height = self.doubleSpinBox_height.value()
+        prominence = self.doubleSpinBox_prominence.value()
+        width = self.doubleSpinBox_width.value()
+        prominence = (
+            prominence if self.doubleSpinBox_prominence.isEnabled() else None
+        )
+        width = width if self.doubleSpinBox_width.isEnabled() else None
+
+        self.args_mapping["synchronous"][5] = height
+        self.args_mapping["synchronous"][6] = prominence
+        self.args_mapping["synchronous"][7] = width
+
+        logger.debug(
+            "(Height, Prominence, Width) set to (%s, %s, %s).",
+            height,
+            None if prominence is None else round(prominence, 2),
+            None if width is None else round(width, 2),
+        )
+
+    @pyqtSlot()
+    def pushButton_detection_gui_clicked(self):
+        pass
 
 
 class Block(QLabel):

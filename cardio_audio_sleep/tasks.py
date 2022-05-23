@@ -16,17 +16,20 @@ from .utils._checks import (
     _check_tdef,
     _check_type,
 )
+from .utils._docs import fill_doc
 
 
+@fill_doc
 def synchronous(
     trigger,
     tdef,
     sequence: ArrayLike,
     stream_name: str,
     ecg_ch_name: str,
-    peak_height_perc: Union[int, float],
-    peak_prominence: Optional[Union[int, float]],
-    peak_width: Optional[Union[int, float]],
+    peak_height_perc: float,
+    peak_prominence: Optional[float],
+    peak_width: Optional[float],
+    volume: float,
     queue: Optional[Queue] = None,
 ) -> list:
     """
@@ -34,17 +37,14 @@ def synchronous(
 
     Parameters
     ----------
-    trigger : Trigger
-        A BSL trigger instance.
+    %(trigger)s
     tdef : TriggerDef
         Trigger definition instance. Must contain the keys:
             - sync_start
             - sound (aligned on sequence)
             - omission (aligned on sequence)
             - sync_stop
-    sequence : array
-        Sequence of stimulus/omissions (of length BLOCK_SIZE if complete).
-        1 corresponds to a stound stimulus. 2 corresponds to an omission.
+    %(sequence)s
     stream_name : str
         Name of the LSL stream to connect to.
     ecg_ch_name : str
@@ -56,6 +56,7 @@ def synchronous(
         Minimum peak prominence as defined by scipy.
     peak_width : float | None
         Minimum peak width expressed in ms. Default to None.
+    %(volume)s
     queue : Queue
         Queue where the sequence_timings are stored. If None, this argument is
         ignored.
@@ -69,7 +70,7 @@ def synchronous(
     from .detector import Detector
 
     # Create sound stimuli
-    sound = Tone(100, frequency=1000)
+    sound = Tone(volume, frequency=1000)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -123,30 +124,31 @@ def synchronous(
     return sequence_timings
 
 
-def isochronous(trigger, tdef, sequence: ArrayLike, delay: Union[int, float]):
+@fill_doc
+def isochronous(
+    trigger, tdef, sequence: ArrayLike, delay: float, volume: float
+):
     """
     Isochronous block where sounds are delivered at a fix interval.
 
     Parameters
     ----------
-    trigger : Trigger
-        A BSL trigger instance.
+    %(trigger)s
     tdef : TriggerDef
         Trigger definition instance. Must contain the keys:
             - iso_start
             - sound (aligned on sequence)
             - omission (aligned on sequence)
             - iso_stop
-    sequence : array
-        Sequence of stimulus/omissions (of length BLOCK_SIZE if complete).
-        1 corresponds to a stound stimulus. 2 corresponds to an omission.
+    %(sequence)s
     delay : float
         Delay between 2 stimulus in seconds.
+    %(volume)s
     """
     from .audio import Tone
 
     # Create sound stimuli
-    sound = Tone(100, frequency=1000)
+    sound = Tone(volume, frequency=1000)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -182,8 +184,13 @@ def isochronous(trigger, tdef, sequence: ArrayLike, delay: Union[int, float]):
     trigger.signal(tdef.iso_stop)
 
 
+@fill_doc
 def asynchronous(
-    trigger, tdef, sequence: ArrayLike, sequence_timings: ArrayLike
+    trigger,
+    tdef,
+    sequence: ArrayLike,
+    sequence_timings: ArrayLike,
+    volume: float,
 ):
     """
     Asynchronous block where sounds repeat a sequence from a synchronous task.
@@ -192,25 +199,23 @@ def asynchronous(
 
     Parameters
     ----------
-    trigger : Trigger
-        A BSL trigger instance.
+    %(trigger)s
     tdef : TriggerDef
         Trigger definition instance. Must contain the keys:
             - async_start
             - sound (aligned on sequence)
             - omission (aligned on sequence)
             - async_stop
-    sequence : array
-        Sequence of stimulus/omissions (of length BLOCK_SIZE if complete).
-        1 corresponds to a stound stimulus. 2 corresponds to an omission.
+    %(sequence)s
     sequence_timings : array
         Array of length BLOCK_SIZE containing the timing at which the stimulus
         was delivered.
+    %(volume)s
     """
     from .audio import Tone
 
     # Create sound stimuli
-    sound = Tone(100, frequency=1000)
+    sound = Tone(volume, frequency=1000)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -249,14 +254,14 @@ def asynchronous(
     trigger.signal(tdef.async_stop)
 
 
-def baseline(trigger, tdef, duration: Union[int, float], verbose: bool = True):
+@fill_doc
+def baseline(trigger, tdef, duration: float, verbose: bool = True):
     """
     Baseline block corresponding to a resting-state recording.
 
     Parameters
     ----------
-    trigger : Trigger
-        A BSL trigger instance.
+    %(trigger)s
     tdef : TriggerDef
         Trigger definition instance. Must contain the keys:
             - baseline_start
@@ -294,7 +299,7 @@ def baseline(trigger, tdef, duration: Union[int, float], verbose: bool = True):
     trigger.signal(tdef.baseline_stop)
 
 
-def inter_block(duration: Union[int, float], verbose: bool = True):
+def inter_block(duration: float, verbose: bool = True):
     """
     Inter-block task-like to wait a specific duration.
 

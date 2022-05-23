@@ -421,7 +421,7 @@ class GUI(QMainWindow):
             self.pushButton_prominence_clicked
         )
         self.pushButton_width.clicked.connect(self.pushButton_width_clicked)
-        self.pushButton_detection_gui.connect(
+        self.pushButton_detection_gui.clicked.connect(
             self.pushButton_detection_gui_clicked
         )
 
@@ -436,6 +436,10 @@ class GUI(QMainWindow):
         )
 
         # volume
+        self.doubleSpinBox_volume.valueChanged.connect(
+            self.doubleSpinBox_volume_valueChanged
+        )
+        self.dial_volume.valueChanged.connect(self.dial_volume_valueChanged)
 
     @pyqtSlot()
     def pushButton_start_clicked(self):
@@ -539,6 +543,18 @@ class GUI(QMainWindow):
     @pyqtSlot()
     def pushButton_detection_gui_clicked(self):
         pass
+
+    @pyqtSlot()
+    def doubleSpinBox_volume_valueChanged(self):
+        volume = self.doubleSpinBox_volume.value()
+        # update dial
+        self.dial_volume.setProperty("value", volume)
+
+    @pyqtSlot()
+    def dial_volume_valueChanged(self):
+        volume = self.dial_volume.value()
+        # update SpinBox
+        self.doubleSpinBox_volume.setProperty("value", volume)
 
 
 class Block(QLabel):

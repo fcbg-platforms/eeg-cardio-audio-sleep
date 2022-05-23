@@ -21,7 +21,7 @@ if __name__ == "__main__":
     delay = 0.5
 
     process = mp.Process(
-        target=isochronous, args=(trigger, tdef, sequence, delay)
+        target=isochronous, args=(trigger, tdef, sequence, delay, 10)
     )
     process.start()
 

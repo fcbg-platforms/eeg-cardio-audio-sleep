@@ -28,6 +28,24 @@ docdict[
 duration : float
     Duration of the sound. The default is 0.1 second."""
 
+# ----------------------------------- tasks ----------------------------------
+docdict[
+    "trigger"
+] = """
+trigger : Trigger
+    A BSL trigger instance."""
+docdict[
+    "sequence"
+] = """
+sequence : array
+    Sequence of stimulus/omissions.
+    1 corresponds to a stound stimulus. 2 corresponds to an omission."""
+docdict[
+    "volume"
+] = """
+volume : float
+    Sound volume between 0 (mute) and 100."""
+
 # ------------------------- Documentation functions --------------------------
 docdict_indented = dict()
 

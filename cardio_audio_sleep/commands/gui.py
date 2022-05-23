@@ -188,7 +188,7 @@ class GUI(QMainWindow):
 
         # Add peak detection settings
         self.doubleSpinBox_height = QDoubleSpinBox(self.central_widget)
-        self.doubleSpinBox_height.setGeometry(QRect(540, 194, 100, 28))
+        self.doubleSpinBox_height.setGeometry(QRect(410, 194, 100, 28))
         self.doubleSpinBox_height.setSizePolicy(
             GUI._sizePolicy(self.doubleSpinBox_height)
         )
@@ -198,7 +198,7 @@ class GUI(QMainWindow):
         self.doubleSpinBox_height.setObjectName("doubleSpinBox_height")
 
         self.doubleSpinBox_prominence = QDoubleSpinBox(self.central_widget)
-        self.doubleSpinBox_prominence.setGeometry(QRect(540, 228, 100, 28))
+        self.doubleSpinBox_prominence.setGeometry(QRect(410, 228, 100, 28))
         self.doubleSpinBox_prominence.setSizePolicy(
             GUI._sizePolicy(self.doubleSpinBox_prominence)
         )
@@ -211,7 +211,7 @@ class GUI(QMainWindow):
         self.doubleSpinBox_prominence.setObjectName("doubleSpinBox_prominence")
 
         self.doubleSpinBox_width = QDoubleSpinBox(self.central_widget)
-        self.doubleSpinBox_width.setGeometry(QRect(540, 262, 100, 28))
+        self.doubleSpinBox_width.setGeometry(QRect(410, 262, 100, 28))
         self.doubleSpinBox_width.setSizePolicy(
             GUI._sizePolicy(self.doubleSpinBox_width)
         )
@@ -221,7 +221,7 @@ class GUI(QMainWindow):
         self.doubleSpinBox_width.setObjectName("doubleSpinBox_width")
 
         self.pushButton_prominence = QPushButton(self.central_widget)
-        self.pushButton_prominence.setGeometry(QRect(660, 228, 113, 28))
+        self.pushButton_prominence.setGeometry(QRect(530, 228, 113, 28))
         self.pushButton_prominence.setSizePolicy(
             GUI._sizePolicy(self.pushButton_prominence)
         )
@@ -231,7 +231,7 @@ class GUI(QMainWindow):
         self.pushButton_prominence.setChecked(False)
 
         self.pushButton_width = QPushButton(self.central_widget)
-        self.pushButton_width.setGeometry(QRect(660, 262, 113, 28))
+        self.pushButton_width.setGeometry(QRect(530, 262, 113, 28))
         self.pushButton_width.setSizePolicy(
             GUI._sizePolicy(self.pushButton_width)
         )
@@ -241,13 +241,13 @@ class GUI(QMainWindow):
         self.pushButton_width.setChecked(False)
 
         # Add peak detection settings labels
-        GUI._add_label(self, 420, 194, 120, 28, "height", "Height")
-        GUI._add_label(self, 420, 228, 120, 28, "prominence", "Prominence")
-        GUI._add_label(self, 420, 262, 120, 28, "width", "Width")
+        GUI._add_label(self, 290, 194, 120, 28, "height", "Height")
+        GUI._add_label(self, 290, 228, 120, 28, "prominence", "Prominence")
+        GUI._add_label(self, 290, 262, 120, 28, "width", "Width")
 
         # Add volume controls
         self.dial_volume = QDial(self.central_widget)
-        self.dial_volume.setGeometry(QRect(25, 210, 70, 68))
+        self.dial_volume.setGeometry(QRect(65, 210, 70, 68))
         self.dial_volume.setSizePolicy(GUI._sizePolicy(self.dial_volume))
         self.dial_volume.setMinimum(0)
         self.dial_volume.setMaximum(100)
@@ -255,7 +255,7 @@ class GUI(QMainWindow):
         self.dial_volume.setObjectName("dial_volume")
 
         self.doubleSpinBox_volume = QDoubleSpinBox(self.central_widget)
-        self.doubleSpinBox_volume.setGeometry(QRect(110, 245, 80, 24))
+        self.doubleSpinBox_volume.setGeometry(QRect(150, 245, 80, 24))
         self.doubleSpinBox_volume.setSizePolicy(
             GUI._sizePolicy(self.doubleSpinBox_volume)
         )
@@ -264,11 +264,11 @@ class GUI(QMainWindow):
         self.doubleSpinBox_volume.setProperty("value", defaults["volume"])
         self.doubleSpinBox_volume.setObjectName("doubleSpinBox_volume")
 
-        GUI._add_label(self, 110, 215, 60, 30, "volume", "Volume")
+        GUI._add_label(self, 150, 215, 60, 30, "volume", "Volume")
 
         # Add separation lines
         GUI._add_line(self, 0, 178, 800, 20, "line1", "h")
-        GUI._add_line(self, 200, 188, 20, 112, "line2", "v")
+        GUI._add_line(self, 260, 188, 20, 112, "line2", "v")
 
         # Set central widget
         self.setCentralWidget(self.central_widget)
@@ -423,10 +423,6 @@ class GUI(QMainWindow):
         self.args_mapping["asynchronous"][4] = volume
 
         logger.debug("Setting the volume to %.2f", volume)
-
-    def _update_peak_detection_settings(self, height, prominence, width):
-        """Update the peak detection settings."""
-        pass
 
     # -------------------------------------------------------------------------
     def connect_signals_to_slots(self):

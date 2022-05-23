@@ -280,7 +280,7 @@
    <widget class="QDoubleSpinBox" name="doubleSpinBox_height">
     <property name="geometry">
      <rect>
-      <x>540</x>
+      <x>410</x>
       <y>194</y>
       <width>100</width>
       <height>28</height>
@@ -292,11 +292,14 @@
       <verstretch>0</verstretch>
      </sizepolicy>
     </property>
+    <property name="maximum">
+     <double>100.000000000000000</double>
+    </property>
    </widget>
    <widget class="QPushButton" name="pushButton_prominence">
     <property name="geometry">
      <rect>
-      <x>660</x>
+      <x>530</x>
       <y>228</y>
       <width>113</width>
       <height>28</height>
@@ -315,7 +318,7 @@
    <widget class="QPushButton" name="pushButton_width">
     <property name="geometry">
      <rect>
-      <x>660</x>
+      <x>530</x>
       <y>262</y>
       <width>113</width>
       <height>28</height>
@@ -334,7 +337,7 @@
    <widget class="QDoubleSpinBox" name="doubleSpinBox_prominence">
     <property name="geometry">
      <rect>
-      <x>540</x>
+      <x>410</x>
       <y>228</y>
       <width>100</width>
       <height>28</height>
@@ -365,7 +368,7 @@
    <widget class="QDoubleSpinBox" name="doubleSpinBox_width">
     <property name="geometry">
      <rect>
-      <x>540</x>
+      <x>410</x>
       <y>262</y>
       <width>100</width>
       <height>28</height>
@@ -377,11 +380,14 @@
       <verstretch>0</verstretch>
      </sizepolicy>
     </property>
+    <property name="maximum">
+     <double>50.000000000000000</double>
+    </property>
    </widget>
    <widget class="QLabel" name="height">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>290</x>
       <y>194</y>
       <width>120</width>
       <height>28</height>
@@ -400,7 +406,7 @@
    <widget class="QLabel" name="prominence">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>290</x>
       <y>228</y>
       <width>120</width>
       <height>28</height>
@@ -419,7 +425,7 @@
    <widget class="QLabel" name="width">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>290</x>
       <y>262</y>
       <width>120</width>
       <height>28</height>
@@ -454,29 +460,10 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_detection_gui">
-    <property name="geometry">
-     <rect>
-      <x>230</x>
-      <y>208</y>
-      <width>151</width>
-      <height>68</height>
-     </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="text">
-     <string>Detection GUI</string>
-    </property>
-   </widget>
    <widget class="QDial" name="dial_volume">
     <property name="geometry">
      <rect>
-      <x>25</x>
+      <x>65</x>
       <y>210</y>
       <width>70</width>
       <height>68</height>
@@ -495,7 +482,7 @@
    <widget class="Line" name="line_2">
     <property name="geometry">
      <rect>
-      <x>200</x>
+      <x>260</x>
       <y>188</y>
       <width>20</width>
       <height>112</height>
@@ -514,7 +501,7 @@
    <widget class="QLabel" name="volume">
     <property name="geometry">
      <rect>
-      <x>110</x>
+      <x>150</x>
       <y>215</y>
       <width>60</width>
       <height>30</height>
@@ -533,7 +520,7 @@
    <widget class="QDoubleSpinBox" name="doubleSpinBox_volume">
     <property name="geometry">
      <rect>
-      <x>110</x>
+      <x>150</x>
       <y>245</y>
       <width>80</width>
       <height>24</height>

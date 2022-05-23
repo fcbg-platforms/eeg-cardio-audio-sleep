@@ -52,7 +52,7 @@ class GUI(QMainWindow):
         self.queue = mp.Queue()
 
         # defaults for the peak detection
-        defaults = dict(height=97., prominence=500., width=None)
+        defaults = dict(height=97.0, prominence=500.0, width=None)
 
         # load configuration
         self.load_config(ecg_ch_name, defaults)
@@ -109,9 +109,9 @@ class GUI(QMainWindow):
                 None,  # sequence
                 stream_name,
                 ecg_ch_name,
-                defaults['height'],
-                defaults['prominence'],
-                defaults['width'],
+                defaults["height"],
+                defaults["prominence"],
+                defaults["width"],
                 self.queue,
             ],
             "isochronous": [self.trigger, self.tdef, None, None],
@@ -184,7 +184,7 @@ class GUI(QMainWindow):
         )
         self.doubleSpinBox_height.setMinimum(0.0)
         self.doubleSpinBox_height.setMaximum(100.0)
-        self.doubleSpinBox_height.setProperty("value", defaults['height'])
+        self.doubleSpinBox_height.setProperty("value", defaults["height"])
         self.doubleSpinBox_height.setObjectName("doubleSpinBox_height")
 
         self.doubleSpinBox_prominence = QDoubleSpinBox(self.central_widget)
@@ -195,7 +195,9 @@ class GUI(QMainWindow):
         self.doubleSpinBox_prominence.setMinimum(400.0)
         self.doubleSpinBox_prominence.setMaximum(3000.0)
         self.doubleSpinBox_prominence.setSingleStep(25.0)
-        self.doubleSpinBox_prominence.setProperty("value", defaults['prominence'])
+        self.doubleSpinBox_prominence.setProperty(
+            "value", defaults["prominence"]
+        )
         self.doubleSpinBox_prominence.setObjectName("doubleSpinBox_prominence")
 
         self.doubleSpinBox_width = QDoubleSpinBox(self.central_widget)
@@ -205,7 +207,7 @@ class GUI(QMainWindow):
         )
         self.doubleSpinBox_width.setMinimum(0.0)
         self.doubleSpinBox_width.setMaximum(50.0)
-        self.doubleSpinBox_width.setProperty("value", defaults['width'])
+        self.doubleSpinBox_width.setProperty("value", defaults["width"])
         self.doubleSpinBox_width.setObjectName("doubleSpinBox_width")
 
         self.pushButton_prominence = QPushButton(self.central_widget)

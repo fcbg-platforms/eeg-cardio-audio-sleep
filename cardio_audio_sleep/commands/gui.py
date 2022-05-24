@@ -1,8 +1,5 @@
 import multiprocessing as mp
-try:
-    from importlib.resources import files  # type: ignore
-except ImportError:
-    from importlib_resources import files  # type: ignore
+from typing import Optional
 
 import numpy as np
 import psutil
@@ -23,6 +20,7 @@ from PyQt5.QtWidgets import (
 from .. import logger
 from ..audio import Tone
 from ..config import load_config, load_triggers
+from ..eye_link import Eyelink
 from ..tasks import (
     asynchronous,
     baseline,
@@ -36,8 +34,10 @@ from ..utils import (
     generate_sequence,
     search_ANT_amplifier,
 )
+from ..utils._docs import fill_doc
 
 
+@fill_doc
 class GUI(QMainWindow):
     """Application window and layout.
 
@@ -45,9 +45,10 @@ class GUI(QMainWindow):
     ----------
     ecg_ch_name : str
         Name of the ECG channel.
+    %(eye_link)s
     """
 
-    def __init__(self, ecg_ch_name: str):
+    def __init__(self, ecg_ch_name: str, eye_link: Optional[Eyelink] = None):
         super().__init__()
 
         # define mp Queue
@@ -57,7 +58,7 @@ class GUI(QMainWindow):
         defaults = dict(height=97.0, prominence=500.0, width=None, volume=0)
 
         # load configuration
-        self.load_config(ecg_ch_name, defaults)
+        self.load_config(ecg_ch_name, defaults, eye_link)
 
         # load GUI
         self.load_ui(defaults)
@@ -81,6 +82,7 @@ class GUI(QMainWindow):
         self,
         ecg_ch_name: str,
         defaults: dict,
+        eye_link: Optional[Eyelink] = None,
     ):
         self.config, trigger_type = load_config()
         self.tdef = load_triggers()
@@ -89,6 +91,9 @@ class GUI(QMainWindow):
         elif trigger_type == "mock":
             self.trigger = MockTrigger()
         stream_name = search_ANT_amplifier()
+
+        # store eye-link
+        self.eye_link = eye_link
 
         # Create task mapping
         self.task_mapping = {
@@ -104,6 +109,8 @@ class GUI(QMainWindow):
                 self.trigger,
                 self.tdef,
                 self.config["baseline"]["duration"],
+                True,
+                self.eye_link,
             ],
             "synchronous": [
                 self.trigger,
@@ -116,6 +123,7 @@ class GUI(QMainWindow):
                 defaults["width"],
                 defaults["volume"],
                 self.queue,
+                self.eye_link,
             ],
             "isochronous": [
                 self.trigger,
@@ -123,6 +131,7 @@ class GUI(QMainWindow):
                 None,
                 None,
                 defaults["volume"],
+                self.eye_link,
             ],
             "asynchronous": [
                 self.trigger,
@@ -130,6 +139,7 @@ class GUI(QMainWindow):
                 None,
                 None,
                 defaults["volume"],
+                self.eye_link,
             ],
         }
 
@@ -436,6 +446,14 @@ class GUI(QMainWindow):
         self.args_mapping["asynchronous"][4] = volume
 
         logger.debug("Setting the volume to %.2f", volume)
+
+    def closeEvent(self, event):
+        """
+        Event called when closing the GUI.
+        """
+        if self.eye_link is not None:
+            self.eye_link.stop_recording_el()
+        event.accept()
 
     # -------------------------------------------------------------------------
     def connect_signals_to_slots(self):

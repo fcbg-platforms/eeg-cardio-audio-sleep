@@ -46,6 +46,12 @@ docdict[
 volume : float
     Sound volume between 0 (mute) and 100."""
 
+# --------------------------------- eye-link ---------------------------------
+docdict["eye_link"] = """
+eye_link : Eyelink | None
+    Eye-link instance where the calibration has been done and the recording has
+    been started. None to disable eye-tracking."""
+
 # ------------------------- Documentation functions --------------------------
 docdict_indented = dict()
 

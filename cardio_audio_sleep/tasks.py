@@ -6,10 +6,12 @@ from typing import Optional
 
 import numpy as np
 import psychtoolbox as ptb
+from bsl.triggers import TriggerDef
 from numpy.typing import ArrayLike
 from psychopy.clock import wait
 
 from . import logger
+from .eye_link import Eyelink
 from .utils._checks import (
     _check_sequence,
     _check_sequence_timings,
@@ -22,7 +24,7 @@ from .utils._docs import fill_doc
 @fill_doc
 def synchronous(
     trigger,
-    tdef,
+    tdef: TriggerDef,
     sequence: ArrayLike,
     stream_name: str,
     ecg_ch_name: str,
@@ -31,6 +33,7 @@ def synchronous(
     peak_width: Optional[float],
     volume: float,
     queue: Optional[Queue] = None,
+    eye_link: Optional[Eyelink] = None,
 ) -> list:
     """
     Synchronous block where sounds are sync to the heartbeat.
@@ -60,6 +63,7 @@ def synchronous(
     queue : Queue
         Queue where the sequence_timings are stored. If None, this argument is
         ignored.
+    %(eye_link)s
 
     Returns
     -------
@@ -126,7 +130,12 @@ def synchronous(
 
 @fill_doc
 def isochronous(
-    trigger, tdef, sequence: ArrayLike, delay: float, volume: float
+    trigger,
+    tdef: TriggerDef,
+    sequence: ArrayLike,
+    delay: float,
+    volume: float,
+    eye_link: Optional[Eyelink] = None,
 ):
     """
     Isochronous block where sounds are delivered at a fix interval.
@@ -144,6 +153,7 @@ def isochronous(
     delay : float
         Delay between 2 stimulus in seconds.
     %(volume)s
+    %(eye_link)s
     """
     from .audio import Tone
 
@@ -187,10 +197,11 @@ def isochronous(
 @fill_doc
 def asynchronous(
     trigger,
-    tdef,
+    tdef: TriggerDef,
     sequence: ArrayLike,
     sequence_timings: ArrayLike,
     volume: float,
+    eye_link: Optional[Eyelink] = None,
 ):
     """
     Asynchronous block where sounds repeat a sequence from a synchronous task.
@@ -211,6 +222,7 @@ def asynchronous(
         Array of length BLOCK_SIZE containing the timing at which the stimulus
         was delivered.
     %(volume)s
+    %(eye_link)s
     """
     from .audio import Tone
 
@@ -255,7 +267,13 @@ def asynchronous(
 
 
 @fill_doc
-def baseline(trigger, tdef, duration: float, verbose: bool = True):
+def baseline(
+        trigger,
+        tdef: TriggerDef,
+        duration: float,
+        verbose: bool = True,
+        eye_link: Optional[Eyelink] = None,
+        ):
     """
     Baseline block corresponding to a resting-state recording.
 
@@ -270,6 +288,7 @@ def baseline(trigger, tdef, duration: float, verbose: bool = True):
         Duration of the resting-state block in seconds.
     verbose : bool
         If True, a timer is logged with the info level every second.
+    %(eye_link)s
     """
     _check_tdef(tdef)
     _check_type(duration, ("numeric",), "duration")

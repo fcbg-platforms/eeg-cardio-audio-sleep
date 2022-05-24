@@ -1,12 +1,18 @@
 import argparse
 import time
+try:
+    from importlib.resources import files  # type: ignore
+except ImportError:
+    from importlib_resources import files  # type: ignore
 
 from bsl.triggers import ParallelPortTrigger
 from bsl.utils.lsl import list_lsl_streams
+from psychopy.visual import ImageStim
 from PyQt5.QtWidgets import QApplication
 
 from .. import logger, peak_detection_parameters_tuning, set_log_level
 from ..config import load_triggers
+from ..eye_link import EyeLink
 from ..utils import search_ANT_amplifier
 from .cli import input_ecg_ch_name
 from .gui import GUI
@@ -18,15 +24,41 @@ def cas():
         prog="CAS", description="Cardio-Audio-Sleep GUI"
     )
     parser.add_argument(
+        "--ecg",
+        help="ECG channel name",
+        nargs=1,
+        type=str,
+        metavar=str,
+    )
+    parser.add_argument(
+        "--eye_tracker", help="enable eye-tracking", action="store_true"
+    )
+    parser.add_argument(
         "--verbose", help="enable debug logs", action="store_true"
     )
     args = parser.parse_args()
     set_log_level("DEBUG" if args.verbose else "INFO")
 
-    ecg_ch_name = input_ecg_ch_name()
+    if args.eye_tracker:
+        # start and calibrate eye-link
+        eye_link = EyeLink(fname='TEST')
+        eye_link.calibrate_el()
+        eye_link.start_recording_el()
+
+        # display fixation cross
+        cross_path = str(files("cardio_audio_sleep.visuals").joinpath("fixation.png"))
+        cross = ImageStim(win=eye_link.win, image=cross_path)
+        cross.autoDraw = False
+        cross.draw()
+        eye_link.win.flip()
+    else:
+        eye_link = None
+
+    # Ask for ECG channel name if it's not provided in the arguments
+    ecg_ch_name = input_ecg_ch_name() if args.ecg is None else args.ecg
 
     app = QApplication([])
-    window = GUI(ecg_ch_name)
+    window = GUI(ecg_ch_name, eye_link)
     window.show()
     app.exec()
 

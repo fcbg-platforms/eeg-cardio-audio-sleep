@@ -90,8 +90,10 @@ class Eyelink:
         # over the link, include the 'HTARGET' flag to save head target sticker
         # data for supported eye trackers
         if eyelink_ver > 3:
-            file_sample_flags = "LEFT,RIGHT,GAZE,HREF,RAW,AREA,HTARGET," + \
-                "GAZERES,BUTTON,STATUS,INPUT"
+            file_sample_flags = (
+                "LEFT,RIGHT,GAZE,HREF,RAW,AREA,HTARGET,"
+                + "GAZERES,BUTTON,STATUS,INPUT"
+            )
             link_sample_flags = (
                 "LEFT,RIGHT,GAZE,GAZERES,AREA,HTARGET,STATUS,INPUT"
             )

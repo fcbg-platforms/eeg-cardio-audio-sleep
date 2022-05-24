@@ -268,12 +268,12 @@ def asynchronous(
 
 @fill_doc
 def baseline(
-        trigger,
-        tdef: TriggerDef,
-        duration: float,
-        verbose: bool = True,
-        eye_link: Optional[Eyelink] = None,
-        ):
+    trigger,
+    tdef: TriggerDef,
+    duration: float,
+    verbose: bool = True,
+    eye_link: Optional[Eyelink] = None,
+):
     """
     Baseline block corresponding to a resting-state recording.
 

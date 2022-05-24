@@ -1,5 +1,6 @@
 import argparse
 import time
+
 try:
     from importlib.resources import files  # type: ignore
 except ImportError:
@@ -41,12 +42,14 @@ def cas():
 
     if args.eye_tracker:
         # start and calibrate eye-link
-        eye_link = EyeLink(fname='TEST')
+        eye_link = EyeLink(fname="TEST")
         eye_link.calibrate_el()
         eye_link.start_recording_el()
 
         # display fixation cross
-        cross_path = str(files("cardio_audio_sleep.visuals").joinpath("fixation.png"))
+        cross_path = str(
+            files("cardio_audio_sleep.visuals").joinpath("fixation.png")
+        )
         cross = ImageStim(win=eye_link.win, image=cross_path)
         cross.autoDraw = False
         cross.draw()

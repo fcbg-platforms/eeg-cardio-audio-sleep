@@ -612,7 +612,7 @@ class GUI(QMainWindow):
         # play sound
         sound = Tone(self.dial_volume.value(), duration=0.1, frequency=1000)
         logger.debug("Playing sound at volume %.2f.", self.dial_volume.value())
-        sound.play(blocking=True)
+        sound.play(blocking=False)
 
 
 class Block(QLabel):

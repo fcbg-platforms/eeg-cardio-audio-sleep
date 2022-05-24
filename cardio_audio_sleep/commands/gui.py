@@ -422,6 +422,9 @@ class GUI(QMainWindow):
                     np.median(np.diff(args[3])),
                 )
 
+        logger.debug("Starting new block of type %s.",
+                     self.blocks[2].btype)
+
         # start new process
         self.process = mp.Process(
             target=self.task_mapping[self.blocks[2].btype], args=tuple(args)
@@ -609,7 +612,6 @@ class GUI(QMainWindow):
         # assert self.dial_volume.value() == self.doubleSpinBox_volume.value()
         # # play sound
         # sound = Tone(self.dial_volume.value(), duration=0.1, frequency=1000)
-        # logger.debug("Playing sound at volume %.2f.", self.dial_volume.value())
         # sound.play(blocking=True)
 
 

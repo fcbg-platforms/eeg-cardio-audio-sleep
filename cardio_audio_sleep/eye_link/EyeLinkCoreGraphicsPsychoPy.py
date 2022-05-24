@@ -335,7 +335,7 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
         """Erase the calibration/validation & drift-check target."""
         try:
             self._calibTar.pause()
-        except:
+        except Exception:
             pass
         self.clear_cal_display()
         self._animatedTarget = False
@@ -613,7 +613,7 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
         for i in range(width):
             try:
                 self._imagebuffer.append(self._pal[buff[i]])
-            except:
+            except Exception:
                 pass
 
         if line == totlines:

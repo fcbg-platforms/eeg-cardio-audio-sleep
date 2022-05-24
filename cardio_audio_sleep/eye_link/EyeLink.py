@@ -35,7 +35,7 @@ class Eyelink(EYELink):
         # Step 1: Connect to the EyeLink Host PC
         #
         # The Host IP address, by default, is "100.1.1.1".
-        # the "el_tracker" objected created here can be accessed through the Pylink
+        # the "el_tracker" objected created here can be accessed through Pylink
         # Set the Host PC address to "None" (without quotes) to run the script
         # in "Dummy Mode"
         if dummy_mode:

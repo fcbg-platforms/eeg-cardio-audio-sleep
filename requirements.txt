@@ -8,3 +8,4 @@ psychopy==2021.2.3
 psutil
 PyQt5
 pyxdf
+importlib-resources; python_version<"3.9"

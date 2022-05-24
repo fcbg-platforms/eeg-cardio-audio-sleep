@@ -606,13 +606,12 @@ class GUI(QMainWindow):
 
     @pyqtSlot()
     def pushButton_volume_clicked(self):
-        pass
-        # from ..audio import Tone
-        # # sanity-check
-        # assert self.dial_volume.value() == self.doubleSpinBox_volume.value()
-        # # play sound
-        # sound = Tone(self.dial_volume.value(), duration=0.1, frequency=1000)
-        # sound.play(blocking=True)
+        from ..audio import Tone
+        # sanity-check
+        assert self.dial_volume.value() == self.doubleSpinBox_volume.value()
+        # play sound
+        sound = Tone(self.dial_volume.value(), duration=0.1, frequency=1000)
+        sound.play(blocking=True)
 
 
 class Block(QLabel):

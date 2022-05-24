@@ -1,19 +1,20 @@
-#
-# Copyright (C) 2018-2021 SR Research Ltd.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or (at
-# your option) any later version.
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-# for more details.
-# You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc., 51
-# Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""
+Copyright (C) 2018-2021 SR Research Ltd.
 
-# Last updated on 5/13/2021
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or (at
+your option) any later version.
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 51
+Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+Last updated on 5/13/2021
+"""
 
 from __future__ import division, print_function
 
@@ -30,10 +31,6 @@ from PIL import Image, ImageDraw
 from psychopy import core, event, logging, monitors, visual
 from psychopy.tools.coordinatetools import pol2cart
 
-# allow to disable sound, or if we failed to initialize pygame.mixer or failed to load audio file
-# continue experiment without sound.
-DISABLE_AUDIO = True
-
 
 # Show only critical log message in the console
 logging.console.setLevel(logging.CRITICAL)
@@ -46,7 +43,6 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
 
         tracker: an EyeLink instance (connection)
         win: the Psychopy display we use for stimulus presentation"""
-        global DISABLE_AUDIO
         pylink.EyeLinkCustomDisplay.__init__(self)
 
         self._version = "2021.3.31"
@@ -235,39 +231,6 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
 
         self._pictureTarget = picture_target
 
-    def setCalibrationSounds(self, target_beep, done_beep, error_beep):
-        """Provide three wav files as the warning beeps
-
-        Parameters:
-            target_beep -- sound to play when the target comes up
-            done_beep -- calibration is done successfully
-            error_beep -- calibration/drift-correction error.
-        """
-
-        # Target beep
-        if target_beep == "":
-            pass
-        elif target_beep == "off":
-            self._target_beep = None
-        else:
-            self._target_beep.setSound(target_beep)
-
-        # Done beep
-        if done_beep == "":
-            pass
-        elif done_beep == "off":
-            self._done_beep = None
-        else:
-            self._done_beep.setSound(done_beep)
-
-        # Error beep
-        if error_beep == "":
-            pass
-        elif error_beep == "off":
-            self._error_beep = None
-        else:
-            self._error_beep.setSound(error_beep)
-
     def update_cal_target(self):
         """Make sure target stimuli is already memory when
         being used by draw_cal_target"""
@@ -367,7 +330,6 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
 
     def record_abort_hide(self):
         """This function is called if aborted"""
-
         pass
 
     def erase_cal_target(self):
@@ -382,7 +344,7 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
         self._display.flip()
 
     def draw_cal_target(self, x, y):
-        """Draw the calibration/validation & drift-check  target"""
+        """Draw the calibration/validation & drift-check target."""
 
         self._calibInst.autoDraw = False
 
@@ -415,35 +377,8 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
             self._tarInner.draw()
             self._display.flip()
 
-    def play_beep(self, beepid):
-        """Play a sound during calibration/drift correct."""
-
-        global DISABLE_AUDIO
-        # if sound is disabled, don't play
-        if DISABLE_AUDIO:
-            pass
-        else:
-            if self._calTarget == "movie":
-                pass
-            else:
-                if beepid in [pylink.CAL_TARG_BEEP, pylink.DC_TARG_BEEP]:
-                    if self._target_beep is not None:
-                        self._target_beep.play()
-                        core.wait(0.5)
-                elif beepid in [pylink.CAL_ERR_BEEP, pylink.DC_ERR_BEEP]:
-                    if self._error_beep is not None:
-                        self._error_beep.play()
-                        core.wait(1.2)
-                elif beepid in [pylink.CAL_GOOD_BEEP, pylink.DC_GOOD_BEEP]:
-                    if self._done_beep is not None:
-                        self._done_beep.play()
-                        core.wait(0.5)
-                else:
-                    pass
-
     def getColorFromIndex(self, colorindex):
-        """Return psychopy colors for elements in the camera image"""
-
+        """Return psychopy colors for elements in the camera image."""
         if colorindex == pylink.CR_HAIR_COLOR:
             return (255, 255, 255)
         elif colorindex == pylink.PUPIL_HAIR_COLOR:
@@ -458,7 +393,7 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
             return (128, 128, 128)
 
     def draw_line(self, x1, y1, x2, y2, colorindex):
-        """Draw a line. This is used for drawing crosshairs/squares"""
+        """Draw a line. This is used for drawing crosshairs/squares."""
 
         color = self.getColorFromIndex(colorindex)
 
@@ -475,7 +410,7 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
 
     def draw_lozenge(self, x, y, width, height, colorindex):
         """Draw a lozenge to show the defined search limits
-        (x,y) is top-left corner of the bounding box
+        (x,y) is top-left corner of the bounding box.
         """
 
         color = self.getColorFromIndex(colorindex)
@@ -725,8 +660,7 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
 # window to the graphics environment constructor (CalibrationGraphics).
 # The graphics environment, once instantiated, can be configured to customize
 # the calibration foreground and background color, the calibration target
-# type, the calibration target size, and the beeps we would like to
-# play during calibration and validation.
+# type, the calibration target size.
 #
 # IMPORTANT: Once the graphics environment is properly configured, call the
 # pylink.openGraphicsEx() function to request Pylink to use the custom graphics
@@ -742,7 +676,7 @@ def main():
 
     The doTrackerSetup() command will bring up a gray calibration screen.
     When the gray screen comes up, press Enter to show the camera image,
-    press C to calibrate, V to validate, and O to quit calibration"""
+    press C to calibrate, V to validate, and O to quit calibration."""
 
     # Set the screen resolution
     scn_w, scn_h = (1440, 900)
@@ -781,11 +715,6 @@ def main():
     genv.setTargetType("circle")
     # Configure the size of the calibration target (in pixels)
     genv.setTargetSize(24)
-
-    # Beeps to play during calibration, validation and drift correction
-    # parameters: target, good, error
-    # Each parameter could be ''--default sound, 'off'--no sound, or a wav file
-    genv.setCalibrationSounds("", "", "")
 
     # Request Pylink to use the graphics environment (genv) we customized above
     pylink.openGraphicsEx(genv)

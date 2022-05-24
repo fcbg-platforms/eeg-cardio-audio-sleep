@@ -6,14 +6,7 @@ import sys
 import pylink
 from psychopy import core, event, logging, monitors, visual
 
-from .EyeLinkCoreGraphicsPsychoPy import EyeLinkCoreGraphicsPsychoPy
-
-# Switch to the script folder
-# script_path = os.path.dirname(sys.argv[0])
-# if len(script_path) != 0:
-#     os.chdir(script_path)
-
-# Show only critical log message in the PsychoPy console
+from . import EyeLinkCoreGraphicsPsychoPy
 
 
 class Eyelink:
@@ -54,8 +47,8 @@ class Eyelink:
                 core.quit()
                 sys.exit()
         # -------------------------------------------------------------------
-
         # Step 2: Open an EDF data file on the Host PC
+
         try:
             self.el_tracker.openDataFile(self.edf_fname + ".EDF")
         except RuntimeError as err:
@@ -67,14 +60,14 @@ class Eyelink:
             sys.exit()
 
         # -------------------------------------------------------------------
-
         # Step 3: Configure the tracker
         #
         # Put the tracker in offline mode before we change tracking parameters
         self.el_tracker.setOfflineMode()
 
-        # Get the software version:  1-EyeLink I, 2-EyeLink II, 3/4-EyeLink 1000,
-        # 5-EyeLink 1000 Plus, 6-Portable DUO
+        # Get the software version:
+        # 1-EyeLink I, 2-EyeLink II, 3/4-EyeLink 1000, 5-EyeLink 1000 Plus,
+        # 6-Portable DUO
         eyelink_ver = 0  # set version to 0, in case running in Dummy mode
         if not dummy_mode:
             vstr = self.el_tracker.getTrackerVersionString()
@@ -83,11 +76,13 @@ class Eyelink:
             print("Running experiment on %s, version %d" % (vstr, eyelink_ver))
 
         # File and Link data control
-        # what eye events to save in the EDF file, include everything by default
+        # what eye events to save in the EDF file
+        # include everything by default
         file_event_flags = (
             "LEFT,RIGHT,FIXATION,SACCADE,BLINK,MESSAGE,BUTTON,INPUT"
         )
-        # what eye events to make available over the link, include everything by default
+        # what eye events to make available over the link
+        # include everything by default
         link_event_flags = (
             "LEFT,RIGHT,FIXATION,SACCADE,BLINK,BUTTON,FIXUPDATE,INPUT"
         )
@@ -95,7 +90,8 @@ class Eyelink:
         # over the link, include the 'HTARGET' flag to save head target sticker
         # data for supported eye trackers
         if eyelink_ver > 3:
-            file_sample_flags = "LEFT,RIGHT,GAZE,HREF,RAW,AREA,HTARGET,GAZERES,BUTTON,STATUS,INPUT"
+            file_sample_flags = "LEFT,RIGHT,GAZE,HREF,RAW,AREA,HTARGET," + \
+                "GAZERES,BUTTON,STATUS,INPUT"
             link_sample_flags = (
                 "LEFT,RIGHT,GAZE,GAZERES,AREA,HTARGET,STATUS,INPUT"
             )
@@ -119,13 +115,15 @@ class Eyelink:
         )
 
         # Optional tracking parameters
-        # Sample rate, 250, 500, 1000, or 2000, check your tracker specification
+        # Sample rate, 250, 500, 1000, or 2000, c.f. tracker specification
         # if eyelink_ver > 2:
         #     el_tracker.sendCommand("sample_rate 1000")
-        # Choose a calibration type, H3, HV3, HV5, HV13 (HV = horizontal/vertical),
+        # Choose a calibration type, H3, HV3, HV5, HV13
+        # (HV = horizontal/vertical)
         self.el_tracker.sendCommand("calibration_type = HV9")
         # Set a gamepad button to accept calibration/drift check target
-        # You need a supported gamepad/button box that is connected to the Host PC
+        # You need a supported gamepad/button box that is connected to the
+        # Host PC
         self.el_tracker.sendCommand(
             "button_function 5 'accept_target_fixation'"
         )
@@ -145,7 +143,8 @@ class Eyelink:
         # get the native screen resolution used by PsychoPy
         self.scn_width, self.scn_height = self.win.size
 
-        # Pass the display pixel coordinates (left, top, right, bottom) to the tracker
+        # Pass the display pixel coordinates (left, top, right, bottom) to the
+        # tracker
         # see the EyeLink Installation Guide, "Customizing Screen Settings"
         el_coords = "screen_pixel_coords = 0 0 %d %d" % (
             self.scn_width - 1,
@@ -195,10 +194,8 @@ class Eyelink:
             self.clear_screen()
 
     # Step 5: Set up the camera and calibrate the tracker
-
     def calibrate_el(self):
         # Show the task instructions
-
         task_msg = "\nPress ENTER twice to display tracker menu"
         self.show_msg(task_msg)
 
@@ -213,7 +210,6 @@ class Eyelink:
         self.el_tracker.sendMessage("START")
 
     def stop_recording_el(self):
-
         self.el_tracker.stopRecording()
         # Put tracker in Offline mode
         self.el_tracker.setOfflineMode()

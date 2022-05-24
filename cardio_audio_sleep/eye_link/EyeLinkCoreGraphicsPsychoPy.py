@@ -31,7 +31,6 @@ from PIL import Image, ImageDraw
 from psychopy import core, event, logging, monitors, visual
 from psychopy.tools.coordinatetools import pol2cart
 
-
 # Show only critical log message in the console
 logging.console.setLevel(logging.CRITICAL)
 

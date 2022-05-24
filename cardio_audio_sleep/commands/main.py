@@ -25,10 +25,7 @@ def cas():
         prog="CAS", description="Cardio-Audio-Sleep GUI"
     )
     parser.add_argument(
-        "--ecg",
-        help="name of the ECG channel",
-        type=str,
-        metavar=str
+        "--ecg", help="name of the ECG channel", type=str, metavar=str
     )
     parser.add_argument(
         "--eye_tracker", help="enable eye-tracking", action="store_true"

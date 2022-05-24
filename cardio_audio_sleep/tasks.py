@@ -98,6 +98,8 @@ def synchronous(
 
     # Task loop
     trigger.signal(tdef.sync_start)
+    if eye_link is not None:
+        eye_link.el_tracker.sendMessage(str(tdef.sync_start))
     wait(0.2, hogCPUperiod=0)
 
     while counter <= len(sequence) - 1:
@@ -108,6 +110,8 @@ def synchronous(
             wait(0.038 - delay, hogCPUperiod=1)  # computer specific delay
             # trigger
             trigger.signal(sequence[counter])
+            if eye_link is not None:
+                eye_link.el_tracker.sendMessage(str(sequence[counter]))
             # sound
             if sequence[counter] == 1:
                 sound.play()
@@ -121,6 +125,8 @@ def synchronous(
 
     wait(1, hogCPUperiod=0)
     trigger.signal(tdef.sync_stop)
+    if eye_link is not None:
+        eye_link.el_tracker.sendMessage(str(tdef.sync_stop))
 
     if queue is not None:
         queue.put(sequence_timings)
@@ -175,11 +181,15 @@ def isochronous(
 
     # Task loop
     trigger.signal(tdef.iso_start)
+    if eye_link is not None:
+        eye_link.el_tracker.sendMessage(str(tdef.iso_start))
     wait(0.2, hogCPUperiod=0)
 
     while counter <= len(sequence) - 1:
         now = ptb.GetSecs()
         trigger.signal(sequence[counter])
+        if eye_link is not None:
+            eye_link.el_tracker.sendMessage(str(sequence[counter]))
         # stimuli
         if sequence[counter] == 1:
             sound.play()
@@ -192,6 +202,8 @@ def isochronous(
 
     wait(1, hogCPUperiod=0)
     trigger.signal(tdef.iso_stop)
+    if eye_link is not None:
+        eye_link.el_tracker.sendMessage(str(tdef.iso_stop))
 
 
 @fill_doc
@@ -244,11 +256,15 @@ def asynchronous(
 
     # Task loop
     trigger.signal(tdef.async_start)
+    if eye_link is not None:
+        eye_link.el_tracker.sendMessage(str(tdef.async_start))
     wait(0.2, hogCPUperiod=0)
 
     while counter <= len(sequence) - 1:
         now = ptb.GetSecs()
         trigger.signal(sequence[counter])
+        if eye_link is not None:
+            eye_link.el_tracker.sendMessage(str(sequence[counter]))
         # stimuli
         if sequence[counter] == 1:
             sound.play()
@@ -264,6 +280,8 @@ def asynchronous(
 
     wait(1, hogCPUperiod=0)
     trigger.signal(tdef.async_stop)
+    if eye_link is not None:
+        eye_link.el_tracker.sendMessage(str(tdef.async_stop))
 
 
 @fill_doc
@@ -301,6 +319,8 @@ def baseline(
 
     # Start trigger
     trigger.signal(tdef.baseline_start)
+    if eye_link is not None:
+        eye_link.el_tracker.sendMessage(str(tdef.baseline_start))
 
     duration_ = datetime.timedelta(seconds=duration)
 
@@ -316,6 +336,8 @@ def baseline(
 
     # Stop trigger
     trigger.signal(tdef.baseline_stop)
+    if eye_link is not None:
+        eye_link.el_tracker.sendMessage(str(tdef.baseline_stop))
 
 
 def inter_block(duration: float, verbose: bool = True):

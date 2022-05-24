@@ -43,10 +43,11 @@ class Eyelink(EYELink):
         else:
             try:
                 self.el_tracker = pylink.EyeLink(host_ip)
-            except RuntimeError as error:
-                print("ERROR:", error)
+            except RuntimeError:
                 core.quit()
                 sys.exit()
+                raise
+
         # -------------------------------------------------------------------
         # Step 2: Open an EDF data file on the Host PC
 

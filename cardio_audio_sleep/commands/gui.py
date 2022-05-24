@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import (
 )
 
 from .. import logger
-from ..audio import Tone
+# from ..audio import Tone
 from ..config import load_config, load_triggers
 from ..eye_link import Eyelink
 from ..tasks import (
@@ -207,7 +207,7 @@ class GUI(QMainWindow):
         self.doubleSpinBox_height.setSizePolicy(
             GUI._sizePolicy(self.doubleSpinBox_height)
         )
-        self.doubleSpinBox_height.setMinimum(0.0)
+        self.doubleSpinBox_height.setMinimum(1.0)
         self.doubleSpinBox_height.setMaximum(100.0)
         self.doubleSpinBox_height.setProperty("value", defaults["height"])
         self.doubleSpinBox_height.setObjectName("doubleSpinBox_height")
@@ -230,7 +230,7 @@ class GUI(QMainWindow):
         self.doubleSpinBox_width.setSizePolicy(
             GUI._sizePolicy(self.doubleSpinBox_width)
         )
-        self.doubleSpinBox_width.setMinimum(0.0)
+        self.doubleSpinBox_width.setMinimum(1.0)
         self.doubleSpinBox_width.setMaximum(50.0)
         self.doubleSpinBox_width.setProperty("value", defaults["width"])
         self.doubleSpinBox_width.setObjectName("doubleSpinBox_width")

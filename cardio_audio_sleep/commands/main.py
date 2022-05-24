@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import QApplication
 
 from .. import logger, peak_detection_parameters_tuning, set_log_level
 from ..config import load_triggers
-from ..eye_link import EyeLink
+from ..eye_link import Eyelink
 from ..utils import search_ANT_amplifier
 from .cli import input_ecg_ch_name
 from .gui import GUI
@@ -42,7 +42,7 @@ def cas():
 
     if args.eye_tracker:
         # start and calibrate eye-link
-        eye_link = EyeLink(fname="TEST")
+        eye_link = Eyelink(fname="TEST")
         eye_link.calibrate_el()
         eye_link.start_recording_el()
 

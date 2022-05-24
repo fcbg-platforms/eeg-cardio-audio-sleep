@@ -18,7 +18,6 @@ from PyQt5.QtWidgets import (
 )
 
 from .. import logger
-# from ..audio import Tone
 from ..config import load_config, load_triggers
 from ..eye_link import Eyelink
 from ..tasks import (
@@ -95,7 +94,7 @@ class GUI(QMainWindow):
         # store eye-link
         self.eye_link = eye_link
 
-        # Create task mapping
+        # create task mapping
         self.task_mapping = {
             "baseline": baseline,
             "synchronous": synchronous,
@@ -103,7 +102,7 @@ class GUI(QMainWindow):
             "asynchronous": asynchronous,
         }
 
-        # Create args
+        # create args
         self.args_mapping = {
             "baseline": [
                 self.trigger,
@@ -220,9 +219,10 @@ class GUI(QMainWindow):
         self.doubleSpinBox_prominence.setMinimum(400.0)
         self.doubleSpinBox_prominence.setMaximum(3000.0)
         self.doubleSpinBox_prominence.setSingleStep(25.0)
-        self.doubleSpinBox_prominence.setProperty(
-            "value", defaults["prominence"]
-        )
+        if defaults["prominence"] is not None:
+            self.doubleSpinBox_prominence.setProperty(
+                "value", defaults["prominence"]
+            )
         self.doubleSpinBox_prominence.setObjectName("doubleSpinBox_prominence")
 
         self.doubleSpinBox_width = QDoubleSpinBox(self.central_widget)
@@ -232,7 +232,8 @@ class GUI(QMainWindow):
         )
         self.doubleSpinBox_width.setMinimum(1.0)
         self.doubleSpinBox_width.setMaximum(50.0)
-        self.doubleSpinBox_width.setProperty("value", defaults["width"])
+        if defaults["width"] is not None:
+            self.doubleSpinBox_width.setProperty("value", defaults["width"])
         self.doubleSpinBox_width.setObjectName("doubleSpinBox_width")
 
         self.pushButton_prominence = QPushButton(self.central_widget)
@@ -603,6 +604,7 @@ class GUI(QMainWindow):
     @pyqtSlot()
     def pushButton_volume_clicked(self):
         pass
+        # from ..audio import Tone
         # # sanity-check
         # assert self.dial_volume.value() == self.doubleSpinBox_volume.value()
         # # play sound

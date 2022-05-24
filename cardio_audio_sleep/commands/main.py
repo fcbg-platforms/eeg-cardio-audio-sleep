@@ -26,10 +26,9 @@ def cas():
     )
     parser.add_argument(
         "--ecg",
-        help="ECG channel name",
-        nargs=1,
+        help="name of the ECG channel",
         type=str,
-        metavar=str,
+        metavar=str
     )
     parser.add_argument(
         "--eye_tracker", help="enable eye-tracking", action="store_true"
@@ -40,13 +39,13 @@ def cas():
     args = parser.parse_args()
     set_log_level("DEBUG" if args.verbose else "INFO")
 
+    # setup eye-tracker
     if args.eye_tracker:
-        # start and calibrate eye-link
         eye_link = Eyelink(fname="TEST")
         eye_link.calibrate_el()
         eye_link.start_recording_el()
 
-        # display fixation cross
+        # draw a fixation cross
         cross_path = str(
             files("cardio_audio_sleep.visuals").joinpath("fixation.png")
         )
@@ -57,7 +56,7 @@ def cas():
     else:
         eye_link = None
 
-    # Ask for ECG channel name if it's not provided in the arguments
+    # ask for ECG channel name if it's not provided as argument
     ecg_ch_name = input_ecg_ch_name() if args.ecg is None else args.ecg
 
     app = QApplication([])

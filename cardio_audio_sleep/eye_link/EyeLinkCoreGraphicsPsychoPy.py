@@ -31,6 +31,7 @@ from PIL import Image, ImageDraw
 from psychopy import core, event, logging, monitors, visual
 from psychopy.tools.coordinatetools import pol2cart
 
+
 # Show only critical log message in the console
 logging.console.setLevel(logging.CRITICAL)
 
@@ -321,19 +322,18 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
 
     def exit_cal_display(self):
         """Exit the calibration/validation routine, set the screen
-        units to the original one used by the user"""
+        units to the original one used by the user."""
 
         self._display.setUnits(self._units)
         self._animatedTarget = False
         self.clear_cal_display()
 
     def record_abort_hide(self):
-        """This function is called if aborted"""
+        """This function is called if aborted."""
         pass
 
     def erase_cal_target(self):
-        """Erase the calibration/validation & drift-check target"""
-
+        """Erase the calibration/validation & drift-check target."""
         try:
             self._calibTar.pause()
         except:
@@ -344,7 +344,6 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
 
     def draw_cal_target(self, x, y):
         """Draw the calibration/validation & drift-check target."""
-
         self._calibInst.autoDraw = False
 
         self.clear_cal_display()
@@ -465,7 +464,7 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
                 )
 
     def get_mouse_state(self):
-        """Get the current mouse position and status"""
+        """Get the current mouse position and status."""
 
         w, h = self._display.size
         X, Y = self._mouse.getPos()
@@ -478,7 +477,7 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
 
     def get_input_key(self):
         """This function will be constantly pools, update the stimuli
-        here is you need dynamic calibration target"""
+        here is you need dynamic calibration target."""
 
         # This function is constantly checked by the API,
         # so we could update the gabor here
@@ -571,7 +570,7 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
         return ky
 
     def exit_image_display(self):
-        """Clear the camera image"""
+        """Clear the camera image."""
 
         self._calibInst.autoDraw = True
         self._title.autoDraw = False
@@ -586,7 +585,7 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
 
     def setup_image_display(self, width, height):
         """Set up the camera image, for newer APIs,
-        the size is 384 x 320 pixels"""
+        the size is 384 x 320 pixels."""
 
         self.last_mouse_state = -1
         self._calibInst.autoDraw = True
@@ -599,7 +598,7 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
         return 1
 
     def image_title(self, text):
-        """Draw title text below the camera image"""
+        """Draw title text below the camera image."""
 
         if self.imgResize is not None:
             im_w, im_h = self.imgResize.size
@@ -609,7 +608,7 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
         self._title.text = text
 
     def draw_image_line(self, width, line, totlines, buff):
-        """Display image pixel by pixel, line by line"""
+        """Display image pixel by pixel, line by line."""
 
         i = 0
         for i in range(width):
@@ -675,7 +674,7 @@ def main():
 
     The doTrackerSetup() command will bring up a gray calibration screen.
     When the gray screen comes up, press Enter to show the camera image,
-    press C to calibrate, V to validate, and O to quit calibration."""
+    press C to calibrate, V to validate, and O to quit calibration"""
 
     # Set the screen resolution
     scn_w, scn_h = (1440, 900)

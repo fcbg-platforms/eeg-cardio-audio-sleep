@@ -13,8 +13,8 @@ from PyQt5.QtWidgets import QApplication
 
 from .. import logger, peak_detection_parameters_tuning, set_log_level
 from ..config import load_triggers
-from ..eye_link import Eyelink
 from ..utils import search_ANT_amplifier
+from ..utils._imports import import_optional_dependency
 from .cli import input_ecg_ch_name
 from .gui import GUI
 
@@ -38,9 +38,16 @@ def cas():
 
     # setup eye-tracker
     if args.eye_tracker:
-        eye_link = Eyelink(fname="TEST")
-        eye_link.calibrate_el()
-        eye_link.start_recording_el()
+        pylink = import_optional_dependency("pylink")
+        if pylink is None:
+            logger.error("The eye-tracker library 'pylink' could not be "
+                         "loaded!")
+            eye_link = None
+        else:
+            from ..eye_link import Eyelink
+            eye_link = Eyelink(fname="TEST")
+            eye_link.calibrate_el()
+            eye_link.start_recording_el()
 
         # draw a fixation cross
         cross_path = str(

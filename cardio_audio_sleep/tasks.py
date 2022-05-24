@@ -11,7 +11,7 @@ from numpy.typing import ArrayLike
 from psychopy.clock import wait
 
 from . import logger
-from .eye_link import Eyelink
+from ._typing import EYELink
 from .utils._checks import (
     _check_sequence,
     _check_sequence_timings,
@@ -33,7 +33,7 @@ def synchronous(
     peak_width: Optional[float],
     volume: float,
     queue: Optional[Queue] = None,
-    eye_link: Optional[Eyelink] = None,
+    eye_link: Optional[EYELink] = None,
 ) -> list:
     """
     Synchronous block where sounds are sync to the heartbeat.
@@ -141,7 +141,7 @@ def isochronous(
     sequence: ArrayLike,
     delay: float,
     volume: float,
-    eye_link: Optional[Eyelink] = None,
+    eye_link: Optional[EYELink] = None,
 ):
     """
     Isochronous block where sounds are delivered at a fix interval.
@@ -213,7 +213,7 @@ def asynchronous(
     sequence: ArrayLike,
     sequence_timings: ArrayLike,
     volume: float,
-    eye_link: Optional[Eyelink] = None,
+    eye_link: Optional[EYELink] = None,
 ):
     """
     Asynchronous block where sounds repeat a sequence from a synchronous task.
@@ -290,7 +290,7 @@ def baseline(
     tdef: TriggerDef,
     duration: float,
     verbose: bool = True,
-    eye_link: Optional[Eyelink] = None,
+    eye_link: Optional[EYELink] = None,
 ):
     """
     Baseline block corresponding to a resting-state recording.

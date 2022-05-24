@@ -7,9 +7,10 @@ import pylink
 from psychopy import core, event, logging, monitors, visual
 
 from . import EyeLinkCoreGraphicsPsychoPy
+from .._typing import EYELink
 
 
-class Eyelink:
+class Eyelink(EYELink):
     def __init__(self, fname="TEST"):
 
         logging.console.setLevel(logging.CRITICAL)

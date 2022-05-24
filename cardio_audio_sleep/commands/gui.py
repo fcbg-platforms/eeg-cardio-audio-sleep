@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import (
 
 from .. import logger
 from ..config import load_config, load_triggers
-from ..eye_link import Eyelink
+from .._typing import EYELink
 from ..tasks import (
     asynchronous,
     baseline,
@@ -47,7 +47,7 @@ class GUI(QMainWindow):
     %(eye_link)s
     """
 
-    def __init__(self, ecg_ch_name: str, eye_link: Optional[Eyelink] = None):
+    def __init__(self, ecg_ch_name: str, eye_link: Optional[EYELink] = None):
         super().__init__()
 
         # define mp Queue
@@ -81,7 +81,7 @@ class GUI(QMainWindow):
         self,
         ecg_ch_name: str,
         defaults: dict,
-        eye_link: Optional[Eyelink] = None,
+        eye_link: Optional[EYELink] = None,
     ):
         self.config, trigger_type = load_config()
         self.tdef = load_triggers()

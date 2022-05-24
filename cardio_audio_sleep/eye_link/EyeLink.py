@@ -6,8 +6,8 @@ import sys
 import pylink
 from psychopy import core, event, logging, monitors, visual
 
-from . import EyeLinkCoreGraphicsPsychoPy
 from .._typing import EYELink
+from . import EyeLinkCoreGraphicsPsychoPy
 
 
 class Eyelink(EYELink):

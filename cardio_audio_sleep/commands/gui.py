@@ -18,8 +18,8 @@ from PyQt5.QtWidgets import (
 )
 
 from .. import logger
-from ..config import load_config, load_triggers
 from .._typing import EYELink
+from ..config import load_config, load_triggers
 from ..tasks import (
     asynchronous,
     baseline,
@@ -422,8 +422,7 @@ class GUI(QMainWindow):
                     np.median(np.diff(args[3])),
                 )
 
-        logger.debug("Starting new block of type %s.",
-                     self.blocks[2].btype)
+        logger.debug("Starting new block of type %s.", self.blocks[2].btype)
 
         # start new process
         self.process = mp.Process(
@@ -607,6 +606,7 @@ class GUI(QMainWindow):
     @pyqtSlot()
     def pushButton_volume_clicked(self):
         from ..audio import Tone
+
         # sanity-check
         assert self.dial_volume.value() == self.doubleSpinBox_volume.value()
         # play sound

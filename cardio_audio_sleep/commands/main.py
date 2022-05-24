@@ -8,7 +8,7 @@ except ImportError:
 
 from bsl.triggers import ParallelPortTrigger
 from bsl.utils.lsl import list_lsl_streams
-from psychopy.visual import ImageStim
+from psychopy.visual import ImageStim, Window
 from PyQt5.QtWidgets import QApplication
 
 from .. import logger, peak_detection_parameters_tuning, set_log_level
@@ -38,25 +38,37 @@ def cas():
 
     # setup eye-tracker
     if args.eye_tracker:
-        pylink = import_optional_dependency("pylink")
+        pylink = import_optional_dependency("pylink", raise_error=False)
         if pylink is None:
-            logger.error("The eye-tracker library 'pylink' could not be "
-                         "loaded!")
+            logger.error(
+                "The eye-tracker library 'pylink' could not be " "loaded!"
+            )
             eye_link = None
         else:
             from ..eye_link import Eyelink
+
             eye_link = Eyelink(fname="TEST")
             eye_link.calibrate_el()
             eye_link.start_recording_el()
 
         # draw a fixation cross
         cross_path = str(
-            files("cardio_audio_sleep.visuals").joinpath("fixation.png")
+            files("cardio_audio_sleep").joinpath("visuals/fixation.png")
         )
-        cross = ImageStim(win=eye_link.win, image=cross_path)
+
+        if eye_link is None:
+            win = Window(
+                fullscr=True,
+                winType="pyglet",
+                units="pix",
+                screen=1,
+            )
+        else:
+            win = eye_link.win
+        cross = ImageStim(win=win, image=cross_path)
         cross.autoDraw = False
         cross.draw()
-        eye_link.win.flip()
+        win.flip()
     else:
         eye_link = None
 

@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (
 )
 
 from .. import logger
+from ..audio import Tone
 from ..config import load_config, load_triggers
 from ..tasks import (
     asynchronous,
@@ -247,7 +248,7 @@ class GUI(QMainWindow):
 
         # Add volume controls
         self.dial_volume = QDial(self.central_widget)
-        self.dial_volume.setGeometry(QRect(65, 210, 70, 68))
+        self.dial_volume.setGeometry(QRect(60, 230, 61, 61))
         self.dial_volume.setSizePolicy(GUI._sizePolicy(self.dial_volume))
         self.dial_volume.setMinimum(0)
         self.dial_volume.setMaximum(100)
@@ -255,7 +256,7 @@ class GUI(QMainWindow):
         self.dial_volume.setObjectName("dial_volume")
 
         self.doubleSpinBox_volume = QDoubleSpinBox(self.central_widget)
-        self.doubleSpinBox_volume.setGeometry(QRect(150, 245, 80, 24))
+        self.doubleSpinBox_volume.setGeometry(QRect(135, 247, 80, 24))
         self.doubleSpinBox_volume.setSizePolicy(
             GUI._sizePolicy(self.doubleSpinBox_volume)
         )
@@ -264,7 +265,15 @@ class GUI(QMainWindow):
         self.doubleSpinBox_volume.setProperty("value", defaults["volume"])
         self.doubleSpinBox_volume.setObjectName("doubleSpinBox_volume")
 
-        GUI._add_label(self, 150, 215, 60, 30, "volume", "Volume")
+        self.pushButton_volume = QPushButton(self.central_widget)
+        self.pushButton_volume.setGeometry(QRect(130, 200, 80, 32))
+        self.pushButton_volume.setSizePolicy(
+            GUI._sizePolicy(self.pushButton_volume)
+        )
+        self.pushButton_volume.setObjectName("pushButton_volume")
+        self.pushButton_volume.setText("Test")
+
+        GUI._add_label(self, 60, 200, 60, 32, "volume", "Volume")
 
         # Add separation lines
         GUI._add_line(self, 0, 178, 800, 20, "line1", "h")
@@ -450,6 +459,7 @@ class GUI(QMainWindow):
             self.doubleSpinBox_volume_valueChanged
         )
         self.dial_volume.valueChanged.connect(self.dial_volume_valueChanged)
+        self.pushButton_volume.clicked.connect(self.pushButton_volume_clicked)
 
     @pyqtSlot()
     def pushButton_start_clicked(self):
@@ -458,10 +468,13 @@ class GUI(QMainWindow):
         self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)
 
-        # Launch first block
+        # disable test sound
+        self.pushButton_volume.setEnabled(False)
+
+        # launch first block
         self.start_new_block(first=True)
 
-        # Start timer
+        # start timer
         self.timer.start(2000)
 
     @pyqtSlot()
@@ -469,6 +482,9 @@ class GUI(QMainWindow):
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)
+
+        # enable test sound
+        self.pushButton_volume.setEnabled(True)
 
         # change text on button
         if self.pushButton_pause.isChecked():
@@ -561,6 +577,15 @@ class GUI(QMainWindow):
         volume = self.dial_volume.value()
         self.doubleSpinBox_volume.setProperty("value", volume)
         self._update_volume(volume)
+
+    @pyqtSlot()
+    def pushButton_volume_clicked(self):
+        # sanity-check
+        assert self.dial_volume.value() == self.doubleSpinBox_volume.value()
+        # play sound
+        sound = Tone(self.dial_volume.value(), duration=0.1, frequency=1000)
+        logger.debug("Playing sound at volume %.2f.", self.dial_volume.value())
+        sound.play(blocking=True)
 
 
 class Block(QLabel):

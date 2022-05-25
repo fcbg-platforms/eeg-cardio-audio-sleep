@@ -94,9 +94,7 @@ class GUI(QMainWindow):
     def load_config(
         self,
         ecg_ch_name: str,
-        peak_height_perc: float,
-        peak_prominence: Optional[float],
-        peak_width: Optional[float],
+        defaults: dict,
     ):
         self.config, trigger_type = load_config()
         self.tdef = load_triggers()
@@ -124,12 +122,12 @@ class GUI(QMainWindow):
             "synchronous": (
                 self.trigger,
                 self.tdef,
-                None,
+                None,  # sequence
                 stream_name,
                 ecg_ch_name,
-                peak_height_perc,
-                peak_prominence,
-                peak_width,
+                defaults["height"],
+                defaults["prominence"],
+                defaults["width"],
                 self.queue,
             ),
             "isochronous": (self.trigger, self.tdef, None, None),
@@ -471,17 +469,23 @@ class GUI(QMainWindow):
         self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)
 
-        # Launch first block
+        # disable test sound
+        self.pushButton_volume.setEnabled(False)
+
+        # launch first block
         self.start_new_block(first=True)
 
-        # Start timer
+        # start timer
         self.timer.start(2000)
-
+        
     @pyqtSlot()
     def pushButton_pause_clicked(self):
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)
+        
+        # enable test sound
+        self.pushButton_volume.setEnabled(True)
 
         # change text on button
         if self.pushButton_pause.isChecked():
@@ -513,7 +517,59 @@ class GUI(QMainWindow):
         self.process.join(1)
         if self.process.is_alive():
             self.process.kill()
+            
+    @pyqtSlot()
+    def pushButton_prominence_clicked(self):
+        state = self.doubleSpinBox_prominence.isEnabled()
+        self.doubleSpinBox_prominence.setEnabled(not state)
+        self.pushButton_prominence.setChecked(state)
+        if state:  # previously enabled, now disabled
+            self.args_mapping["synchronous"][6] = None
+            logger.debug("Disabling prominence -> %s", self.args_mapping["synchronous"][6])
+        else:  # previously disabled, now enabled
+            value = self.doubleSpinBox_prominence.value()
+            self.args_mapping["synchronous"][6] = value
+            logger.debug("Setting prominence to %.2f -> %.2f", value, self.args_mapping["synchronous"][6])
 
+    @pyqtSlot()
+    def pushButton_width_clicked(self):
+        state = self.doubleSpinBox_width.isEnabled()
+        self.doubleSpinBox_width.setEnabled(not state)
+        self.pushButton_width.setChecked(state)
+        if state:  # previously enabled, now disabled
+            self.args_mapping["synchronous"][7] = None
+            logger.debug("Disabling width -> %s", self.args_mapping["synchronous"][7])
+        else:  # previously disabled, now enabled
+            value = self.doubleSpinBox_width.value()
+            self.args_mapping["synchronous"][
+                7
+            ] = self.doubleSpinBox_width.value()
+            logger.debug("Setting width to %.2f -> %.2f", value, self.args_mapping["synchronous"][7])
+
+    @pyqtSlot()
+    def doubleSpinBox_valueChanged(self):
+        height = self.doubleSpinBox_height.value()
+        prominence = self.doubleSpinBox_prominence.value()
+        width = self.doubleSpinBox_width.value()
+        prominence = (
+            prominence if self.doubleSpinBox_prominence.isEnabled() else None
+        )
+        width = width if self.doubleSpinBox_width.isEnabled() else None
+
+        self.args_mapping["synchronous"][5] = height
+        self.args_mapping["synchronous"][6] = prominence
+        self.args_mapping["synchronous"][7] = width
+
+        logger.debug(
+            "(Height, Prominence, Width) set to (%s, %s, %s) -> (%s, %s, %s)",
+            height,
+            None if prominence is None else round(prominence, 2),
+            None if width is None else round(width, 2),
+            self.args_mapping["synchronous"][5],
+            self.args_mapping["synchronous"][6],
+            self.args_mapping["synchronous"][7],
+        )
+        
 
 class Block(QLabel):
     """

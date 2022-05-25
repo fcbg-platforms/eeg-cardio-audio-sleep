@@ -110,10 +110,23 @@ class GUI(QMainWindow):
                 defaults["height"],
                 defaults["prominence"],
                 defaults["width"],
+                defaults["volume"],
                 self.queue,
             ],
-            "isochronous": [self.trigger, self.tdef, None, None],
-            "asynchronous": [self.trigger, self.tdef, None, None],
+            "isochronous": [
+                self.trigger,
+                self.tdef,
+                None,
+                None,
+                defaults["volume"],
+            ],
+            "asynchronous": [
+                self.trigger,
+                self.tdef,
+                None,
+                None,
+                defaults["volume"],
+            ],
         }
 
     # -------------------------------------------------------------------------
@@ -438,6 +451,21 @@ class GUI(QMainWindow):
         self.psutil_process = psutil.Process(self.process.pid)
         self.process_block_name = "inter-block"
 
+    def _update_volume(self, volume):
+        """Update the volume setting."""
+        self.args_mapping["synchronous"][8] = volume
+        self.args_mapping["isochronous"][4] = volume
+        self.args_mapping["asynchronous"][4] = volume
+
+        logger.debug(
+            "Setting the volume to %.2f -> "
+            "(sync: %.1f, iso: %.1f, async: %.1f)",
+            volume,
+            self.args_mapping["synchronous"][8],
+            self.args_mapping["isochronous"][4],
+            self.args_mapping["asynchronous"][4],
+        )
+
     # -------------------------------------------------------------------------
     def connect_signals_to_slots(self):
         self.pushButton_start.clicked.connect(self.pushButton_start_clicked)
@@ -458,6 +486,12 @@ class GUI(QMainWindow):
             self.pushButton_prominence_clicked
         )
         self.pushButton_width.clicked.connect(self.pushButton_width_clicked)
+        
+        # volume
+        self.doubleSpinBox_volume.valueChanged.connect(
+            self.doubleSpinBox_volume_valueChanged
+        )
+        self.dial_volume.valueChanged.connect(self.dial_volume_valueChanged)
 
     @pyqtSlot()
     def pushButton_start_clicked(self):
@@ -579,6 +613,18 @@ class GUI(QMainWindow):
             self.args_mapping["synchronous"][6],
             self.args_mapping["synchronous"][7],
         )
+
+    @pyqtSlot()
+    def doubleSpinBox_volume_valueChanged(self):
+        volume = self.doubleSpinBox_volume.value()
+        self.dial_volume.setProperty("value", volume)
+        self._update_volume(volume)
+
+    @pyqtSlot()
+    def dial_volume_valueChanged(self):
+        volume = self.dial_volume.value()
+        self.doubleSpinBox_volume.setProperty("value", volume)
+        self._update_volume(volume)
 
 
 class Block(QLabel):

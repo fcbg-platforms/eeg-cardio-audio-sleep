@@ -2,25 +2,30 @@ import argparse
 
 from PyQt5.QtWidgets import QApplication
 
-from .. import peak_detection_parameters_tuning
-from .cli import (
-    input_ecg_ch_name,
-    input_peak_height_perc,
-    input_peak_prominence,
-    input_peak_width,
-)
+from .. import peak_detection_parameters_tuning, set_log_level
+from .cli import input_ecg_ch_name
 from .gui import GUI
 
 
 def cas():
     """Entrypoint for cas <command> usage."""
-    ecg_ch_name = input_ecg_ch_name()
-    peak_height_perc = input_peak_height_perc()
-    peak_prominence = input_peak_prominence()
-    peak_width = input_peak_width()
+    parser = argparse.ArgumentParser(
+        prog="CAS", description="Cardio-Audio-Sleep GUI"
+    )
+    parser.add_argument(
+        "--ecg", help="name of the ECG channel", type=str, metavar=str
+    )
+    parser.add_argument(
+        "--verbose", help="enable debug logs", action="store_true"
+    )
+    args = parser.parse_args()
+    set_log_level("DEBUG" if args.verbose else "INFO")
+
+    # ask for ECG channel name if it's not provided as argument
+    ecg_ch_name = input_ecg_ch_name() if args.ecg is None else args.ecg
 
     app = QApplication([])
-    window = GUI(ecg_ch_name, peak_height_perc, peak_prominence, peak_width)
+    window = GUI(ecg_ch_name)
     window.show()
     app.exec()
 

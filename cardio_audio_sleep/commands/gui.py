@@ -41,37 +41,19 @@ class GUI(QMainWindow):
     ----------
     ecg_ch_name : str
         Name of the ECG channel.
-    peak_height_perc : float
-        Minimum height of the peak expressed as a percentile of the samples in
-        the buffer.
-    peak_prominence : float | None
-        Minimum peak prominence as defined by scipy.
-    peak_width : float | None
-        Minimum peak width expressed in ms. Default to None.
     """
 
-    def __init__(
-        self,
-        ecg_ch_name: str,
-        peak_height_perc: float,
-        peak_prominence: Optional[float],
-        peak_width: Optional[float],
-    ):
+    def __init__(self, ecg_ch_name: str):
         super().__init__()
 
         # define mp Queue
         self.queue = mp.Queue()
 
-        # load configuration
-        self.load_config(
-            ecg_ch_name,
-            peak_height_perc,
-            peak_prominence,
-            peak_width,
-        )
-
         # defaults for the peak detection
         defaults = dict(height=97.0, prominence=500.0, width=None, volume=0)
+
+        # load configuration
+        self.load_config(ecg_ch_name, defaults)
 
         # load GUI
         self.load_ui(defaults)
@@ -114,12 +96,12 @@ class GUI(QMainWindow):
 
         # Create args
         self.args_mapping = {
-            "baseline": (
+            "baseline": [
                 self.trigger,
                 self.tdef,
                 self.config["baseline"]["duration"],
-            ),
-            "synchronous": (
+            ],
+            "synchronous": [
                 self.trigger,
                 self.tdef,
                 None,  # sequence
@@ -129,9 +111,9 @@ class GUI(QMainWindow):
                 defaults["prominence"],
                 defaults["width"],
                 self.queue,
-            ),
-            "isochronous": (self.trigger, self.tdef, None, None),
-            "asynchronous": (self.trigger, self.tdef, None, None),
+            ],
+            "isochronous": [self.trigger, self.tdef, None, None],
+            "asynchronous": [self.trigger, self.tdef, None, None],
         }
 
     # -------------------------------------------------------------------------
@@ -401,7 +383,7 @@ class GUI(QMainWindow):
         if btype == "baseline":
             args = self.args_mapping[btype]
         else:
-            args = list(self.args_mapping[btype])
+            args = self.args_mapping[btype]
             args[2] = generate_sequence(
                 self.config[btype]["n_stimuli"],
                 self.config[btype]["n_omissions"],
@@ -462,6 +444,21 @@ class GUI(QMainWindow):
         self.pushButton_pause.clicked.connect(self.pushButton_pause_clicked)
         self.pushButton_stop.clicked.connect(self.pushButton_stop_clicked)
 
+        # detection settings
+        self.doubleSpinBox_height.valueChanged.connect(
+            self.doubleSpinBox_valueChanged
+        )
+        self.doubleSpinBox_prominence.valueChanged.connect(
+            self.doubleSpinBox_valueChanged
+        )
+        self.doubleSpinBox_width.valueChanged.connect(
+            self.doubleSpinBox_valueChanged
+        )
+        self.pushButton_prominence.clicked.connect(
+            self.pushButton_prominence_clicked
+        )
+        self.pushButton_width.clicked.connect(self.pushButton_width_clicked)
+
     @pyqtSlot()
     def pushButton_start_clicked(self):
         logger.debug("Start requested.")
@@ -477,13 +474,13 @@ class GUI(QMainWindow):
 
         # start timer
         self.timer.start(2000)
-        
+
     @pyqtSlot()
     def pushButton_pause_clicked(self):
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)
-        
+
         # enable test sound
         self.pushButton_volume.setEnabled(True)
 
@@ -517,7 +514,7 @@ class GUI(QMainWindow):
         self.process.join(1)
         if self.process.is_alive():
             self.process.kill()
-            
+
     @pyqtSlot()
     def pushButton_prominence_clicked(self):
         state = self.doubleSpinBox_prominence.isEnabled()
@@ -525,11 +522,18 @@ class GUI(QMainWindow):
         self.pushButton_prominence.setChecked(state)
         if state:  # previously enabled, now disabled
             self.args_mapping["synchronous"][6] = None
-            logger.debug("Disabling prominence -> %s", self.args_mapping["synchronous"][6])
+            logger.debug(
+                "Disabling prominence -> %s",
+                self.args_mapping["synchronous"][6],
+            )
         else:  # previously disabled, now enabled
             value = self.doubleSpinBox_prominence.value()
             self.args_mapping["synchronous"][6] = value
-            logger.debug("Setting prominence to %.2f -> %.2f", value, self.args_mapping["synchronous"][6])
+            logger.debug(
+                "Setting prominence to %.2f -> %.2f",
+                value,
+                self.args_mapping["synchronous"][6],
+            )
 
     @pyqtSlot()
     def pushButton_width_clicked(self):
@@ -538,13 +542,19 @@ class GUI(QMainWindow):
         self.pushButton_width.setChecked(state)
         if state:  # previously enabled, now disabled
             self.args_mapping["synchronous"][7] = None
-            logger.debug("Disabling width -> %s", self.args_mapping["synchronous"][7])
+            logger.debug(
+                "Disabling width -> %s", self.args_mapping["synchronous"][7]
+            )
         else:  # previously disabled, now enabled
             value = self.doubleSpinBox_width.value()
             self.args_mapping["synchronous"][
                 7
             ] = self.doubleSpinBox_width.value()
-            logger.debug("Setting width to %.2f -> %.2f", value, self.args_mapping["synchronous"][7])
+            logger.debug(
+                "Setting width to %.2f -> %.2f",
+                value,
+                self.args_mapping["synchronous"][7],
+            )
 
     @pyqtSlot()
     def doubleSpinBox_valueChanged(self):
@@ -569,7 +579,7 @@ class GUI(QMainWindow):
             self.args_mapping["synchronous"][6],
             self.args_mapping["synchronous"][7],
         )
-        
+
 
 class Block(QLabel):
     """

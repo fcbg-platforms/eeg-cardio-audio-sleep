@@ -11,6 +11,7 @@ from numpy.typing import ArrayLike
 from psychopy.clock import wait
 
 from . import logger
+from .triggers import Trigger
 from .utils._checks import (
     _check_sequence,
     _check_sequence_timings,
@@ -22,7 +23,7 @@ from .utils._docs import fill_doc
 
 @fill_doc
 def synchronous(
-    trigger,
+    trigger: Trigger,
     tdef: TriggerDef,
     sequence: ArrayLike,
     stream_name: str,
@@ -127,7 +128,11 @@ def synchronous(
 
 @fill_doc
 def isochronous(
-    trigger, tdef: TriggerDef, sequence: ArrayLike, delay: float, volume: float
+    trigger: Trigger,
+    tdef: TriggerDef,
+    sequence: ArrayLike,
+    delay: float,
+    volume: float,
 ):
     """
     Isochronous block where sounds are delivered at a fix interval.
@@ -187,7 +192,7 @@ def isochronous(
 
 @fill_doc
 def asynchronous(
-    trigger,
+    trigger: Trigger,
     tdef: TriggerDef,
     sequence: ArrayLike,
     sequence_timings: ArrayLike,
@@ -256,7 +261,9 @@ def asynchronous(
 
 
 @fill_doc
-def baseline(trigger, tdef: TriggerDef, duration: float, verbose: bool = True):
+def baseline(
+    trigger: Trigger, tdef: TriggerDef, duration: float, verbose: bool = True
+):
     """
     Baseline block corresponding to a resting-state recording.
 

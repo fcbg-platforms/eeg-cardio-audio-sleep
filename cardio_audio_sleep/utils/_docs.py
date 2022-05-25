@@ -38,7 +38,7 @@ docdict[
     "trigger"
 ] = """
 trigger : Trigger
-    A BSL trigger instance."""
+    A combination of a BSL trigger instance and of a mock or real eye-link."""
 docdict[
     "volume"
 ] = """
@@ -50,6 +50,13 @@ docdict[
 sequence : array
     Sequence of stimulus/omissions.
     1 corresponds to a stound stimulus. 2 corresponds to an omission."""
+
+# --------------------------------- eye-tracker ------------------------------
+docdict[
+    "eye_link"
+] = """
+eye_link : Eyelink
+    Eyelink class which communicates with the Eye-Tracker device."""
 
 # ------------------------- Documentation functions --------------------------
 docdict_indented = dict()

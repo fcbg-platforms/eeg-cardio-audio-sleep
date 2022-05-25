@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import (
 )
 
 from .. import logger
+from .._typing import EYELink
 from ..config import load_config, load_triggers
 from ..tasks import (
     asynchronous,
@@ -26,6 +27,7 @@ from ..tasks import (
     isochronous,
     synchronous,
 )
+from ..triggers import Trigger
 from ..utils import (
     generate_async_timings,
     generate_blocks_sequence,
@@ -33,8 +35,10 @@ from ..utils import (
     search_ANT_amplifier,
     test_volume,
 )
+from ..utils._docs import fill_doc
 
 
+@fill_doc
 class GUI(QMainWindow):
     """Application window and layout.
 
@@ -42,9 +46,10 @@ class GUI(QMainWindow):
     ----------
     ecg_ch_name : str
         Name of the ECG channel.
+    %(eye_link)s
     """
 
-    def __init__(self, ecg_ch_name: str):
+    def __init__(self, ecg_ch_name: str, eye_link: EYELink):
         super().__init__()
 
         # define mp Queue
@@ -54,7 +59,7 @@ class GUI(QMainWindow):
         defaults = dict(height=97.0, prominence=500.0, width=None, volume=0)
 
         # load configuration
-        self.load_config(ecg_ch_name, defaults)
+        self.load_config(ecg_ch_name, defaults, eye_link)
 
         # load GUI
         self.load_ui(defaults)
@@ -78,13 +83,20 @@ class GUI(QMainWindow):
         self,
         ecg_ch_name: str,
         defaults: dict,
+        eye_link: EYELink,
     ):
         self.config, trigger_type = load_config()
         self.tdef = load_triggers()
+
+        # combine trigger with eye-link
         if trigger_type == "lpt":
-            self.trigger = ParallelPortTrigger("/dev/parport0")
+            trigger = ParallelPortTrigger("/dev/parport0")
         elif trigger_type == "mock":
-            self.trigger = MockTrigger()
+            trigger = MockTrigger()
+        self.eye_link = eye_link
+        self.trigger = Trigger(trigger, self.eye_link)
+
+        # search for LSL stream
         stream_name = search_ANT_amplifier()
 
         # Create task mapping
@@ -495,12 +507,20 @@ class GUI(QMainWindow):
         self.dial_volume.valueChanged.connect(self.dial_volume_valueChanged)
         self.pushButton_volume.clicked.connect(self.pushButton_volume_clicked)
 
+        # eye-tracking
+        self.pushButton_calibrate.clicked.connect(
+            self.pushButton_calibrate_clicked
+        )
+
     @pyqtSlot()
     def pushButton_start_clicked(self):
         logger.debug("Start requested.")
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)
+
+        # start eye-tracking
+        self.eye_link.start()
 
         # disable test sound
         self.pushButton_volume.setEnabled(False)
@@ -550,6 +570,9 @@ class GUI(QMainWindow):
         self.process.join(1)
         if self.process.is_alive():
             self.process.kill()
+
+        # stop eye-tracking
+        self.eye_link.stop()
 
     @pyqtSlot()
     def pushButton_prominence_clicked(self):
@@ -638,6 +661,10 @@ class GUI(QMainWindow):
         )
         process.start()
         process.join()
+
+    @pyqtSlot()
+    def pushButton_calibrate_clicked(self):
+        self.eye_link.calibrate()
 
 
 class Block(QLabel):

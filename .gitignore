@@ -123,3 +123,6 @@ dmypy.json
 
 # PyCharm
 **/.idea/
+
+# Eye-tracker
+*.EDF

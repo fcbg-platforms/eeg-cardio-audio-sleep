@@ -9,7 +9,8 @@ class Trigger:
 
     Parameters
     ----------
-    %(trigger)s
+    trigger : Trigger
+        A BSL trigger instance.
     %(eye_link)s
     """
 

@@ -3,8 +3,8 @@ import argparse
 from PyQt5.QtWidgets import QApplication
 
 from .. import peak_detection_parameters_tuning, set_log_level
+from ..eye_link import Eyelink, EyelinkMock
 from .cli import input_ecg_ch_name
-from .eye_link import Eyelink, EyelinkMock
 from .gui import GUI
 
 

@@ -31,6 +31,7 @@ from ..utils import (
     generate_blocks_sequence,
     generate_sequence,
     search_ANT_amplifier,
+    test_volume,
 )
 
 
@@ -486,12 +487,13 @@ class GUI(QMainWindow):
             self.pushButton_prominence_clicked
         )
         self.pushButton_width.clicked.connect(self.pushButton_width_clicked)
-        
+
         # volume
         self.doubleSpinBox_volume.valueChanged.connect(
             self.doubleSpinBox_volume_valueChanged
         )
         self.dial_volume.valueChanged.connect(self.dial_volume_valueChanged)
+        self.pushButton_volume.clicked.connect(self.pushButton_volume_clicked)
 
     @pyqtSlot()
     def pushButton_start_clicked(self):
@@ -625,6 +627,17 @@ class GUI(QMainWindow):
         volume = self.dial_volume.value()
         self.doubleSpinBox_volume.setProperty("value", volume)
         self._update_volume(volume)
+
+    @pyqtSlot()
+    def pushButton_volume_clicked(self):
+        # sanity-check
+        assert self.dial_volume.value() == self.doubleSpinBox_volume.value()
+        logger.debug("Playing sound at volume %.2f.", self.dial_volume.value())
+        process = mp.Process(
+            target=test_volume, args=(self.dial_volume.value(),)
+        )
+        process.start()
+        process.join()
 
 
 class Block(QLabel):

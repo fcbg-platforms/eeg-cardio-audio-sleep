@@ -1,5 +1,3 @@
-from __future__ import division, print_function
-
 import os
 from pathlib import Path
 
@@ -9,23 +7,31 @@ from psychopy import core, event, logging, monitors, visual
 from .. import logger
 from .._typing import EYELink
 from ..utils._checks import _check_type
-from . import EyeLinkCoreGraphicsPsychoPy
+from .EyeLinkCoreGraphicsPsychoPy import EyeLinkCoreGraphicsPsychoPy
 
 # set psychopy log level
 logging.console.setLevel(logging.CRITICAL)
 
 
 class Eyelink(EYELink):
-    def __init__(self, pname="./", fname="TEST"):
-        # Set this variable to True to run the script in "Dummy Mode"
-        dummy_mode = False
-        # Set this variable to True to run the task in full screen mode
-        # It is easier to debug the script in non-fullscreen mode
-        full_screen = True
-        host_ip = "100.1.1.1"
-        # Set up EDF data file name and local data folder
-        # The EDF data filename should not exceed 8 alphanumeric characters
-        # use ONLY number 0-9, letters, & _ (underscore) in the filename
+    """
+    Eyelink class which communicates with the Eye-Tracker device from
+    SR Research.
+
+    Parameters
+    ----------
+    pname : path-like
+        Path to the directory where the .EDF file is saved locally.
+    fname : str
+        Name of the .EDF file saved. The file name should not exceed 8
+        alphanumerical characters (number 0-9, letters and '_' (underscores),
+        and should not include the extension '.EDF'.
+    host_ip : str | None
+        IP Address of the computer hosting the eye-tracking device.
+        If None, a dummy eye-tracker is created.
+    """
+
+    def __init__(self, pname="./", fname: str = "TEST", host_ip="100.1.1.1"):
         pname = Path(_check_type(pname, ("path-like",), "pname"))
         if not pname.exists():
             os.makedirs(pname)
@@ -41,19 +47,11 @@ class Eyelink(EYELink):
 
         # ----------------------------------------------------------------------
         # Step 1: Connect to the EyeLink Host PC
-        #
-        # The Host IP address, by default, is "100.1.1.1".
-        # the "el_tracker" objected created here can be accessed through Pylink
-        # Set the Host PC address to "None" (without quotes) to run the script
-        # in "Dummy Mode"
-        if dummy_mode:
-            self.el_tracker = pylink.EyeLink(None)
-        else:
-            try:
-                self.el_tracker = pylink.EyeLink(host_ip)
-            except RuntimeError:
-                self.close()
-                raise
+        try:
+            self.el_tracker = pylink.EyeLink(host_ip)
+        except RuntimeError:
+            self.close()
+            raise
 
         # -------------------------------------------------------------------
         # Step 2: Open an EDF data file on the Host PC
@@ -72,7 +70,7 @@ class Eyelink(EYELink):
         # 1-EyeLink I, 2-EyeLink II, 3/4-EyeLink 1000, 5-EyeLink 1000 Plus,
         # 6-Portable DUO
         eyelink_ver = 0  # set version to 0, in case running in Dummy mode
-        if not dummy_mode:
+        if host_ip is not None:
             vstr = self.el_tracker.getTrackerVersionString()
             eyelink_ver = int(vstr.split()[-1].split(".")[0])
             logger.debug(
@@ -112,25 +110,17 @@ class Eyelink(EYELink):
         self.el_tracker.sendCommand(f"link_event_filter = {link_event_flags}")
         self.el_tracker.sendCommand(f"link_sample_data = {link_sample_flags}")
 
-        # Optional tracking parameters
-        # Sample rate, 250, 500, 1000, or 2000, c.f. tracker specification
-        # if eyelink_ver > 2:
-        #     el_tracker.sendCommand("sample_rate 1000")
         # Choose a calibration type, H3, HV3, HV5, HV13
         # (HV = horizontal/vertical)
         self.el_tracker.sendCommand("calibration_type = HV9")
-        # Set a gamepad button to accept calibration/drift check target
-        # You need a supported gamepad/button box that is connected to the
-        # Host PC
         self.el_tracker.sendCommand(
             "button_function 5 'accept_target_fixation'"
         )
 
         # Step 4: set up a graphics environment for calibration
-        # Open a window, be sure to specify monitor parameters
         mon = monitors.Monitor("myMonitor", width=53.0, distance=70.0)
         self.win = visual.Window(
-            fullscr=full_screen,
+            fullscr=True,
             monitor=mon,
             winType="pyglet",
             units="pix",
@@ -161,7 +151,6 @@ class Eyelink(EYELink):
         self.genv.setTargetSize(24)
         pylink.openGraphicsEx(self.genv)
 
-    # ----------------------------
     def clear_screen(self):
         """clear up the PsychoPy window"""
         self.win.fillColor = self.genv.getBackgroundColor()
@@ -184,8 +173,7 @@ class Eyelink(EYELink):
             event.waitKeys()
             self.clear_screen()
 
-    # Step 5: Set up the camera and calibrate the tracker
-    def calibrate_el(self):
+    def calibrate(self):
         # Show the task instructions
         task_msg = "\nPress ENTER twice to display tracker menu"
         self.show_msg(task_msg)
@@ -196,11 +184,11 @@ class Eyelink(EYELink):
             self.close()
             raise
 
-    def start_recording_el(self):
+    def start(self):
         self.el_tracker.startRecording(1, 1, 1, 1)
         self.el_tracker.sendMessage("START")
 
-    def stop_recording_el(self):
+    def stop(self):
         self.el_tracker.stopRecording()
         self.el_tracker.setOfflineMode()
 
@@ -216,15 +204,9 @@ class Eyelink(EYELink):
         try:
             self.el_tracker.receiveDataFile(self.edf_fname + ".EDF", local_edf)
         except RuntimeError:
-            self.close()
             raise
-
-        # Close the link to the tracker.
-        self.el_tracker.close()
-        # close the PsychoPy window
-        self.win.close()
-        # quit PsychoPy
-        core.quit()
+        finally:
+            self.close()
 
     def close(self):
         """Close in case a RuntimeError was raised."""

@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QApplication
 
 from .. import peak_detection_parameters_tuning, set_log_level
 from .cli import input_ecg_ch_name
+from .eye_link import Eyelink, EyelinkMock
 from .gui import GUI
 
 
@@ -16,16 +17,25 @@ def cas():
         "--ecg", help="name of the ECG channel", type=str, metavar=str
     )
     parser.add_argument(
+        "--eye_tracker", help="enable eye-tracking", action="store_true"
+    )
+    parser.add_argument(
         "--verbose", help="enable debug logs", action="store_true"
     )
     args = parser.parse_args()
     set_log_level("DEBUG" if args.verbose else "INFO")
 
+    # setup eye-tracker
+    if args.eye_tracker:
+        eye_link = Eyelink("./", "TEST")
+    else:
+        eye_link = EyelinkMock()
+
     # ask for ECG channel name if it's not provided as argument
     ecg_ch_name = input_ecg_ch_name() if args.ecg is None else args.ecg
 
     app = QApplication([])
-    window = GUI(ecg_ch_name)
+    window = GUI(ecg_ch_name, eye_link)
     window.show()
     app.exec()
 

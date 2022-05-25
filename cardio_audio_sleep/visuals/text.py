@@ -17,11 +17,18 @@ class Text(_Visual):
         (width, height).
     """
 
-    def __init__(self, window_name='Visual', window_size=None):
+    def __init__(self, window_name="Visual", window_size=None):
         super().__init__(window_name, window_size)
 
-    def putText(self, text, fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=2,
-                color='white', thickness=2, position='centered'):
+    def putText(
+        self,
+        text,
+        fontFace=cv2.FONT_HERSHEY_DUPLEX,
+        fontScale=2,
+        color="white",
+        thickness=2,
+        position="centered",
+    ):
         """
         Method adding text to the visual.
 
@@ -46,21 +53,35 @@ class Text(_Visual):
             position is defined in opencv coordinates, with (0, 0) being the
             top left corner of the window.\n
         """
-        if text != '':
+        if text != "":
             textWidth, textHeight = cv2.getTextSize(
-                text, fontFace, fontScale, thickness)[0]
+                text, fontFace, fontScale, thickness
+            )[0]
             position = Text._check_position(
-                position, textWidth, textHeight,
-                self.window_size, self.window_center)
+                position,
+                textWidth,
+                textHeight,
+                self.window_size,
+                self.window_center,
+            )
             color = _Visual._check_color(color)
 
-            cv2.putText(self._img, text, position, fontFace, fontScale, color,
-                        thickness=thickness, lineType=cv2.LINE_AA)
+            cv2.putText(
+                self._img,
+                text,
+                position,
+                fontFace,
+                fontScale,
+                color,
+                thickness=thickness,
+                lineType=cv2.LINE_AA,
+            )
 
     # --------------------------------------------------------------------
     @staticmethod
-    def _check_position(position, textWidth, textHeight,
-                        window_size, window_center):
+    def _check_position(
+        position, textWidth, textHeight, window_size, window_center
+    ):
         """
         Checks that the inputted position of the bottom left corner of the
         text allows the text to fit in the window.
@@ -69,9 +90,11 @@ class Text(_Visual):
         """
         if isinstance(position, str):
             position = position.lower().strip()
-            assert position in ['centered', 'center']
-            position = (window_center[0] - textWidth//2,
-                        window_center[1] + textHeight//2)
+            assert position in ["centered", "center"]
+            position = (
+                window_center[0] - textWidth // 2,
+                window_center[1] + textHeight // 2,
+            )
 
         position = tuple(position)
         assert len(position) == 2

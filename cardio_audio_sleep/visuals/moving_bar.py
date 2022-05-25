@@ -20,7 +20,7 @@ class MovingBar(_Visual):
         (width, height).
     """
 
-    def __init__(self, window_name='Visual', window_size=None):
+    def __init__(self, window_name="Visual", window_size=None):
         super().__init__(window_name, window_size)
         self._backup_img = None
 
@@ -62,9 +62,11 @@ class MovingBar(_Visual):
         self._axis = _Visual._check_axis(axis)
 
         self._length = MovingBar._check_length(
-            length, self._axis, self.window_size)
+            length, self._axis, self.window_size
+        )
         self._width = MovingBar._check_width(
-            width, self._length, self._axis, self.window_size)
+            width, self._length, self._axis, self.window_size
+        )
         self._color = _Visual._check_color(color)
 
         self._putBar()
@@ -88,16 +90,17 @@ class MovingBar(_Visual):
         --- P2
         """
         position = MovingBar._convert_position_to_pixel(
-            self._position, self._axis, self.window_size, self.window_center)
+            self._position, self._axis, self.window_size, self.window_center
+        )
 
         if self._axis == 0:
-            xP1 = self.window_center[0] - self._length//2
-            yP1 = position - self._width//2
+            xP1 = self.window_center[0] - self._length // 2
+            yP1 = position - self._width // 2
             xP2 = xP1 + self._length
             yP2 = yP1 + self._width
         elif self._axis == 1:
-            xP1 = position - self._width//2
-            yP1 = self.window_center[1] - self._length//2
+            xP1 = position - self._width // 2
+            yP1 = self.window_center[1] - self._length // 2
             xP2 = xP1 + self._width
             yP2 = yP1 + self._length
 
@@ -154,11 +157,13 @@ class MovingBar(_Visual):
                 return window_center[1]
             elif -1 <= position < 0:
                 # top to center
-                return int(window_center[1] * (1-abs(position)))
+                return int(window_center[1] * (1 - abs(position)))
             elif 0 < position <= 1:
                 # center to bottom
-                return int(window_center[1] +
-                           (window_size[1]-window_center[1])*position)
+                return int(
+                    window_center[1]
+                    + (window_size[1] - window_center[1]) * position
+                )
 
         # vertical bar moving left and right
         elif axis == 1:
@@ -166,11 +171,13 @@ class MovingBar(_Visual):
                 return window_center[0]
             elif -1 <= position < 0:
                 # left to center
-                return int(window_center[0] * (1-abs(position)))
+                return int(window_center[0] * (1 - abs(position)))
             elif 0 < position <= 1:
                 # center to right
-                return int(window_center[0] +
-                           (window_size[0]-window_center[0])*position)
+                return int(
+                    window_center[0]
+                    + (window_size[0] - window_center[0]) * position
+                )
 
     # --------------------------------------------------------------------
     @property
@@ -183,7 +190,8 @@ class MovingBar(_Visual):
     @length.setter
     def length(self, length):
         self._length = MovingBar._check_length(
-            length, self._axis, self.window_size)
+            length, self._axis, self.window_size
+        )
         self._reset()
         self._putBar()
 
@@ -197,7 +205,8 @@ class MovingBar(_Visual):
     @width.setter
     def width(self, width):
         self._width = MovingBar._check_width(
-            width, self._length, self._axis, self.window_size)
+            width, self._length, self._axis, self.window_size
+        )
         self._reset()
         self._putBar()
 

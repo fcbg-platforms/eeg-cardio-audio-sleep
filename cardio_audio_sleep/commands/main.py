@@ -1,82 +1,26 @@
 import argparse
-import time
 
-try:
-    from importlib.resources import files  # type: ignore
-except ImportError:
-    from importlib_resources import files  # type: ignore
-
-from bsl.triggers import ParallelPortTrigger
-from bsl.utils.lsl import list_lsl_streams
-from psychopy.visual import ImageStim, Window
 from PyQt5.QtWidgets import QApplication
 
-from .. import logger, peak_detection_parameters_tuning, set_log_level
-from ..config import load_triggers
-from ..utils import search_ANT_amplifier
-from ..utils._imports import import_optional_dependency
-from .cli import input_ecg_ch_name
+from .. import peak_detection_parameters_tuning
+from .cli import (
+    input_ecg_ch_name,
+    input_peak_height_perc,
+    input_peak_prominence,
+    input_peak_width,
+)
 from .gui import GUI
 
 
 def cas():
     """Entrypoint for cas <command> usage."""
-    parser = argparse.ArgumentParser(
-        prog="CAS", description="Cardio-Audio-Sleep GUI"
-    )
-    parser.add_argument(
-        "--ecg", help="name of the ECG channel", type=str, metavar=str
-    )
-    parser.add_argument(
-        "--eye_tracker", help="enable eye-tracking", action="store_true"
-    )
-    parser.add_argument(
-        "--verbose", help="enable debug logs", action="store_true"
-    )
-    args = parser.parse_args()
-    set_log_level("DEBUG" if args.verbose else "INFO")
-
-    # setup eye-tracker
-    if args.eye_tracker:
-        pylink = import_optional_dependency("pylink", raise_error=False)
-        if pylink is None:
-            logger.error(
-                "The eye-tracker library 'pylink' could not be " "loaded!"
-            )
-            eye_link = None
-        else:
-            from ..eye_link import Eyelink
-
-            eye_link = Eyelink(fname="TEST")
-            eye_link.calibrate_el()
-            eye_link.start_recording_el()
-
-        # draw a fixation cross
-        cross_path = str(
-            files("cardio_audio_sleep").joinpath("visuals/fixation.png")
-        )
-
-        if eye_link is None:
-            win = Window(
-                fullscr=True,
-                winType="pyglet",
-                units="pix",
-                screen=1,
-            )
-        else:
-            win = eye_link.win
-        cross = ImageStim(win=win, image=cross_path)
-        cross.autoDraw = False
-        cross.draw()
-        win.flip()
-    else:
-        eye_link = None
-
-    # ask for ECG channel name if it's not provided as argument
-    ecg_ch_name = input_ecg_ch_name() if args.ecg is None else args.ecg
+    ecg_ch_name = input_ecg_ch_name()
+    peak_height_perc = input_peak_height_perc()
+    peak_prominence = input_peak_prominence()
+    peak_width = input_peak_width()
 
     app = QApplication([])
-    window = GUI(ecg_ch_name, eye_link)
+    window = GUI(ecg_ch_name, peak_height_perc, peak_prominence, peak_width)
     window.show()
     app.exec()
 
@@ -123,63 +67,3 @@ def pds():
     print(f"Prominence   ->  {prominence}")
     print(f"Width:       ->  {width}")
     print("-----------------------------------------")
-
-
-def test():
-    """Run test on the LSL stream and triggers."""
-    error = False
-    # look for the LSL stream
-    logger.info("Looking for ANT LSL stream..")
-    try:
-        stream_name = search_ANT_amplifier()
-        logger.info("ANT LSL stream found!")
-    except RuntimeError:
-        error = True
-        logger.error(
-            "ANT LSL stream could not be found. Is the amplifier "
-            "correctly connected and the LSL app started?"
-        )
-
-    # check the sampling rate
-    stream_names, stream_infos = list_lsl_streams(ignore_markers=True)
-    idx = stream_names.index(stream_name)
-    sinfo = stream_infos[idx]
-    if sinfo.nominal_srate() == 1024:
-        logger.info(
-            "ANT LSL stream sampling rate is correctly set at 1024 Hz."
-        )
-    else:
-        error = True
-        logger.error(
-            "ANT LSL stream sampling rate is not correctly set! "
-            "Currently %s Hz, while 1024 Hz is expected!",
-            sinfo.nominal_srate(),
-        )
-
-    # check the trigger
-    try:
-        trigger = ParallelPortTrigger("/dev/parport0")
-    except Exception:
-        error = True
-        logger.error(
-            "Could not initialize the parallel port trigger. Is the LPT cable "
-            "correctly connected and does '/dev/parport0' exist?"
-        )
-
-    if error:
-        logger.info(
-            "Something went wrong.. please check the setup! "
-            "Aborting further tests.."
-        )
-        return None
-
-    # check the trigger pins
-    logger.info(
-        "Testing all the triggers. Please look at a StreamViewer and "
-        "confirm that each value is correctly displayed."
-    )
-    tdef = load_triggers()
-    for value in tdef.by_value:
-        logger.info("Testing trigger %i..", value)
-        trigger.signal(value)
-        time.sleep(0.5)

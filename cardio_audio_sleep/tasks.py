@@ -2,52 +2,49 @@
 
 import datetime
 from multiprocessing import Queue
-from typing import Optional
+from typing import Optional, Union
 
 import numpy as np
 import psychtoolbox as ptb
-from bsl.triggers import TriggerDef
 from numpy.typing import ArrayLike
 from psychopy.clock import wait
 
 from . import logger
-from ._typing import EYELink
 from .utils._checks import (
     _check_sequence,
     _check_sequence_timings,
     _check_tdef,
     _check_type,
 )
-from .utils._docs import fill_doc
 
 
-@fill_doc
 def synchronous(
     trigger,
-    tdef: TriggerDef,
+    tdef,
     sequence: ArrayLike,
     stream_name: str,
     ecg_ch_name: str,
-    peak_height_perc: float,
-    peak_prominence: Optional[float],
-    peak_width: Optional[float],
-    volume: float,
+    peak_height_perc: Union[int, float],
+    peak_prominence: Optional[Union[int, float]],
+    peak_width: Optional[Union[int, float]],
     queue: Optional[Queue] = None,
-    eye_link: Optional[EYELink] = None,
 ) -> list:
     """
     Synchronous block where sounds are sync to the heartbeat.
 
     Parameters
     ----------
-    %(trigger)s
+    trigger : Trigger
+        A BSL trigger instance.
     tdef : TriggerDef
         Trigger definition instance. Must contain the keys:
             - sync_start
             - sound (aligned on sequence)
             - omission (aligned on sequence)
             - sync_stop
-    %(sequence)s
+    sequence : array
+        Sequence of stimulus/omissions (of length BLOCK_SIZE if complete).
+        1 corresponds to a stound stimulus. 2 corresponds to an omission.
     stream_name : str
         Name of the LSL stream to connect to.
     ecg_ch_name : str
@@ -59,11 +56,9 @@ def synchronous(
         Minimum peak prominence as defined by scipy.
     peak_width : float | None
         Minimum peak width expressed in ms. Default to None.
-    %(volume)s
     queue : Queue
         Queue where the sequence_timings are stored. If None, this argument is
         ignored.
-    %(eye_link)s
 
     Returns
     -------
@@ -74,7 +69,7 @@ def synchronous(
     from .detector import Detector
 
     # Create sound stimuli
-    sound = Tone(volume, frequency=1000)
+    sound = Tone(100, frequency=1000)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -98,8 +93,6 @@ def synchronous(
 
     # Task loop
     trigger.signal(tdef.sync_start)
-    if eye_link is not None:
-        eye_link.el_tracker.sendMessage(str(tdef.sync_start))
     wait(0.2, hogCPUperiod=0)
 
     while counter <= len(sequence) - 1:
@@ -110,8 +103,6 @@ def synchronous(
             wait(0.038 - delay, hogCPUperiod=1)  # computer specific delay
             # trigger
             trigger.signal(sequence[counter])
-            if eye_link is not None:
-                eye_link.el_tracker.sendMessage(str(sequence[counter]))
             # sound
             if sequence[counter] == 1:
                 sound.play()
@@ -125,8 +116,6 @@ def synchronous(
 
     wait(1, hogCPUperiod=0)
     trigger.signal(tdef.sync_stop)
-    if eye_link is not None:
-        eye_link.el_tracker.sendMessage(str(tdef.sync_stop))
 
     if queue is not None:
         queue.put(sequence_timings)
@@ -134,37 +123,30 @@ def synchronous(
     return sequence_timings
 
 
-@fill_doc
-def isochronous(
-    trigger,
-    tdef: TriggerDef,
-    sequence: ArrayLike,
-    delay: float,
-    volume: float,
-    eye_link: Optional[EYELink] = None,
-):
+def isochronous(trigger, tdef, sequence: ArrayLike, delay: Union[int, float]):
     """
     Isochronous block where sounds are delivered at a fix interval.
 
     Parameters
     ----------
-    %(trigger)s
+    trigger : Trigger
+        A BSL trigger instance.
     tdef : TriggerDef
         Trigger definition instance. Must contain the keys:
             - iso_start
             - sound (aligned on sequence)
             - omission (aligned on sequence)
             - iso_stop
-    %(sequence)s
+    sequence : array
+        Sequence of stimulus/omissions (of length BLOCK_SIZE if complete).
+        1 corresponds to a stound stimulus. 2 corresponds to an omission.
     delay : float
         Delay between 2 stimulus in seconds.
-    %(volume)s
-    %(eye_link)s
     """
     from .audio import Tone
 
     # Create sound stimuli
-    sound = Tone(volume, frequency=1000)
+    sound = Tone(100, frequency=1000)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -181,15 +163,11 @@ def isochronous(
 
     # Task loop
     trigger.signal(tdef.iso_start)
-    if eye_link is not None:
-        eye_link.el_tracker.sendMessage(str(tdef.iso_start))
     wait(0.2, hogCPUperiod=0)
 
     while counter <= len(sequence) - 1:
         now = ptb.GetSecs()
         trigger.signal(sequence[counter])
-        if eye_link is not None:
-            eye_link.el_tracker.sendMessage(str(sequence[counter]))
         # stimuli
         if sequence[counter] == 1:
             sound.play()
@@ -202,18 +180,10 @@ def isochronous(
 
     wait(1, hogCPUperiod=0)
     trigger.signal(tdef.iso_stop)
-    if eye_link is not None:
-        eye_link.el_tracker.sendMessage(str(tdef.iso_stop))
 
 
-@fill_doc
 def asynchronous(
-    trigger,
-    tdef: TriggerDef,
-    sequence: ArrayLike,
-    sequence_timings: ArrayLike,
-    volume: float,
-    eye_link: Optional[EYELink] = None,
+    trigger, tdef, sequence: ArrayLike, sequence_timings: ArrayLike
 ):
     """
     Asynchronous block where sounds repeat a sequence from a synchronous task.
@@ -222,24 +192,25 @@ def asynchronous(
 
     Parameters
     ----------
-    %(trigger)s
+    trigger : Trigger
+        A BSL trigger instance.
     tdef : TriggerDef
         Trigger definition instance. Must contain the keys:
             - async_start
             - sound (aligned on sequence)
             - omission (aligned on sequence)
             - async_stop
-    %(sequence)s
+    sequence : array
+        Sequence of stimulus/omissions (of length BLOCK_SIZE if complete).
+        1 corresponds to a stound stimulus. 2 corresponds to an omission.
     sequence_timings : array
         Array of length BLOCK_SIZE containing the timing at which the stimulus
         was delivered.
-    %(volume)s
-    %(eye_link)s
     """
     from .audio import Tone
 
     # Create sound stimuli
-    sound = Tone(volume, frequency=1000)
+    sound = Tone(100, frequency=1000)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -256,15 +227,11 @@ def asynchronous(
 
     # Task loop
     trigger.signal(tdef.async_start)
-    if eye_link is not None:
-        eye_link.el_tracker.sendMessage(str(tdef.async_start))
     wait(0.2, hogCPUperiod=0)
 
     while counter <= len(sequence) - 1:
         now = ptb.GetSecs()
         trigger.signal(sequence[counter])
-        if eye_link is not None:
-            eye_link.el_tracker.sendMessage(str(sequence[counter]))
         # stimuli
         if sequence[counter] == 1:
             sound.play()
@@ -280,24 +247,16 @@ def asynchronous(
 
     wait(1, hogCPUperiod=0)
     trigger.signal(tdef.async_stop)
-    if eye_link is not None:
-        eye_link.el_tracker.sendMessage(str(tdef.async_stop))
 
 
-@fill_doc
-def baseline(
-    trigger,
-    tdef: TriggerDef,
-    duration: float,
-    verbose: bool = True,
-    eye_link: Optional[EYELink] = None,
-):
+def baseline(trigger, tdef, duration: Union[int, float], verbose: bool = True):
     """
     Baseline block corresponding to a resting-state recording.
 
     Parameters
     ----------
-    %(trigger)s
+    trigger : Trigger
+        A BSL trigger instance.
     tdef : TriggerDef
         Trigger definition instance. Must contain the keys:
             - baseline_start
@@ -306,7 +265,6 @@ def baseline(
         Duration of the resting-state block in seconds.
     verbose : bool
         If True, a timer is logged with the info level every second.
-    %(eye_link)s
     """
     _check_tdef(tdef)
     _check_type(duration, ("numeric",), "duration")
@@ -319,8 +277,6 @@ def baseline(
 
     # Start trigger
     trigger.signal(tdef.baseline_start)
-    if eye_link is not None:
-        eye_link.el_tracker.sendMessage(str(tdef.baseline_start))
 
     duration_ = datetime.timedelta(seconds=duration)
 
@@ -336,11 +292,9 @@ def baseline(
 
     # Stop trigger
     trigger.signal(tdef.baseline_stop)
-    if eye_link is not None:
-        eye_link.el_tracker.sendMessage(str(tdef.baseline_stop))
 
 
-def inter_block(duration: float, verbose: bool = True):
+def inter_block(duration: Union[int, float], verbose: bool = True):
     """
     Inter-block task-like to wait a specific duration.
 

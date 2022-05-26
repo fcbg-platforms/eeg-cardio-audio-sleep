@@ -70,7 +70,7 @@ def peak_detection_parameters_tuning(
     # Slider for prominence
     prominence_slider_ax = fig.add_axes([0.1, 0.13, 0.6, 0.03])
     prominence_slider = Slider(
-        prominence_slider_ax, "prominence", 400, 3000, valinit=500.0
+        prominence_slider_ax, "prominence", 0, 2000, valinit=500.0
     )
 
     # Slider for width

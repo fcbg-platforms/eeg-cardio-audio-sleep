@@ -97,7 +97,6 @@ setup(
         'console_scripts': [
             'cas = cardio_audio_sleep.commands.main:cas',
             'pds = cardio_audio_sleep.commands.main:pds',
-            'test = cardio_audio_sleep.commands.main:test',
             ]
         }
     )

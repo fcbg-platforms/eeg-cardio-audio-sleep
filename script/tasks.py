@@ -19,8 +19,6 @@ tdef = load_triggers()
 stream_name = search_ANT_amplifier()
 ecg_ch_name = "AUX7"
 
-#%% Sound volume
-volume = 10
 
 #%% Synchronous
 
@@ -40,7 +38,6 @@ sequence_timings = synchronous(
     peak_height_perc,
     peak_prominence,
     peak_width,
-    volume,
 )
 
 
@@ -51,7 +48,7 @@ delay = np.median(np.diff(sequence_timings))
 # Sequence
 sequence = generate_sequence(100, 0, 10, tdef)
 # Task
-isochronous(trigger, tdef, sequence, delay, volume)
+isochronous(trigger, tdef, sequence, delay)
 
 
 #%% Asynchronous
@@ -59,7 +56,7 @@ isochronous(trigger, tdef, sequence, delay, volume)
 # Sequence
 sequence = generate_sequence(100, 0, 10, tdef)
 # Task
-asynchronous(trigger, tdef, sequence, sequence_timings, volume)
+asynchronous(trigger, tdef, sequence, sequence_timings)
 
 
 #%% Baseline

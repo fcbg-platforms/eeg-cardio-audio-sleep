@@ -28,4 +28,4 @@ class Trigger:
             Value sent on the trigger channel.
         """
         self.trigger.signal(value)
-        self.eye_link.el_tracker.sendMessage(str(value))
+        self.eye_link.signal(str(value))

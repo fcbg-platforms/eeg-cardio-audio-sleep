@@ -208,6 +208,10 @@ class Eyelink(EYELink):
         finally:
             self.close()
 
+    def signal(self, value: str):
+        """Send a trigger signal."""
+        self.el_tracker.sendMessage(value)
+
     def close(self):
         """Close in case a RuntimeError was raised."""
         try:

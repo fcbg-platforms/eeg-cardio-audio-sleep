@@ -131,7 +131,7 @@ class Eyelink(EYELink):
         self.scn_width, self.scn_height = self.win.size
 
         # Pass the display pixel coordinates (left, top, right, bottom) to the
-        # tracker, c.f. EyeLink Installation Guide "Customizing Screen Settings"
+        # tracker, c.f EyeLink Installation Guide "Customizing Screen Settings"
         el_coords = (
             "screen_pixel_coords = 0 0 "
             + f"{self.scn_width - 1} {self.scn_height - 1}"

@@ -6,9 +6,19 @@ import psutil
 from bsl.triggers import MockTrigger, ParallelPortTrigger
 from PyQt5.QtCore import QRect, QSize, Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import QColor, QFont, QPalette
-from PyQt5.QtWidgets import QLabel, QMainWindow, QPushButton, QWidget
+from PyQt5.QtWidgets import (
+    QDial,
+    QDoubleSpinBox,
+    QFrame,
+    QLabel,
+    QMainWindow,
+    QPushButton,
+    QSizePolicy,
+    QWidget,
+)
 
 from .. import logger
+from .._typing import EYELink
 from ..config import load_config, load_triggers
 from ..tasks import (
     asynchronous,
@@ -17,14 +27,18 @@ from ..tasks import (
     isochronous,
     synchronous,
 )
+from ..triggers import Trigger
 from ..utils import (
     generate_async_timings,
     generate_blocks_sequence,
     generate_sequence,
     search_ANT_amplifier,
+    test_volume,
 )
+from ..utils._docs import fill_doc
 
 
+@fill_doc
 class GUI(QMainWindow):
     """Application window and layout.
 
@@ -32,37 +46,23 @@ class GUI(QMainWindow):
     ----------
     ecg_ch_name : str
         Name of the ECG channel.
-    peak_height_perc : float
-        Minimum height of the peak expressed as a percentile of the samples in
-        the buffer.
-    peak_prominence : float | None
-        Minimum peak prominence as defined by scipy.
-    peak_width : float | None
-        Minimum peak width expressed in ms. Default to None.
+    %(eye_link)s
     """
 
-    def __init__(
-        self,
-        ecg_ch_name: str,
-        peak_height_perc: float,
-        peak_prominence: Optional[float],
-        peak_width: Optional[float],
-    ):
+    def __init__(self, ecg_ch_name: str, eye_link: EYELink):
         super().__init__()
 
         # define mp Queue
         self.queue = mp.Queue()
 
+        # defaults for the peak detection
+        defaults = dict(height=97.0, prominence=500.0, width=None, volume=0)
+
         # load configuration
-        self.load_config(
-            ecg_ch_name,
-            peak_height_perc,
-            peak_prominence,
-            peak_width,
-        )
+        self.load_config(ecg_ch_name, defaults, eye_link)
 
         # load GUI
-        self.load_ui()
+        self.load_ui(defaults)
         self.connect_signals_to_slots()
 
         # block generation
@@ -82,16 +82,21 @@ class GUI(QMainWindow):
     def load_config(
         self,
         ecg_ch_name: str,
-        peak_height_perc: float,
-        peak_prominence: Optional[float],
-        peak_width: Optional[float],
+        defaults: dict,
+        eye_link: EYELink,
     ):
         self.config, trigger_type = load_config()
         self.tdef = load_triggers()
+
+        # combine trigger with eye-link
         if trigger_type == "lpt":
-            self.trigger = ParallelPortTrigger("/dev/parport0")
+            trigger = ParallelPortTrigger("/dev/parport0")
         elif trigger_type == "mock":
-            self.trigger = MockTrigger()
+            trigger = MockTrigger()
+        self.eye_link = eye_link
+        self.trigger = Trigger(trigger, self.eye_link)
+
+        # search for LSL stream
         stream_name = search_ANT_amplifier()
 
         # Create task mapping
@@ -104,38 +109,53 @@ class GUI(QMainWindow):
 
         # Create args
         self.args_mapping = {
-            "baseline": (
+            "baseline": [
                 self.trigger,
                 self.tdef,
                 self.config["baseline"]["duration"],
-            ),
-            "synchronous": (
+            ],
+            "synchronous": [
+                self.trigger,
+                self.tdef,
+                None,  # sequence
+                stream_name,
+                ecg_ch_name,
+                defaults["height"],
+                defaults["prominence"],
+                defaults["width"],
+                defaults["volume"],
+                self.queue,
+            ],
+            "isochronous": [
                 self.trigger,
                 self.tdef,
                 None,
-                stream_name,
-                ecg_ch_name,
-                peak_height_perc,
-                peak_prominence,
-                peak_width,
-                self.queue,
-            ),
-            "isochronous": (self.trigger, self.tdef, None, None),
-            "asynchronous": (self.trigger, self.tdef, None, None),
+                None,
+                defaults["volume"],
+            ],
+            "asynchronous": [
+                self.trigger,
+                self.tdef,
+                None,
+                None,
+                defaults["volume"],
+            ],
         }
 
     # -------------------------------------------------------------------------
-    def load_ui(self):
-        # Main window
+    def load_ui(self, defaults: dict):
+        """Load the graphical user interface."""
+        # main window
         self.setWindowTitle("Cardio-Audio-Sleep experiment")
-        self.setFixedSize(QSize(800, 200))
+        self.setFixedSize(QSize(800, 300))
+        self.setSizePolicy(GUI._sizePolicy(self))
         self.setContextMenuPolicy(Qt.NoContextMenu)
 
-        # Main widget
+        # main widget
         self.central_widget = QWidget(self)
         self.central_widget.setObjectName("central_widget")
 
-        # Add blocks
+        # add blocks
         self.blocks = list()
         for k in range(5):
             block = Block(self.central_widget, "")
@@ -146,49 +166,218 @@ class GUI(QMainWindow):
                 block.setEnabled(False)
             self.blocks.append(block)
 
-        # Add labels
-        past = QLabel(self.central_widget)
-        past.setGeometry(QRect(50, 115, 265, 20))
-        past.setAlignment(Qt.AlignCenter)
-        past.setObjectName("past")
-        past.setText("Previous blocks")
+        # add labels
+        GUI._add_label(self, 50, 115, 265, 20, "past", "Previous blocks")
+        GUI._add_label(self, 340, 115, 120, 20, "current", "Current")
+        GUI._add_label(self, 485, 115, 265, 20, "future", "Next blocks")
 
-        future = QLabel(self.central_widget)
-        future.setGeometry(QRect(485, 115, 265, 20))
-        future.setAlignment(Qt.AlignCenter)
-        future.setObjectName("future")
-        future.setText("Next blocks")
+        # add start / pause / stop push buttons
+        self.pushButton_start = GUI._add_pushButton(
+            self, 25, 150, 240, 32, "pushButton_start", "Start"
+        )
+        self.pushButton_pause = GUI._add_pushButton(
+            self, 280, 150, 240, 32, "pushButton_pause", "Pause"
+        )
+        self.pushButton_stop = GUI._add_pushButton(
+            self, 535, 150, 240, 32, "pushButton_stop", "Stop"
+        )
 
-        current = QLabel(self.central_widget)
-        current.setGeometry(QRect(340, 115, 120, 20))
-        current.setAlignment(Qt.AlignCenter)
-        current.setObjectName("current")
-        current.setText("Current")
-
-        # Add push buttons
-        self.pushButton_start = QPushButton(self.central_widget)
-        self.pushButton_start.setEnabled(True)
-        self.pushButton_start.setGeometry(QRect(25, 150, 240, 32))
-        self.pushButton_start.setObjectName("pushButton_start")
-        self.pushButton_start.setText("Start")
-
-        self.pushButton_pause = QPushButton(self.central_widget)
         self.pushButton_pause.setEnabled(False)
-        self.pushButton_pause.setGeometry(QRect(280, 150, 240, 32))
-        self.pushButton_pause.setObjectName("pushButton_pause")
-        self.pushButton_pause.setText("Pause")
         self.pushButton_pause.setCheckable(True)
-
-        self.pushButton_stop = QPushButton(self.central_widget)
         self.pushButton_stop.setEnabled(False)
-        self.pushButton_stop.setGeometry(QRect(535, 150, 240, 32))
-        self.pushButton_stop.setObjectName("pushButton_stop")
-        self.pushButton_stop.setText("Stop")
 
-        # Set central widget
+        # add peak detection settings
+        self.doubleSpinBox_height = GUI._add_doubleSpinBox(
+            self,
+            350,
+            194,
+            100,
+            28,
+            "doubleSpinBox_height",
+            min_=1.0,
+            max_=100.0,
+            step=1.0,
+            value=defaults["height"],
+        )
+        self.doubleSpinBox_prominence = GUI._add_doubleSpinBox(
+            self,
+            350,
+            228,
+            100,
+            28,
+            "doubleSpinBox_prominence",
+            min_=400.0,
+            max_=3000.0,
+            step=25.0,
+            value=defaults["prominence"],
+        )
+        self.doubleSpinBox_width = GUI._add_doubleSpinBox(
+            self,
+            350,
+            262,
+            100,
+            28,
+            "doubleSpinBox_width",
+            min_=1.0,
+            max_=50.0,
+            step=1.0,
+            value=defaults["width"],
+        )
+        self.pushButton_prominence = GUI._add_pushButton(
+            self, 470, 228, 113, 28, "pushButton_prominence", "Disable"
+        )
+        self.pushButton_prominence.setCheckable(True)
+        self.pushButton_prominence.setChecked(False)
+        self.pushButton_width = GUI._add_pushButton(
+            self, 470, 262, 113, 28, "pushButton_width", "Disable"
+        )
+        self.pushButton_width.setCheckable(True)
+        self.pushButton_width.setChecked(False)
+        GUI._add_label(self, 230, 194, 120, 28, "height", "Height")
+        GUI._add_label(self, 230, 228, 120, 28, "prominence", "Prominence")
+        GUI._add_label(self, 230, 262, 120, 28, "width", "Width")
+
+        # add volume controls
+        self.dial_volume = QDial(self.central_widget)
+        self.dial_volume.setGeometry(QRect(25, 230, 61, 61))
+        self.dial_volume.setSizePolicy(GUI._sizePolicy(self.dial_volume))
+        self.dial_volume.setMinimum(0)
+        self.dial_volume.setMaximum(100)
+        self.dial_volume.setProperty("value", defaults["volume"])
+        self.dial_volume.setObjectName("dial_volume")
+        self.doubleSpinBox_volume = GUI._add_doubleSpinBox(
+            self,
+            100,
+            247,
+            80,
+            24,
+            "doubleSpinBox_volume",
+            min_=0.0,
+            max_=100.0,
+            step=1.0,
+            value=defaults["volume"],
+        )
+        self.pushButton_volume = GUI._add_pushButton(
+            self, 95, 200, 80, 32, "pushButton_volume", "Test"
+        )
+        GUI._add_label(self, 25, 200, 60, 32, "volume", "Volume")
+
+        # add Eye-tracker controls
+        self.pushButton_calibrate = GUI._add_pushButton(
+            self, 660, 240, 100, 32, "pushButton_calibrate", "Calibrate"
+        )
+        GUI._add_label(self, 660, 200, 100, 32, "eye_tracker", "Eye Tracker")
+
+        # add separation lines
+        GUI._add_line(self, 0, 178, 800, 20, "line1", "h")
+        GUI._add_line(self, 190, 188, 20, 112, "line2", "v")
+        GUI._add_line(self, 600, 188, 20, 112, "line2", "v")
+
+        # set central widget
         self.setCentralWidget(self.central_widget)
 
         logger.debug("UI loaded.")
+
+    @staticmethod
+    def _add_label(
+        window: QMainWindow,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        name: str,
+        text: str,
+    ) -> QLabel:
+        """Add a fix label to the window."""
+        label = QLabel(window.central_widget)
+        label.setGeometry(QRect(x, y, w, h))
+        label.setSizePolicy(GUI._sizePolicy(label))
+        label.setAutoFillBackground(True)
+        label.setAlignment(Qt.AlignCenter)
+        label.setObjectName(name)
+        label.setText(text)
+        return label
+
+    @staticmethod
+    def _add_line(
+        window: QMainWindow,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        name: str,
+        orientation: str,
+    ) -> QFrame:
+        """Add a line."""
+        line = QFrame(window.central_widget)
+        line.setGeometry(QRect(x, y, w, h))
+        line.setSizePolicy(GUI._sizePolicy(line))
+        if orientation == "h":
+            line.setFrameShape(QFrame.HLine)
+        elif orientation == "v":
+            line.setFrameShape(QFrame.VLine)
+        else:
+            raise ValueError(
+                "A line orientation should be 'h' or 'v'. "
+                f"Provided: '{orientation}'."
+            )
+        line.setFrameShadow(QFrame.Sunken)
+        line.setObjectName(name)
+        return line
+
+    @staticmethod
+    def _add_pushButton(
+        window: QMainWindow,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        name: str,
+        text: str,
+    ) -> QPushButton:
+        """Add a push-button."""
+        pushButton = QPushButton(window.central_widget)
+        pushButton.setGeometry(QRect(x, y, w, h))
+        pushButton.setSizePolicy(GUI._sizePolicy(pushButton))
+        pushButton.setObjectName(name)
+        pushButton.setText(text)
+        return pushButton
+
+    @staticmethod
+    def _add_doubleSpinBox(
+        window: QMainWindow,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        name: str,
+        min_: Optional[float] = None,
+        max_: Optional[float] = None,
+        step: Optional[float] = None,
+        value: Optional[float] = None,
+    ) -> QDoubleSpinBox:
+        doubleSpinBox = QDoubleSpinBox(window.central_widget)
+        doubleSpinBox.setGeometry(QRect(x, y, w, h))
+        doubleSpinBox.setSizePolicy(GUI._sizePolicy(doubleSpinBox))
+        doubleSpinBox.setObjectName(name)
+        if min_ is not None:
+            doubleSpinBox.setMinimum(min_)
+        if max_ is not None:
+            doubleSpinBox.setMaximum(max_)
+        if step is not None:
+            doubleSpinBox.setSingleStep(step)
+        if value is not None:
+            doubleSpinBox.setProperty("value", value)
+        return doubleSpinBox
+
+    @staticmethod
+    def _sizePolicy(widget: QWidget):
+        """A fixed size policy."""
+        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(widget.sizePolicy().hasHeightForWidth())
+        return sizePolicy
 
     # -------------------------------------------------------------------------
     def update(self):
@@ -220,7 +409,7 @@ class GUI(QMainWindow):
         if btype == "baseline":
             args = self.args_mapping[btype]
         else:
-            args = list(self.args_mapping[btype])
+            args = self.args_mapping[btype]
             args[2] = generate_sequence(
                 self.config[btype]["n_stimuli"],
                 self.config[btype]["n_omissions"],
@@ -275,11 +464,53 @@ class GUI(QMainWindow):
         self.psutil_process = psutil.Process(self.process.pid)
         self.process_block_name = "inter-block"
 
+    def _update_volume(self, volume):
+        """Update the volume setting."""
+        self.args_mapping["synchronous"][8] = volume
+        self.args_mapping["isochronous"][4] = volume
+        self.args_mapping["asynchronous"][4] = volume
+
+        logger.debug(
+            "Setting the volume to %.2f -> "
+            "(sync: %.1f, iso: %.1f, async: %.1f)",
+            volume,
+            self.args_mapping["synchronous"][8],
+            self.args_mapping["isochronous"][4],
+            self.args_mapping["asynchronous"][4],
+        )
+
     # -------------------------------------------------------------------------
     def connect_signals_to_slots(self):
         self.pushButton_start.clicked.connect(self.pushButton_start_clicked)
         self.pushButton_pause.clicked.connect(self.pushButton_pause_clicked)
         self.pushButton_stop.clicked.connect(self.pushButton_stop_clicked)
+
+        # detection settings
+        self.doubleSpinBox_height.valueChanged.connect(
+            self.doubleSpinBox_valueChanged
+        )
+        self.doubleSpinBox_prominence.valueChanged.connect(
+            self.doubleSpinBox_valueChanged
+        )
+        self.doubleSpinBox_width.valueChanged.connect(
+            self.doubleSpinBox_valueChanged
+        )
+        self.pushButton_prominence.clicked.connect(
+            self.pushButton_prominence_clicked
+        )
+        self.pushButton_width.clicked.connect(self.pushButton_width_clicked)
+
+        # volume
+        self.doubleSpinBox_volume.valueChanged.connect(
+            self.doubleSpinBox_volume_valueChanged
+        )
+        self.dial_volume.valueChanged.connect(self.dial_volume_valueChanged)
+        self.pushButton_volume.clicked.connect(self.pushButton_volume_clicked)
+
+        # eye-tracking
+        self.pushButton_calibrate.clicked.connect(
+            self.pushButton_calibrate_clicked
+        )
 
     @pyqtSlot()
     def pushButton_start_clicked(self):
@@ -288,10 +519,17 @@ class GUI(QMainWindow):
         self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)
 
-        # Launch first block
+        # start eye-tracking
+        self.eye_link.start()
+
+        # disable test sound and eye-link calibration buttons
+        self.pushButton_volume.setEnabled(False)
+        self.pushButton_calibrate.setEnabled(False)
+
+        # launch first block
         self.start_new_block(first=True)
 
-        # Start timer
+        # start timer
         self.timer.start(2000)
 
     @pyqtSlot()
@@ -299,6 +537,10 @@ class GUI(QMainWindow):
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)
+
+        # enable test sound and eye-link calibration buttons
+        self.pushButton_volume.setEnabled(True)
+        self.pushButton_calibrate.setEnabled(True)
 
         # change text on button
         if self.pushButton_pause.isChecked():
@@ -323,13 +565,120 @@ class GUI(QMainWindow):
     @pyqtSlot()
     def pushButton_stop_clicked(self):
         logger.debug("Stop requested.")
+        # disable all interactive features
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(False)
         self.pushButton_stop.setEnabled(False)
+        self.pushButton_volume.setEnabled(False)
+        self.pushButton_calibrate.setEnabled(False)
+        self.pushButton_prominence.setEnabled(False)
+        self.pushButton_width.setEnabled(False)
+        self.doubleSpinBox_height.setEnabled(False)
+        self.doubleSpinBox_prominence.setEnabled(False)
+        self.doubleSpinBox_width.setEnabled(False)
+        self.dial_volume.setEnabled(False)
+        self.doubleSpinBox_volume.setEnabled(False)
+
+        # stop task process
         self.timer.stop()
         self.process.join(1)
         if self.process.is_alive():
             self.process.kill()
+
+        # stop eye-tracking
+        self.eye_link.stop()
+
+    @pyqtSlot()
+    def pushButton_prominence_clicked(self):
+        state = self.doubleSpinBox_prominence.isEnabled()
+        self.doubleSpinBox_prominence.setEnabled(not state)
+        self.pushButton_prominence.setChecked(state)
+        if state:  # previously enabled, now disabled
+            self.args_mapping["synchronous"][6] = None
+            logger.debug(
+                "Disabling prominence -> %s",
+                self.args_mapping["synchronous"][6],
+            )
+        else:  # previously disabled, now enabled
+            value = self.doubleSpinBox_prominence.value()
+            self.args_mapping["synchronous"][6] = value
+            logger.debug(
+                "Setting prominence to %.2f -> %.2f",
+                value,
+                self.args_mapping["synchronous"][6],
+            )
+
+    @pyqtSlot()
+    def pushButton_width_clicked(self):
+        state = self.doubleSpinBox_width.isEnabled()
+        self.doubleSpinBox_width.setEnabled(not state)
+        self.pushButton_width.setChecked(state)
+        if state:  # previously enabled, now disabled
+            self.args_mapping["synchronous"][7] = None
+            logger.debug(
+                "Disabling width -> %s", self.args_mapping["synchronous"][7]
+            )
+        else:  # previously disabled, now enabled
+            value = self.doubleSpinBox_width.value()
+            self.args_mapping["synchronous"][
+                7
+            ] = self.doubleSpinBox_width.value()
+            logger.debug(
+                "Setting width to %.2f -> %.2f",
+                value,
+                self.args_mapping["synchronous"][7],
+            )
+
+    @pyqtSlot()
+    def doubleSpinBox_valueChanged(self):
+        height = self.doubleSpinBox_height.value()
+        prominence = self.doubleSpinBox_prominence.value()
+        width = self.doubleSpinBox_width.value()
+        prominence = (
+            prominence if self.doubleSpinBox_prominence.isEnabled() else None
+        )
+        width = width if self.doubleSpinBox_width.isEnabled() else None
+
+        self.args_mapping["synchronous"][5] = height
+        self.args_mapping["synchronous"][6] = prominence
+        self.args_mapping["synchronous"][7] = width
+
+        logger.debug(
+            "(Height, Prominence, Width) set to (%s, %s, %s) -> (%s, %s, %s)",
+            height,
+            None if prominence is None else round(prominence, 2),
+            None if width is None else round(width, 2),
+            self.args_mapping["synchronous"][5],
+            self.args_mapping["synchronous"][6],
+            self.args_mapping["synchronous"][7],
+        )
+
+    @pyqtSlot()
+    def doubleSpinBox_volume_valueChanged(self):
+        volume = self.doubleSpinBox_volume.value()
+        self.dial_volume.setProperty("value", volume)
+        self._update_volume(volume)
+
+    @pyqtSlot()
+    def dial_volume_valueChanged(self):
+        volume = self.dial_volume.value()
+        self.doubleSpinBox_volume.setProperty("value", volume)
+        self._update_volume(volume)
+
+    @pyqtSlot()
+    def pushButton_volume_clicked(self):
+        # sanity-check
+        assert self.dial_volume.value() == self.doubleSpinBox_volume.value()
+        logger.debug("Playing sound at volume %.2f.", self.dial_volume.value())
+        process = mp.Process(
+            target=test_volume, args=(self.dial_volume.value(),)
+        )
+        process.start()
+        process.join()
+
+    @pyqtSlot()
+    def pushButton_calibrate_clicked(self):
+        self.eye_link.calibrate()
 
 
 class Block(QLabel):

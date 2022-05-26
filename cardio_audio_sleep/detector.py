@@ -151,6 +151,8 @@ class Detector:
         peak = peaks[-1]
         # stop if last peak is already treated or keep track
         if self._last_peak is not None:
+            if self._timestamps_buffer[peak] == self._last_peak:
+                return None  # don't log the same peak
             if self._timestamps_buffer[peak] - self._last_peak <= 0.25:
                 logger.debug(
                     "Skipping peak. Found: %.2f - Last: %.2f - Δ: %.2f",

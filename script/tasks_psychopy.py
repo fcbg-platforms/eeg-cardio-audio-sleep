@@ -9,9 +9,9 @@ from numpy.typing import ArrayLike
 from psychopy.clock import wait
 from psychopy.sound.backend_ptb import SoundPTB as Sound
 
-from . import logger
-from .detector import Detector
-from .utils._checks import (
+from cardio_audio_sleep import logger
+from cardio_audio_sleep.detector import Detector
+from cardio_audio_sleep.utils._checks import (
     _check_sequence,
     _check_sequence_timings,
     _check_tdef,

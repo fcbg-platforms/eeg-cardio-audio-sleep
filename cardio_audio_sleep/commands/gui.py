@@ -522,8 +522,9 @@ class GUI(QMainWindow):
         # start eye-tracking
         self.eye_link.start()
 
-        # disable test sound
+        # disable test sound and eye-link calibration buttons
         self.pushButton_volume.setEnabled(False)
+        self.pushButton_calibrate.setEnabled(False)
 
         # launch first block
         self.start_new_block(first=True)
@@ -537,8 +538,9 @@ class GUI(QMainWindow):
         self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)
 
-        # enable test sound
+        # enable test sound and eye-link calibration buttons
         self.pushButton_volume.setEnabled(True)
+        self.pushButton_calibrate.setEnabled(True)
 
         # change text on button
         if self.pushButton_pause.isChecked():
@@ -563,9 +565,21 @@ class GUI(QMainWindow):
     @pyqtSlot()
     def pushButton_stop_clicked(self):
         logger.debug("Stop requested.")
+        # disable all interactive features
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(False)
         self.pushButton_stop.setEnabled(False)
+        self.pushButton_volume.setEnabled(False)
+        self.pushButton_calibrate.setEnabled(False)
+        self.pushButton_prominence.setEnabled(False)
+        self.pushButton_width.setEnabled(False)
+        self.doubleSpinBox_height.setEnabled(False)
+        self.doubleSpinBox_prominence.setEnabled(False)
+        self.doubleSpinBox_width.setEnabled(False)
+        self.dial_volume.setEnabled(False)
+        self.doubleSpinBox_volume.setEnabled(False)
+
+        # stop task process
         self.timer.stop()
         self.process.join(1)
         if self.process.is_alive():

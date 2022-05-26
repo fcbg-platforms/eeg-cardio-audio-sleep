@@ -27,7 +27,7 @@ def cas():
 
     # setup eye-tracker
     if args.eye_tracker:
-        eye_link = Eyelink("./", "TEST")
+        eye_link = Eyelink("./", "TEST")  # mock if pylink is not available
     else:
         eye_link = EyelinkMock()
 

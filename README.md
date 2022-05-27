@@ -18,7 +18,7 @@ instructions can be found [here](https://www.psychopy.org/download.html).
 On Linux, PsychToolbox requires the following libraries:
 
 ```
-sudo apt-get install libusb-1.0-0-dev portaudio19-dev libasound2-dev
+sudo apt-get install libusb-1.0-0-dev portaudio19-dev libasound2-dev libsdl2-2.0-0
 ```
 
 For EyeLink eye-tracking, `pylink` is required. The wheel should be retrieved

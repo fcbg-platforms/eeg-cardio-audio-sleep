@@ -40,14 +40,8 @@ pylink = import_optional_dependency("pylink", raise_error=False)
 if sys.platform == "linux":
     wx = import_optional_dependency("wx", raise_error=False)
 if pylink is None:
-    logger.error(
-        "The pylink library could not be found! Eye-tracking will not work."
-    )
     Eyelink = EyelinkMock
 elif sys.platform == "linux" and wx is None:
-    logger.error(
-        "The wxPython library could not be found! Eye-tracking will not work."
-    )
     Eyelink = EyelinkMock
 else:
     from .EyeLink import Eyelink  # noqa: F401

@@ -36,6 +36,7 @@ from ..utils import (
     test_volume,
 )
 from ..utils._docs import fill_doc
+from ..eye_link import EyelinkMock
 
 
 @fill_doc
@@ -62,7 +63,7 @@ class GUI(QMainWindow):
         self.load_config(ecg_ch_name, defaults, eye_link)
 
         # load GUI
-        self.load_ui(defaults)
+        self.load_ui(defaults, eye_link)
         self.connect_signals_to_slots()
 
         # block generation
@@ -143,7 +144,7 @@ class GUI(QMainWindow):
         }
 
     # -------------------------------------------------------------------------
-    def load_ui(self, defaults: dict):
+    def load_ui(self, defaults: dict, eye_link: EYELink):
         """Load the graphical user interface."""
         # main window
         self.setWindowTitle("Cardio-Audio-Sleep experiment")
@@ -266,6 +267,8 @@ class GUI(QMainWindow):
         self.pushButton_calibrate = GUI._add_pushButton(
             self, 660, 240, 100, 32, "pushButton_calibrate", "Calibrate"
         )
+        if isinstance(eye_link, EyelinkMock):
+            self.pushButton_calibrate.setEnabled(False)
         GUI._add_label(self, 660, 200, 100, 32, "eye_tracker", "Eye Tracker")
 
         # add separation lines
@@ -540,7 +543,8 @@ class GUI(QMainWindow):
 
         # enable test sound and eye-link calibration buttons
         self.pushButton_volume.setEnabled(True)
-        self.pushButton_calibrate.setEnabled(True)
+        if not isinstance(self.eye_link, EyelinkMock):
+            self.pushButton_calibrate.setEnabled(True)
 
         # change text on button
         if self.pushButton_pause.isChecked():

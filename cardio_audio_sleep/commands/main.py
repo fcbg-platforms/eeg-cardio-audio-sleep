@@ -1,4 +1,5 @@
 import argparse
+import sys
 import time
 
 from bsl.triggers import ParallelPortTrigger
@@ -7,8 +8,8 @@ from PyQt5.QtWidgets import QApplication
 
 from .. import logger, peak_detection_parameters_tuning, set_log_level
 from ..config import load_triggers
-from ..eye_link import Eyelink, EyelinkMock
 from ..utils import search_ANT_amplifier
+from ..utils._imports import import_optional_dependency
 from .cli import input_ecg_ch_name
 from .gui import GUI
 
@@ -32,8 +33,13 @@ def cas():
 
     # setup eye-tracker
     if args.eye_tracker:
-        eye_link = Eyelink("./", "TEST")  # mock if pylink is not available
+        import_optional_dependency("pylink", raise_error=True)
+        if sys.platform == "linux":
+            import_optional_dependency("wx", raise_error=True)
+        from ..eye_link import Eyelink
+        eye_link = Eyelink("./", "TEST")
     else:
+        from ..eye_link import EyelinkMock
         eye_link = EyelinkMock()
 
     # ask for ECG channel name if it's not provided as argument

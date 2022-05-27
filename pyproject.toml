@@ -66,6 +66,11 @@ documentation = 'https://github.com/mscheltienne/cardio_audio_sleep'
 source = 'https://github.com/mscheltienne/cardio_audio_sleep'
 tracker = 'https://github.com/mscheltienne/cardio_audio_sleep/issues'
 
+[project.scripts]
+cas = 'cardio_audio_sleep.commands.main:cas'
+pds = 'cardio_audio_sleep.commands.main:pds'
+test = 'cardio_audio_sleep.commands.main:test'
+
 [tool.setuptools]
 include-package-data = true
 

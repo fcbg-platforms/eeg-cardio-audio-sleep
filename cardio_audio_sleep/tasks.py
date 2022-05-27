@@ -29,9 +29,9 @@ def synchronous(
     stream_name: str,
     ecg_ch_name: str,
     peak_height_perc: float,
-    peak_prominek_width: Optional[float],
-    vonce: Optional[float],
-    pealume: float,
+    peak_prominence: Optional[float],
+    peak_width: Optional[float],
+    volume: float,
     queue: Optional[Queue] = None,
 ) -> list:
     """

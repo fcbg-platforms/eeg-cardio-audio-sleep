@@ -29,9 +29,8 @@ def synchronous(
     peak_prominence: Optional[Union[int, float]],
     peak_width: Optional[Union[int, float]],
     queue: Optional[Queue] = None,
-) -> list:
-    """
-    Synchronous block where sounds are sync to the heartbeat.
+) -> list:  # noqa: D401
+    """Synchronous block where sounds are sync to the heartbeat.
 
     Parameters
     ----------
@@ -132,8 +131,7 @@ def synchronous(
 
 
 def isochronous(trigger, tdef, sequence: ArrayLike, delay: Union[int, float]):
-    """
-    Isochronous block where sounds are delivered at a fix interval.
+    """Isochronous block where sounds are delivered at a fix interval.
 
     Parameters
     ----------
@@ -200,10 +198,10 @@ def isochronous(trigger, tdef, sequence: ArrayLike, delay: Union[int, float]):
 def asynchronous(
     trigger, tdef, sequence: ArrayLike, sequence_timings: ArrayLike
 ):
-    """
-    Asynchronous block where sounds repeat a sequence from a synchronous task.
-    Omissions are randomized (compared to the synchronous task they are
-    extracted from).
+    """Asynchronous block where a synchronous sequence is repeated.
+
+    Omissions are randomized compared to the synchronous task they are
+    extracted from.
 
     Parameters
     ----------

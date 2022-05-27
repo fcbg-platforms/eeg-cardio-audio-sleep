@@ -35,7 +35,7 @@ jobs:
       - name: Install linux dependencies
         if: ${{ matrix.os == 'ubuntu'}}
         run: |
-          sudo apt-get install libusb-1.0-0-dev portaudio19-dev libasound2-dev libportaudio2
+          sudo apt-get install libusb-1.0-0-dev portaudio19-dev libasound2-dev libportaudio2 libsndfile-dev
       - name: Install dependencies
         run: |
           python -m pip install --progress-bar off --upgrade pip setuptools wheel

@@ -45,7 +45,6 @@ dependencies = [
     'psutil',
     'PyQt5',
     'pyxdf',
-    'wxPython'
 ]
 
 [project.optional-dependencies]

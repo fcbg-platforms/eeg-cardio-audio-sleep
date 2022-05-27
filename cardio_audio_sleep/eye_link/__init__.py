@@ -2,27 +2,25 @@
 
 import sys
 
-from .. import logger
 from .._typing import EYELink
 from ..utils._imports import import_optional_dependency
 
 
 class EyelinkMock(EYELink):
     def __init__(self, pname=None, fname=None, host_ip=None):
-        logger.info("Eye-tracker: creating a MOCK eye-tracker.")
         self.el_tracker = _ElTrackerMock()
 
     def calibrate(self):
-        logger.info("Eye-tracker: mock calibration.")
+        pass
 
     def start(self):
-        logger.info("Eye-tracker: mock start.")
+        pass
 
     def stop(self):
-        logger.info("Eye-tracker: mock stop.")
+        pass
 
     def signal(self, value: str):
-        self.el_tracker.sendMessage(value)
+        pass
 
     def close(self):
         pass
@@ -33,7 +31,7 @@ class _ElTrackerMock:
         pass
 
     def sendMessage(self, value: str):
-        logger.info("Eye-tracker: mock trigger %s.", value)
+        pass
 
 
 pylink = import_optional_dependency("pylink", raise_error=False)

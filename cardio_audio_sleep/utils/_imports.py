@@ -2,6 +2,7 @@
 
 Inspired from pandas: https://pandas.pydata.org/
 """
+
 import importlib
 
 # A mapping from import name to package name (on PyPI) when the package name

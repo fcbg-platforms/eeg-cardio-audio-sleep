@@ -83,7 +83,7 @@ def add_annotations_from_events(raw: BaseRaw) -> BaseRaw:
     blocks = {
         "Synchronous": (tdef.sync_start, tdef.sync_stop),
         "Isochronous": (tdef.iso_start, tdef.iso_stop),
-        "Asynchornous": (tdef.async_start, tdef.async_stop),
+        "Asynchronous": (tdef.async_start, tdef.async_stop),
         "Baseline": (tdef.baseline_start, tdef.baseline_stop),
     }
     for block, (tdef_start, tdef_stop) in blocks.items():

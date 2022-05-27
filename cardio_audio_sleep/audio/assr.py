@@ -1,6 +1,4 @@
-"""
-Auditory Steady State Response Stimuli.
-"""
+"""Auditory Steady State Response Stimuli."""
 
 import numpy as np
 
@@ -11,10 +9,9 @@ from ._sound import _Sound
 
 @fill_doc
 class ASSR(_Sound):
-    """
-    Auditory Steady State Response Stimuli.
-    Composed of a carrier frequency fc which is amplitude modulated at fm.
+    """Auditory Steady State Response Stimuli.
 
+    Composed of a carrier frequency fc which is amplitude modulated at fm.
     By default, a 1000 Hz carrier frequency modulated at 40 Hz through
     conventional modulation.
 
@@ -63,9 +60,7 @@ class ASSR(_Sound):
         super().__init__(volume, sample_rate, duration)
 
     def _set_signal(self):
-        """
-        Sets the signal to output.
-        """
+        """Set the signal to output."""
         if self._method == "conventional":
             assr_amplitude = 1 - np.cos(
                 2 * np.pi * self._frequency_modulation * self._time_arr
@@ -93,9 +88,7 @@ class ASSR(_Sound):
     # --------------------------------------------------------------------
     @staticmethod
     def _check_frequency_carrier(frequency_carrier):
-        """
-        Checks if the carrier frequency is positive.
-        """
+        """Check if the carrier frequency is positive."""
         _check_type(
             frequency_carrier, ("numeric",), item_name="frequency_carrier"
         )
@@ -104,9 +97,7 @@ class ASSR(_Sound):
 
     @staticmethod
     def _check_frequency_modulation(frequency_modulation):
-        """
-        Checks if the modulation frequency is positive.
-        """
+        """Check if the modulation frequency is positive."""
         _check_type(
             frequency_modulation,
             ("numeric",),
@@ -118,9 +109,7 @@ class ASSR(_Sound):
     # --------------------------------------------------------------------
     @property
     def frequency_carrier(self):
-        """
-        Sound's carrier frequency [Hz].
-        """
+        """Sound's carrier frequency [Hz]."""
         return self._frequency_carrier
 
     @frequency_carrier.setter
@@ -132,9 +121,7 @@ class ASSR(_Sound):
 
     @property
     def frequency_modulation(self):
-        """
-        Sound's modulation frequency [Hz].
-        """
+        """Sound's modulation frequency [Hz]."""
         return self._frequency_modulation
 
     @frequency_modulation.setter
@@ -146,9 +133,7 @@ class ASSR(_Sound):
 
     @property
     def method(self):
-        """
-        Sound's modulation method.
-        """
+        """Sound's modulation method."""
         return self._method
 
     @method.setter

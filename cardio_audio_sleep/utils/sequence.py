@@ -18,10 +18,7 @@ def generate_sequence(
     max_iter: int = 500,
     on_diverge: str = "warn",
 ) -> NDArray[int]:
-    """
-    Creates a valid sequence.
-    - 300 sounds / block
-    - 20% (60) are omissions
+    """Create a valid sequence of stimuli and omissions.
 
     An omission should not be in the first or last 5%.
     Omissions should not be consecutive.
@@ -40,7 +37,7 @@ def generate_sequence(
             - sound (aligned on sequence)
             - omission (aligned on sequence)
     max_iter : int
-        Maximum numnber of iteration to randomize the sequence.
+        Maximum number of iteration to randomize the sequence.
     on_diverge : str
         Either 'warn' to log an error message or 'raise' to raise a
         RuntimeError when the randomization does not converge within the

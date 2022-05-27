@@ -1,3 +1,5 @@
+"""MAtplotlib GUI to calibrate the peak detector settings."""
+
 import math
 import time
 from itertools import cycle
@@ -93,7 +95,7 @@ def peak_detection_parameters_tuning(
     )
 
     # Action on slider change
-    def sliders_on_changed(val):
+    def sliders_on_changed(val):  # noqa: D401
         """Action on slider movement."""
         global height_lines
         global peak_lines
@@ -154,7 +156,7 @@ def peak_detection_parameters_tuning(
     width_colors = cycle(["0.975", "lightgoldenrodyellow"])
     width_hovercolors = cycle(["lightgoldenrodyellow", "0.975"])
 
-    def prominence_button_clicked(mouse_event):
+    def prominence_button_clicked(mouse_event):  # noqa: D401
         """Action on prominence button click."""
         global peak_lines
         global prominence_disabled
@@ -180,7 +182,7 @@ def peak_detection_parameters_tuning(
         # update fig
         fig.canvas.draw_idle()
 
-    def width_button_clicked(mouse_event):
+    def width_button_clicked(mouse_event):  # noqa: D401
         """Action on width button click."""
         global peak_lines
         global prominence_disabled
@@ -210,7 +212,7 @@ def peak_detection_parameters_tuning(
     width_button.on_clicked(width_button_clicked)
 
     # ------------------------------------------------------------------------
-    # Add a reset buttom
+    # Add a reset button
     reset_button_ax = fig.add_axes([0.68, 0.025, 0.1, 0.04])
     reset_button = Button(
         reset_button_ax,
@@ -288,7 +290,7 @@ def _acquire_data(ecg_ch_name, stream_name, duration_buffer):
         time.sleep(2.5)
         logger.info("%i/4 complete!", k + 1)
 
-    # Retrive sampling rate
+    # Retrieve sampling rate
     fs = sr.streams[stream_name].sample_rate
 
     return data, fs

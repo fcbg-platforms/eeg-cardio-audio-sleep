@@ -1,6 +1,4 @@
-"""
-Pure tone sound.
-"""
+"""Pure tone sound."""
 
 import numpy as np
 
@@ -11,10 +9,9 @@ from ._sound import _Sound
 
 @fill_doc
 class Tone(_Sound):
-    """
-    Pure tone stimuli at the frequency f (Hz).
-    The equation is sin(2*pi*f*time).
+    """Pure tone stimuli at the frequency f (Hz).
 
+    The equation is sin(2*pi*f*time).
     Example: A 440 - La 440 - Tone(f=440)
 
     Parameters
@@ -32,9 +29,7 @@ class Tone(_Sound):
         super().__init__(volume, sample_rate, duration)
 
     def _set_signal(self):
-        """
-        Sets the signal to output.
-        """
+        """Set the signal to output."""
         tone_arr = np.sin(2 * np.pi * self._frequency * self._time_arr)
 
         self._signal[:, 0] = tone_arr * self._volume[0] / 100
@@ -44,9 +39,7 @@ class Tone(_Sound):
     # --------------------------------------------------------------------
     @staticmethod
     def _check_frequency(frequency):
-        """
-        Checks if the frequency is positive.
-        """
+        """Check if the frequency is positive."""
         _check_type(frequency, ("numeric",), item_name="frequency")
         assert 0 < frequency
         return frequency
@@ -54,9 +47,7 @@ class Tone(_Sound):
     # --------------------------------------------------------------------
     @property
     def frequency(self):
-        """
-        Sound's pure tone frequency [Hz].
-        """
+        """Sound's pure tone frequency [Hz]."""
         return self._frequency
 
     @frequency.setter

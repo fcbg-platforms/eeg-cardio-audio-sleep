@@ -1,6 +1,86 @@
+[build-system]
+requires = ['setuptools >= 61.0.0', 'wheel']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'cardio_audio_sleep'
+version = '0.2.0.dev'
+description = 'Cardio-audio-sleep study.'
+readme = 'README.md'
+license = {file = 'LICENSE'}
+requires-python = '>=3.8'
+authors = [
+    {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'},
+]
+maintainers = [
+    {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'},
+]
+keywords = [
+    'python',
+    'neuroscience',
+    'neuroimaging',
+    'sleep',
+]
+classifiers = [
+    'Operating System :: Microsoft :: Windows',
+    'Operating System :: Unix',
+    'Operating System :: MacOS',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Natural Language :: English',
+    'License :: OSI Approved :: MIT License',
+    'Intended Audience :: Science/Research',
+    'Topic :: Scientific/Engineering',
+]
+dependencies = [
+    'numpy',
+    'scipy',
+    'mne>=1.0.0',
+    'matplotlib',
+    'bsl==0.4.0',
+    'sounddevice',
+    'psychopy==2021.2.3',
+    'psutil',
+    'PyQt5',
+    'pyxdf',
+]
+
+[project.optional-dependencies]
+style = ['black', 'codespell', 'isort', 'flake8', 'pydocstyle[toml]']
+build = ['build', 'twine']
+all = [
+    'black',
+    'build',
+    'codespell',
+    'isort',
+    'flake8',
+    'pydocstyle[toml]',
+    'twine',
+]
+
+[project.urls]
+homepage = 'https://github.com/mscheltienne/cardio_audio_sleep'
+documentation = 'https://github.com/mscheltienne/cardio_audio_sleep'
+source = 'https://github.com/mscheltienne/cardio_audio_sleep'
+tracker = 'https://github.com/mscheltienne/cardio_audio_sleep/issues'
+
+[project.scripts]
+cas = 'cardio_audio_sleep.commands.main:cas'
+pds = 'cardio_audio_sleep.commands.main:pds'
+test = 'cardio_audio_sleep.commands.main:test'
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ['cardio_audio_sleep*']
+exclude = ['^.*tests']
+
 [tool.black]
 line-length = 79
-target-version = ['py37']
+target-version = ['py38']
 include = '\.pyi?$'
 extend-exclude = '''
 (
@@ -14,7 +94,14 @@ extend-exclude = '''
 profile = "black"
 multi_line_output = 3
 line_length = 79
-py_version = 37
+py_version = 38
 extend_skip_glob = [
     'setup.py',
-    ]
+]
+
+[tool.pydocstyle]
+convention = 'numpy'
+ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot)'
+match = '^(?!setup|__init__|test_).*\.py'
+match-dir = '^(?!build|dist|\.|eye_link).*'
+add_ignore = 'D100,D104,D107'

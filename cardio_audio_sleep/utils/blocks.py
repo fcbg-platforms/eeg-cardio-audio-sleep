@@ -3,7 +3,7 @@ import random
 
 def generate_blocks_sequence(previous_blocks: list) -> str:
     """
-    Creates a valid block sequence.
+    Create a valid block sequence.
 
     Parameters
     ----------

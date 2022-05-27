@@ -1,6 +1,4 @@
-"""
-White Noise sound.
-"""
+"""White Noise sound."""
 
 import numpy as np
 
@@ -10,8 +8,7 @@ from ._sound import _Sound
 
 @fill_doc
 class WhiteNoise(_Sound):
-    """
-    White noise stimuli.
+    """White noise stimuli.
 
     Parameters
     ----------
@@ -26,9 +23,7 @@ class WhiteNoise(_Sound):
         super().__init__(volume, sample_rate, duration)
 
     def _set_signal(self):
-        """
-        Sets the signal to output.
-        """
+        """Set the signal to output."""
         # mean: 0, sigma: 0.33
         wn_arr = self._rng.normal(loc=0, scale=1 / 3, size=self._time_arr.size)
 

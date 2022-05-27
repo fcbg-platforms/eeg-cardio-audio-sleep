@@ -1,6 +1,5 @@
-"""
-Base class for sound delivery.
-"""
+"""Base class for sound delivery."""
+
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -38,29 +37,25 @@ class _Sound(ABC):
 
     @abstractmethod
     def _set_signal(self):
-        """
-        Sets the signal to output.
-        """
+        """Set the signal to output."""
         pass
 
     # --------------------------------------------------------------------
     def play(self, blocking=False):
-        """
-        Play the sound. This function creates and terminates an audio stream.
+        """Play the sound.
+
+        This function creates and terminates an audio stream.
         """
         sd.play(self._signal, samplerate=self._sample_rate, mapping=[1, 2])
         if blocking:
             sd.wait()
 
     def stop(self):
-        """
-        Stops the sounds played in the background.
-        """
+        """Stop the sounds played in the background."""
         sd.stop()
 
     def write(self, fname):
-        """
-        Save a sound signal into a .wav file with scipy.io.wavfile.write().
+        """Save a sound signal into a .wav file with scipy.io.wavfile.write().
 
         Parameters
         ----------
@@ -73,11 +68,12 @@ class _Sound(ABC):
     # --------------------------------------------------------------------
     @staticmethod
     def _check_volume(volume):
-        """
-        Checks that the volume is either:
+        """Check that the volume is valid.
+
+        Check that the volume is either:
             - 1 number, 1-item iterable for mono.
             - 2 numbers in a 2-item iterable for stereo.
-        Checks that the volume value is between [0, 100].
+        Check that the volume value is between [0, 100].
         """
         _check_type(
             volume, (int, float, list, tuple, np.ndarray), item_name="volume"
@@ -92,18 +88,14 @@ class _Sound(ABC):
 
     @staticmethod
     def _check_sample_rate(sample_rate):
-        """
-        Checks if the sample rate is a positive integer.
-        """
+        """Check if the sample rate is a positive integer."""
         _check_type(sample_rate, ("numeric",), item_name="sample_rate")
         assert 0 < sample_rate
         return sample_rate
 
     @staticmethod
     def _check_duration(duration):
-        """
-        Checks if the duration is positive.
-        """
+        """Check if the duration is positive."""
         _check_type(duration, ("numeric",), item_name="duration")
         assert 0 < duration
         return duration
@@ -111,9 +103,7 @@ class _Sound(ABC):
     # --------------------------------------------------------------------
     @property
     def volume(self):
-        """
-        Sound's volume(s).
-        """
+        """Sound's volume(s)."""
         return self._volume
 
     @volume.setter
@@ -124,9 +114,7 @@ class _Sound(ABC):
 
     @property
     def sample_rate(self):
-        """
-        Sound's sampling rate [Hz].
-        """
+        """Sound's sampling rate [Hz]."""
         return self._sample_rate
 
     @sample_rate.setter
@@ -143,9 +131,7 @@ class _Sound(ABC):
 
     @property
     def duration(self):
-        """
-        Sound's duration [seconds].
-        """
+        """Sound's duration [seconds]."""
         return self._duration
 
     @duration.setter
@@ -162,7 +148,5 @@ class _Sound(ABC):
 
     @property
     def signal(self):
-        """
-        Sound's signal.
-        """
+        """Sound's signal."""
         return self._signal

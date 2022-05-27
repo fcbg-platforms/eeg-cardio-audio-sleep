@@ -1,5 +1,7 @@
 """Eye-link module."""
 
+import sys
+
 from .. import logger
 from .._typing import EYELink
 from ..utils._imports import import_optional_dependency
@@ -19,6 +21,12 @@ class EyelinkMock(EYELink):
     def stop(self):
         logger.info("Eye-tracker: mock stop.")
 
+    def signal(self, value: str):
+        self.el_tracker.sendMessage(value)
+
+    def close(self):
+        pass
+
 
 class _ElTrackerMock:
     def __init__(self):
@@ -29,9 +37,16 @@ class _ElTrackerMock:
 
 
 pylink = import_optional_dependency("pylink", raise_error=False)
+if sys.platform == 'linux':
+    wx = import_optional_dependency("wx", raise_error=False)
 if pylink is None:
     logger.error(
-        "The pylink library could not be found! Eye-tracking will " "not work."
+        "The pylink library could not be found! Eye-tracking will not work."
+    )
+    Eyelink = EyelinkMock
+elif sys.platform == 'linux' and wx is None:
+    logger.error(
+        "The wxPython library could not be found! Eye-tracking will not work."
     )
     Eyelink = EyelinkMock
 else:

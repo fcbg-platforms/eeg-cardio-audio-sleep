@@ -6,7 +6,11 @@ import importlib
 
 # A mapping from import name to package name (on PyPI) when the package name
 # is different.
-INSTALL_MAPPING = {"serial": "pyserial"}
+INSTALL_MAPPING = {
+    "cv2": "opencv-python",
+    "serial": "pyserial",
+    "wx": "wxPython",
+}
 
 
 def import_optional_dependency(

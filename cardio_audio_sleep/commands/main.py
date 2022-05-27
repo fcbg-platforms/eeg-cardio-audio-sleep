@@ -6,11 +6,11 @@ from bsl.utils.lsl import list_lsl_streams
 from PyQt5.QtWidgets import QApplication
 
 from .. import logger, peak_detection_parameters_tuning, set_log_level
+from ..config import load_triggers
 from ..eye_link import Eyelink, EyelinkMock
+from ..utils import search_ANT_amplifier
 from .cli import input_ecg_ch_name
 from .gui import GUI
-from ..utils import search_ANT_amplifier
-from ..config import load_triggers
 
 
 def cas():

@@ -40,7 +40,7 @@ def generate_sequence(
             - sound (aligned on sequence)
             - omission (aligned on sequence)
     max_iter : int
-        Maximum numnber of iteration to randomize the sequence.
+        Maximum number of iteration to randomize the sequence.
     on_diverge : str
         Either 'warn' to log an error message or 'raise' to raise a
         RuntimeError when the randomization does not converge within the

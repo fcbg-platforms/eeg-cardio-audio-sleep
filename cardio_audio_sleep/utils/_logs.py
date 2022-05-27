@@ -48,7 +48,7 @@ def add_file_handler(fname, mode="a", verbose="INFO"):
     ----------
     fname : str | Path
     mode : str
-        Mode in which the file is openned.
+        Mode in which the file is opened.
     verbose : int | str
         Handler verbosity.
     """

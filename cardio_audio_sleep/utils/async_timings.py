@@ -23,7 +23,7 @@ def generate_async_timings(
     Parameters
     ----------
     sequence_timings : list
-        List of timings at which an R-peak occured.
+        List of timings at which an R-peak occurred.
     zscore : float
         The value above which a feature is classified as outlier.
     valid_perc : float

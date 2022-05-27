@@ -4,7 +4,7 @@ from ._logs import logger
 
 
 def search_ANT_amplifier() -> str:
-    """Looks for ANT Neuro amplifier on the LSL network.
+    """Look for ANT Neuro amplifier on the LSL network.
 
     Returns
     -------

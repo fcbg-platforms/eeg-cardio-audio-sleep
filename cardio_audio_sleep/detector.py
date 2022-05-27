@@ -1,3 +1,5 @@
+"""Heartbeat detector, detecting R-peak entering an LSL buffer."""
+
 import math
 from typing import Optional, Union
 
@@ -13,9 +15,7 @@ from .utils._logs import logger
 
 
 class Detector:
-    """
-    Class detecting R-peaks from an ECG LSL stream.
-    Adapted from BSL StreamViewer scope.
+    """Class detecting R-peaks from an ECG LSL stream.
 
     Parameters
     ----------
@@ -101,9 +101,11 @@ class Detector:
             self._sample_rate,
         )
 
-    def prefill_buffer(self):
-        """Prefill an entire buffer before starting to avoid any
-        discontinuities in the ECG buffer."""
+    def prefill_buffer(self) -> None:
+        """Prefill an entire buffer.
+
+        Avoids any discontinuities in the ECG buffer.
+        """
         logger.info(
             "Filling an entire buffer of %s seconds..", self._duration_buffer
         )
@@ -112,8 +114,9 @@ class Detector:
             self.update_loop()
         logger.info("Buffer pre-filled, ready to start!")
 
-    def update_loop(self):
-        """
+    def update_loop(self) -> None:
+        """Update loop.
+
         Main update loop acquiring data from the LSL stream and filling the
         detector's buffer on each call.
         """
@@ -140,9 +143,7 @@ class Detector:
         self._timestamps_buffer[-n:] = times
 
     def new_peaks(self):
-        """
-        Look if new R-peaks have entered the buffer.
-        """
+        """Look if new R-peaks have entered the buffer."""
         peaks = self.detect_peak()
         # stop if there is no peak
         if len(peaks) == 0:
@@ -180,9 +181,7 @@ class Detector:
         return peak
 
     def detect_peak(self):
-        """
-        Detect peaks in the ECG buffer.
-        """
+        """Detect peaks in the ECG buffer."""
         data = self.detrend_data()
 
         # peak detection
@@ -197,7 +196,7 @@ class Detector:
 
     def filter_data(self):
         """
-        Filters the ECG buffer with an acausal filter.
+        Filter the ECG buffer with an acausal filter.
 
         Timeit
         ------
@@ -304,7 +303,7 @@ class Detector:
     # --------------------------------------------------------------------
     @staticmethod
     def _check_peak_height_perc(peak_height_perc: Union[int, float]):
-        """Checks argument 'peak_height_perc'."""
+        """Check argument 'peak_height_perc'."""
         _check_type(
             peak_height_perc, ("numeric",), item_name="peak_height_perc"
         )
@@ -322,7 +321,7 @@ class Detector:
 
     @staticmethod
     def _check_peak_width(peak_width: Optional[Union[int, float]]):
-        """Checks argument 'peak_width'."""
+        """Check argument 'peak_width'."""
         _check_type(peak_width, ("numeric", None), item_name="peak_width")
         if peak_width is None:
             return None
@@ -343,7 +342,7 @@ class Detector:
 
     @staticmethod
     def _check_peak_prominence(peak_prominence: Optional[Union[int, float]]):
-        """Checks argument 'peak_prominence'."""
+        """Check argument 'peak_prominence'."""
         _check_type(
             peak_prominence, ("numeric", None), item_name="peak_prominence"
         )

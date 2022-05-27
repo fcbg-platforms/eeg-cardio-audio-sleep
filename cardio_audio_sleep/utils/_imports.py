@@ -1,5 +1,5 @@
-"""
-Optional dependency import.
+"""Optional dependency import.
+
 Inspired from pandas: https://pandas.pydata.org/
 """
 import importlib
@@ -16,8 +16,8 @@ INSTALL_MAPPING = {
 def import_optional_dependency(
     name: str, extra: str = "", raise_error: bool = True
 ):
-    """
-    Import an optional dependency.
+    """Import an optional dependency.
+
     By default, if a dependency is missing an ImportError with a nice message
     will be raised.
 

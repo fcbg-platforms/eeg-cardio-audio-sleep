@@ -57,7 +57,7 @@ def read_raw_xdf(fname):
 
     # scaling
     def uVolt2Volt(timearr):
-        """Converts from uV to Volts."""
+        """Convert from uV to Volts."""
         return timearr * 1e-6
 
     raw.apply_function(
@@ -71,9 +71,7 @@ def read_raw_xdf(fname):
 
 
 def _get_eeg_ch_info(stream):
-    """
-    Extract the info for each eeg channels (label, type and unit)
-    """
+    """Extract the info for each eeg channels (label, type and unit)."""
     ch_names, ch_types, units = [], [], []
 
     # get channels labels, types and units

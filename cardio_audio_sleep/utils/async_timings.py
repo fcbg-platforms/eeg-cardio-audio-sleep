@@ -13,7 +13,8 @@ def generate_async_timings(
     zscore: float = 2.0,
     valid_perc: float = 60,
 ) -> Tuple[Optional[NDArray[float]], bool]:
-    """
+    """Generate timings for an asynchronous block from a synchronous block.
+
     Given the sequence of timings of a synchronous block, generate the sequence
     of timings for the future asynchronous block(s).
     Outliers are removed based on Denis Engemann iterative Z-score method, and

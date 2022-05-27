@@ -5,7 +5,8 @@ from ._checks import _check_type
 
 
 def match_positions(x: ArrayLike, y: ArrayLike, threshold: int):
-    """
+    """Match the peaks from x and y, 2 by 2.
+
     Return indices from X and Y that are closer than a threshold distance.
     Assumes one element from X matches one and only one element from Y.
 

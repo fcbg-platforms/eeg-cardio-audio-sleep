@@ -175,9 +175,18 @@ def _check_value(item, allowed_values, item_name=None, extra=None):
     return item
 
 
-def _check_verbose(verbose):
-    """
-    Check that the value of verbose is valid.
+def _check_verbose(verbose: Union[bool, str, int, None]) -> int:
+    """Check that the value of verbose is valid.
+
+    Parameters
+    ----------
+    verbose : bool | str | int | None
+        The verbosity level.
+
+    Returns
+    -------
+    verbose : int
+        The verbosity level as an integer.
     """
     logging_types = dict(
         DEBUG=logging.DEBUG,
@@ -187,27 +196,31 @@ def _check_verbose(verbose):
         CRITICAL=logging.CRITICAL,
     )
 
-    _check_type(verbose, (bool, str, int, None), item_name="verbose")
+    _check_type(verbose, (bool, str, "int", None), item_name="verbose")
 
     if verbose is None:
-        verbose = "INFO"
+        verbose = logging.WARNING
     elif isinstance(verbose, str):
         verbose = verbose.upper()
         _check_value(verbose, logging_types, item_name="verbose")
         verbose = logging_types[verbose]
     elif isinstance(verbose, bool):
         if verbose:
-            verbose = "INFO"
+            verbose = logging.INFO
         else:
-            verbose = "WARNING"
+            verbose = logging.WARNING
+    elif isinstance(verbose, int):
+        if verbose <= 0:
+            raise ValueError(
+                "Argument 'verbose' can not be a negative integer, "
+                f"{verbose} is invalid."
+            )
 
     return verbose
 
 
-def _check_tdef(tdef):
-    """
-    Checks that the trigger definition contains all the required keys.
-    """
+def _check_tdef(tdef: TriggerDef) -> TriggerDef:
+    """Check that the trigger definition contains all the required keys."""
     _check_type(tdef, (TriggerDef,), "tdef")
     keys = (
         "sound",
@@ -222,12 +235,11 @@ def _check_tdef(tdef):
         "baseline_stop",
     )
     assert all(hasattr(tdef, attribute) for attribute in keys)
+    return TriggerDef
 
 
-def _check_sequence(sequence: ArrayLike, tdef):
-    """
-    Checks that the sequence is valid.
-    """
+def _check_sequence(sequence: ArrayLike, tdef: TriggerDef) -> ArrayLike:
+    """Check that the sequence is valid."""
     _check_type(sequence, (list, tuple, np.ndarray), "sequence")
     if isinstance(sequence, (list, tuple)):
         sequence = np.array(sequence)
@@ -251,10 +263,8 @@ def _check_sequence_timings(
     sequence_timings: ArrayLike,
     sequence: ArrayLike,
     min_distance: Union[int, float] = 0.1,  # sound duration
-):
-    """
-    Checks that the sequence timings are valid.
-    """
+) -> ArrayLike:
+    """Check that the sequence timings are valid."""
     _check_type(
         sequence_timings, (list, tuple, np.ndarray), "sequence_timings"
     )

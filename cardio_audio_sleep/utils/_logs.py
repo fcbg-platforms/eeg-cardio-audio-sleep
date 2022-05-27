@@ -10,8 +10,7 @@ logger.propagate = False  # don't propagate (in case of multiple imports)
 
 
 def init_logger(verbose="INFO"):
-    """
-    Initialize a logger. Assign sys.stdout as a handler of the logger.
+    """Initialize a logger. Assign sys.stdout as a handler of the logger.
 
     Parameters
     ----------
@@ -23,9 +22,7 @@ def init_logger(verbose="INFO"):
 
 
 def add_stream_handler(stream, verbose="INFO"):
-    """
-    Add a handler to the logger. The handler redirects the logger output to
-    the stream.
+    """Add a stream handler to the logger.
 
     Parameters
     ----------
@@ -41,8 +38,7 @@ def add_stream_handler(stream, verbose="INFO"):
 
 
 def add_file_handler(fname, mode="a", verbose="INFO"):
-    """
-    Add a file handler to the logger. The handler saves the logs to file.
+    """Add a file handler to the logger.
 
     Parameters
     ----------
@@ -60,8 +56,8 @@ def add_file_handler(fname, mode="a", verbose="INFO"):
 
 
 def set_handler_log_level(verbose, handler_id=0):
-    """
-    Set the log level for a specific handler.
+    """Set the log level for a specific handler.
+
     First handler (ID 0) is always stdout, followed by user-defined handlers.
 
     Parameters
@@ -76,8 +72,7 @@ def set_handler_log_level(verbose, handler_id=0):
 
 
 def set_log_level(verbose):
-    """
-    Set the log level for the logger.
+    """Set the log level for the logger.
 
     Parameters
     ----------
@@ -89,9 +84,7 @@ def set_log_level(verbose):
 
 
 class LoggerFormatter(logging.Formatter):
-    """
-    Format string Syntax.
-    """
+    """Format string Syntax."""
 
     # Format string syntax for the different Log levels
     _formatters = dict()
@@ -131,8 +124,7 @@ class LoggerFormatter(logging.Formatter):
 
 
 def verbose(f):
-    """
-    Set the verbose for the function call from the kwargs.
+    """Set the verbose for the function call from the kwargs.
 
     Parameters
     ----------

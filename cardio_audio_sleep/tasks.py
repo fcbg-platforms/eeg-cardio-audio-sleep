@@ -33,9 +33,8 @@ def synchronous(
     peak_width: Optional[float],
     volume: float,
     queue: Optional[Queue] = None,
-) -> list:
-    """
-    Synchronous block where sounds are sync to the heartbeat.
+) -> list:  # noqa: D401
+    """Synchronous block where sounds are sync to the heartbeat.
 
     Parameters
     ----------
@@ -134,8 +133,7 @@ def isochronous(
     delay: float,
     volume: float,
 ):
-    """
-    Isochronous block where sounds are delivered at a fix interval.
+    """Isochronous block where sounds are delivered at a fix interval.
 
     Parameters
     ----------
@@ -198,10 +196,10 @@ def asynchronous(
     sequence_timings: ArrayLike,
     volume: float,
 ):
-    """
-    Asynchronous block where sounds repeat a sequence from a synchronous task.
-    Omissions are randomized (compared to the synchronous task they are
-    extracted from).
+    """Asynchronous block where a synchronous sequence is repeated.
+
+    Omissions are randomized compared to the synchronous task they are
+    extracted from.
 
     Parameters
     ----------

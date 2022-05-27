@@ -86,6 +86,7 @@ class GUI(QMainWindow):
         defaults: dict,
         eye_link: EYELink,
     ):
+        """Set the variables and tasks arguments."""
         self.config, trigger_type = load_config()
         self.tdef = load_triggers()
 
@@ -291,7 +292,7 @@ class GUI(QMainWindow):
         name: str,
         text: str,
     ) -> QLabel:
-        """Add a fix label to the window."""
+        """Add a fix label."""
         label = QLabel(window.central_widget)
         label.setGeometry(QRect(x, y, w, h))
         label.setSizePolicy(GUI._sizePolicy(label))
@@ -359,6 +360,7 @@ class GUI(QMainWindow):
         step: Optional[float] = None,
         value: Optional[float] = None,
     ) -> QDoubleSpinBox:
+        """Add a double SpinBox."""
         doubleSpinBox = QDoubleSpinBox(window.central_widget)
         doubleSpinBox.setGeometry(QRect(x, y, w, h))
         doubleSpinBox.setSizePolicy(GUI._sizePolicy(doubleSpinBox))
@@ -375,7 +377,7 @@ class GUI(QMainWindow):
 
     @staticmethod
     def _sizePolicy(widget: QWidget):
-        """A fixed size policy."""
+        """Set a fixed size policy."""
         sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -384,8 +386,11 @@ class GUI(QMainWindow):
 
     # -------------------------------------------------------------------------
     def update(self):
-        """Update loop called every timer tick checking if the task is still
-        on going or if we can schedule the next block."""
+        """Update loop.
+
+        The update loop is called every timer tick checking if the task is
+        still on going or if we can schedule the next block.
+        """
         self.process.join(timeout=0.2)  # blocks 0.2 second
         if not self.process.is_alive():
             if self.process_block_name == "synchronous":
@@ -396,9 +401,11 @@ class GUI(QMainWindow):
                 self.start_inter_block()
 
     def start_new_block(self, first: bool = False):
-        """Starts a new block. If this is the first block run, initialization
-        correctly placed the initial 3 blocks. Else, we start by rolling the
-        blocks. Arguments must be determined depending on the block played."""
+        """Start a new block.
+
+        If this is the first block run, determines the 3 initial blocks.
+        Else, start by rolling the blocks.
+        """
         if not first:  # roll blocks
             for k, block in enumerate(self.blocks):
                 if k == len(self.blocks) - 1:
@@ -483,7 +490,7 @@ class GUI(QMainWindow):
         )
 
     # -------------------------------------------------------------------------
-    def connect_signals_to_slots(self):
+    def connect_signals_to_slots(self):  # noqa: D102
         self.pushButton_start.clicked.connect(self.pushButton_start_clicked)
         self.pushButton_pause.clicked.connect(self.pushButton_pause_clicked)
         self.pushButton_stop.clicked.connect(self.pushButton_stop_clicked)
@@ -516,7 +523,7 @@ class GUI(QMainWindow):
         )
 
     @pyqtSlot()
-    def pushButton_start_clicked(self):
+    def pushButton_start_clicked(self):  # noqa: D102
         logger.debug("Start requested.")
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(True)
@@ -536,7 +543,7 @@ class GUI(QMainWindow):
         self.timer.start(2000)
 
     @pyqtSlot()
-    def pushButton_pause_clicked(self):
+    def pushButton_pause_clicked(self):  # noqa: D102
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)
@@ -567,7 +574,7 @@ class GUI(QMainWindow):
             self.trigger.signal(self.tdef.resume)
 
     @pyqtSlot()
-    def pushButton_stop_clicked(self):
+    def pushButton_stop_clicked(self):  # noqa: D102
         logger.debug("Stop requested.")
         # disable all interactive features
         self.pushButton_start.setEnabled(False)
@@ -593,7 +600,7 @@ class GUI(QMainWindow):
         self.eye_link.stop()
 
     @pyqtSlot()
-    def pushButton_prominence_clicked(self):
+    def pushButton_prominence_clicked(self):  # noqa: D102
         state = self.doubleSpinBox_prominence.isEnabled()
         self.doubleSpinBox_prominence.setEnabled(not state)
         self.pushButton_prominence.setChecked(state)
@@ -613,7 +620,7 @@ class GUI(QMainWindow):
             )
 
     @pyqtSlot()
-    def pushButton_width_clicked(self):
+    def pushButton_width_clicked(self):  # noqa: D102
         state = self.doubleSpinBox_width.isEnabled()
         self.doubleSpinBox_width.setEnabled(not state)
         self.pushButton_width.setChecked(state)
@@ -634,7 +641,7 @@ class GUI(QMainWindow):
             )
 
     @pyqtSlot()
-    def doubleSpinBox_valueChanged(self):
+    def doubleSpinBox_valueChanged(self):  # noqa: D102
         height = self.doubleSpinBox_height.value()
         prominence = self.doubleSpinBox_prominence.value()
         width = self.doubleSpinBox_width.value()
@@ -658,19 +665,19 @@ class GUI(QMainWindow):
         )
 
     @pyqtSlot()
-    def doubleSpinBox_volume_valueChanged(self):
+    def doubleSpinBox_volume_valueChanged(self):  # noqa: D102
         volume = self.doubleSpinBox_volume.value()
         self.dial_volume.setProperty("value", volume)
         self._update_volume(volume)
 
     @pyqtSlot()
-    def dial_volume_valueChanged(self):
+    def dial_volume_valueChanged(self):  # noqa: D102
         volume = self.dial_volume.value()
         self.doubleSpinBox_volume.setProperty("value", volume)
         self._update_volume(volume)
 
     @pyqtSlot()
-    def pushButton_volume_clicked(self):
+    def pushButton_volume_clicked(self):  # noqa: D102
         # sanity-check
         assert self.dial_volume.value() == self.doubleSpinBox_volume.value()
         logger.debug("Playing sound at volume %.2f.", self.dial_volume.value())
@@ -681,14 +688,12 @@ class GUI(QMainWindow):
         process.join()
 
     @pyqtSlot()
-    def pushButton_calibrate_clicked(self):
+    def pushButton_calibrate_clicked(self):  # noqa: D102
         self.eye_link.calibrate()
 
 
 class Block(QLabel):
-    """
-    Widget to represent a block (Baseline, Synchronous, Isochronous or
-    Asynchronous).
+    """Widget to represent a task block.
 
     Parameters
     ----------

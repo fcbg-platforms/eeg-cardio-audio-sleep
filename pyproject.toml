@@ -10,16 +10,16 @@ readme = 'README.md'
 license = {file = 'LICENSE'}
 requires-python = '>=3.8'
 authors = [
-    {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'}
+    {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'},
 ]
 maintainers = [
-    {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'}
+    {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'},
 ]
 keywords = [
     'python',
     'neuroscience',
     'neuroimaging',
-    'sleep'
+    'sleep',
 ]
 classifiers = [
     'Operating System :: Microsoft :: Windows',
@@ -32,7 +32,7 @@ classifiers = [
     'Natural Language :: English',
     'License :: OSI Approved :: MIT License',
     'Intended Audience :: Science/Research',
-    'Topic :: Scientific/Engineering'
+    'Topic :: Scientific/Engineering',
 ]
 dependencies = [
     'numpy',
@@ -57,7 +57,7 @@ all = [
     'isort',
     'flake8',
     'pydocstyle[toml]',
-    'twine'
+    'twine',
 ]
 
 [project.urls]

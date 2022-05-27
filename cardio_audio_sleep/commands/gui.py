@@ -20,6 +20,7 @@ from PyQt5.QtWidgets import (
 from .. import logger
 from .._typing import EYELink
 from ..config import load_config, load_triggers
+from ..eye_link import EyelinkMock
 from ..tasks import (
     asynchronous,
     baseline,
@@ -36,7 +37,6 @@ from ..utils import (
     test_volume,
 )
 from ..utils._docs import fill_doc
-from ..eye_link import EyelinkMock
 
 
 @fill_doc

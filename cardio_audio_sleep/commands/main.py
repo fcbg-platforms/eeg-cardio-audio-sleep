@@ -37,9 +37,11 @@ def cas():
         if sys.platform == "linux":
             import_optional_dependency("wx", raise_error=True)
         from ..eye_link import Eyelink
+
         eye_link = Eyelink("./", "TEST")
     else:
         from ..eye_link import EyelinkMock
+
         eye_link = EyelinkMock()
 
     # ask for ECG channel name if it's not provided as argument

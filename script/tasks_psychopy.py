@@ -64,7 +64,7 @@ def synchronous(
     Returns
     -------
     sequence_timings : list
-        List of timings at which an R-peak occured.
+        List of timings at which an R-peak occurred.
     """
     # Create sound stimuli
     sound = Sound(

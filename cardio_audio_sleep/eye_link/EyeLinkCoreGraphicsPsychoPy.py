@@ -68,7 +68,7 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
 
         # Camera image set up
         self._imagebuffer = array.array("I")
-        self._pal = None  # color pallete to use for camera image drawing
+        self._pal = None  # color palette to use for camera image drawing
         self._size = (384, 320)
 
         # Initial setup for the mouse

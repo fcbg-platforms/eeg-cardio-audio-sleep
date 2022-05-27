@@ -210,7 +210,7 @@ def peak_detection_parameters_tuning(
     width_button.on_clicked(width_button_clicked)
 
     # ------------------------------------------------------------------------
-    # Add a reset buttom
+    # Add a reset button
     reset_button_ax = fig.add_axes([0.68, 0.025, 0.1, 0.04])
     reset_button = Button(
         reset_button_ax,
@@ -288,7 +288,7 @@ def _acquire_data(ecg_ch_name, stream_name, duration_buffer):
         time.sleep(2.5)
         logger.info("%i/4 complete!", k + 1)
 
-    # Retrive sampling rate
+    # Retrieve sampling rate
     fs = sr.streams[stream_name].sample_rate
 
     return data, fs

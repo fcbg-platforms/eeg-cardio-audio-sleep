@@ -14,7 +14,7 @@ def search_ANT_amplifier() -> str:
     stream_names, _ = list_lsl_streams(ignore_markers=True)
     stream_name = [stream for stream in stream_names if "eego" in stream]
     if len(stream_name) == 1:
-        logger.info("Found LSL stream fron ANT Neuro amplifier.")
+        logger.info("Found LSL stream from ANT Neuro amplifier.")
         stream_name = stream_name[0]
     elif 1 < len(stream_name):
         logger.warning(

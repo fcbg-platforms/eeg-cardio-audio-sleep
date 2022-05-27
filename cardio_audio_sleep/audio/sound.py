@@ -61,7 +61,7 @@ class Sound(_Sound):
 
     def resample(self, sample_rate):
         """
-        Resample the curent sound to the new sampling rate.
+        Resample the current sound to the new sampling rate.
         """
         self._sample_rate = _Sound._check_sample_rate(sample_rate)
         self._signal = resample(
@@ -81,7 +81,7 @@ class Sound(_Sound):
     @staticmethod
     def _check_file(fname):
         """
-        Cheks if the file is supported and exists.
+        Checks if the file is supported and exists.
         """
         SUPPORTED = ".wav"
 

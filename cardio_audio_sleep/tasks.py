@@ -29,9 +29,9 @@ def synchronous(
     stream_name: str,
     ecg_ch_name: str,
     peak_height_perc: float,
-    peak_prominence: Optional[float],
-    peak_width: Optional[float],
-    volume: float,
+    peak_prominek_width: Optional[float],
+    vonce: Optional[float],
+    pealume: float,
     queue: Optional[Queue] = None,
 ) -> list:
     """
@@ -66,7 +66,7 @@ def synchronous(
     Returns
     -------
     sequence_timings : list
-        List of timings at which an R-peak occured.
+        List of timings at which an R-peak occurred.
     """
     from .audio import Tone
     from .detector import Detector

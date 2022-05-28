@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import sys
 from typing import Optional
 
 import numpy as np
@@ -265,6 +266,8 @@ class GUI(QMainWindow):
         self.pushButton_volume = GUI._add_pushButton(
             self, 95, 200, 80, 32, "pushButton_volume", "Test"
         )
+        if sys.platform.startswith("win"):
+            self.pushButton_volume.setEnabled(False)
         GUI._add_label(self, 25, 200, 60, 32, "volume", "Volume")
 
         # add Eye-tracker controls
@@ -552,7 +555,8 @@ class GUI(QMainWindow):
         self.pushButton_stop.setEnabled(True)
 
         # enable test sound and eye-link calibration buttons
-        self.pushButton_volume.setEnabled(True)
+        if not sys.platform.startswith("win"):
+            self.pushButton_volume.setEnabled(True)
         if not isinstance(self.eye_link, EyelinkMock):
             self.pushButton_calibrate.setEnabled(True)
 

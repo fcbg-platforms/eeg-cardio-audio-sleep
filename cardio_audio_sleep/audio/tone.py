@@ -3,7 +3,7 @@
 import numpy as np
 
 from ..utils._checks import _check_type
-from ..utils._docs import fill_doc
+from ..utils._docs import copy_doc, fill_doc
 from ._sound import _Sound
 
 
@@ -28,8 +28,8 @@ class Tone(_Sound):
         self.name = "tone"
         super().__init__(volume, sample_rate, duration)
 
+    @copy_doc(_Sound._set_signal)
     def _set_signal(self):
-        """Set the signal to output."""
         tone_arr = np.sin(2 * np.pi * self._frequency * self._time_arr)
 
         self._signal[:, 0] = tone_arr * self._volume[0] / 100

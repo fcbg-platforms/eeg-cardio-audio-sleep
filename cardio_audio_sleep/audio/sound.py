@@ -6,6 +6,7 @@ from scipy.io import wavfile
 from scipy.signal import resample
 
 from ..utils._checks import _check_type
+from ..utils._docs import copy_doc
 from ._sound import _Sound
 
 
@@ -36,8 +37,8 @@ class Sound(_Sound):
             _volume, self._original_sample_rate, self._original_duration
         )
 
+    @copy_doc(_Sound._set_signal)
     def _set_signal(self):
-        """Set the signal to output."""
         assert len(self._signal.shape) in (1, 2)
         slc = (
             slice(None, self._trim_samples)

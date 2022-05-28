@@ -3,7 +3,7 @@
 import numpy as np
 
 from ..utils._checks import _check_type, _check_value
-from ..utils._docs import fill_doc
+from ..utils._docs import copy_doc, fill_doc
 from ._sound import _Sound
 
 
@@ -59,8 +59,8 @@ class ASSR(_Sound):
         self.name = f"ASSR {self._method}"
         super().__init__(volume, sample_rate, duration)
 
+    @copy_doc(_Sound._set_signal)
     def _set_signal(self):
-        """Set the signal to output."""
         if self._method == "conventional":
             assr_amplitude = 1 - np.cos(
                 2 * np.pi * self._frequency_modulation * self._time_arr

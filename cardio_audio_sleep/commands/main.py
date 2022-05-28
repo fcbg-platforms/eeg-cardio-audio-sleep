@@ -26,6 +26,9 @@ def cas():
         "--eye_tracker", help="enable eye-tracking", action="store_true"
     )
     parser.add_argument(
+        "--dev", help="load short sequence for testing", action="store_true"
+    )
+    parser.add_argument(
         "--verbose", help="enable debug logs", action="store_true"
     )
     args = parser.parse_args()
@@ -48,7 +51,7 @@ def cas():
     ecg_ch_name = input_ecg_ch_name() if args.ecg is None else args.ecg
 
     app = QApplication([])
-    window = GUI(ecg_ch_name, eye_link)
+    window = GUI(ecg_ch_name, eye_link, args.dev)
     window.show()
     app.exec()
 

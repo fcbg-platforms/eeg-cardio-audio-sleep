@@ -3,7 +3,7 @@ from pathlib import Path
 
 from bsl.triggers import TriggerDef
 
-from ..utils._checks import _check_value
+from ..utils._checks import _check_type, _check_value
 
 
 def load_triggers():
@@ -43,18 +43,25 @@ def load_triggers():
     return tdef
 
 
-def load_config():
-    """
-    Load config from config.ini.
+def load_config(dev: bool = False):
+    """Load config from config.ini.
+
+    Parameters
+    ----------
+    dev : bool
+        If True, the config-dev.ini file is used instead.
 
     Returns
     -------
     config : dict
     """
+    _check_type(dev, (bool,), "dev")
+
     directory = Path(__file__).parent
     config = ConfigParser(inline_comment_prefixes=("#", ";"))
     config.optionxform = str
-    config.read(str(directory / "config.ini"))
+    fname = "config-dev.ini" if dev else "config.ini"
+    config.read(str(directory / fname))
 
     keys = (
         "trigger",

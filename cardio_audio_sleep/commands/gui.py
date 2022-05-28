@@ -48,9 +48,11 @@ class GUI(QMainWindow):
     ecg_ch_name : str
         Name of the ECG channel.
     %(eye_link)s
+    dev : bool
+        If True, a configuration with shorter sequence is loaded.
     """
 
-    def __init__(self, ecg_ch_name: str, eye_link: EYELink):
+    def __init__(self, ecg_ch_name: str, eye_link: EYELink, dev: bool = False):
         super().__init__()
 
         # define mp Queue
@@ -60,7 +62,7 @@ class GUI(QMainWindow):
         defaults = dict(height=97.0, prominence=500.0, width=None, volume=0)
 
         # load configuration
-        self.load_config(ecg_ch_name, defaults, eye_link)
+        self.load_config(ecg_ch_name, defaults, eye_link, dev)
 
         # load GUI
         self.load_ui(defaults, eye_link)
@@ -85,9 +87,10 @@ class GUI(QMainWindow):
         ecg_ch_name: str,
         defaults: dict,
         eye_link: EYELink,
+        dev: bool,
     ):
         """Set the variables and tasks arguments."""
-        self.config, trigger_type = load_config()
+        self.config, trigger_type = load_config(dev)
         self.tdef = load_triggers()
 
         # combine trigger with eye-link

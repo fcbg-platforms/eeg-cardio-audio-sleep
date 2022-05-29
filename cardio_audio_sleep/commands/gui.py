@@ -6,7 +6,7 @@ import numpy as np
 import psutil
 from bsl.triggers import MockTrigger, ParallelPortTrigger
 from psychopy.monitors import Monitor
-from psychopy.visual import Window
+from psychopy.visual import TextStim, Window
 from PyQt5.QtCore import QRect, QSize, Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import QColor, QFont, QPalette
 from PyQt5.QtWidgets import (
@@ -736,6 +736,8 @@ class GUI(QMainWindow):
                     units="pix",
                     screen=1,
                 )
+            TextStim(self.win, text="+", height=100).draw()
+            self.win.flip()
 
 
 class Block(QLabel):

@@ -1,1 +1,4 @@
-include cardio_audio_sleep/config/triggers.iniinclude cardio_audio_sleep/visuals/image/fixation.png
+include cardio_audio_sleep/config/config.ini
+include cardio_audio_sleep/config/config-dev.ini
+include cardio_audio_sleep/config/triggers.ini
+include cardio_audio_sleep/visuals/fixation.png

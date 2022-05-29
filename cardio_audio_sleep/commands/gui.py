@@ -5,6 +5,8 @@ from typing import Optional
 import numpy as np
 import psutil
 from bsl.triggers import MockTrigger, ParallelPortTrigger
+from psychopy.monitors import Monitor
+from psychopy.visual import Window
 from PyQt5.QtCore import QRect, QSize, Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import QColor, QFont, QPalette
 from PyQt5.QtWidgets import (
@@ -64,6 +66,9 @@ class GUI(QMainWindow):
 
         # load configuration
         self.load_config(ecg_ch_name, defaults, eye_link, dev)
+
+        # define window for fixation cross
+        self.win = None
 
         # load GUI
         self.load_ui(defaults, eye_link)
@@ -272,11 +277,16 @@ class GUI(QMainWindow):
 
         # add Eye-tracker controls
         self.pushButton_calibrate = GUI._add_pushButton(
-            self, 660, 240, 100, 32, "pushButton_calibrate", "Calibrate"
+            self, 660, 228, 100, 28, "pushButton_calibrate", "Calibrate"
         )
         if isinstance(eye_link, EyelinkMock):
             self.pushButton_calibrate.setEnabled(False)
-        GUI._add_label(self, 660, 200, 100, 32, "eye_tracker", "Eye Tracker")
+        self.pushButton_cross = GUI._add_pushButton(
+            self, 660, 262, 100, 28, "pushButton_cross", "Fixation Cross"
+        )
+        self.pushButton_cross.setCheckable(True)
+        self.pushButton_cross.setChecked(False)
+        GUI._add_label(self, 660, 190, 100, 32, "eye_tracker", "Eye Tracker")
 
         # add separation lines
         GUI._add_line(self, 0, 178, 800, 20, "line1", "h")
@@ -527,9 +537,10 @@ class GUI(QMainWindow):
         self.pushButton_calibrate.clicked.connect(
             self.pushButton_calibrate_clicked
         )
+        self.pushButton_cross.clicked.connect(self.pushButton_cross_clicked)
 
     @pyqtSlot()
-    def pushButton_start_clicked(self):  # noqa: D102
+    def pushButton_start_clicked(self):
         logger.debug("Start requested.")
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(True)
@@ -549,7 +560,7 @@ class GUI(QMainWindow):
         self.timer.start(2000)
 
     @pyqtSlot()
-    def pushButton_pause_clicked(self):  # noqa: D102
+    def pushButton_pause_clicked(self):
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)
@@ -581,7 +592,7 @@ class GUI(QMainWindow):
             self.trigger.signal(self.tdef.resume)
 
     @pyqtSlot()
-    def pushButton_stop_clicked(self):  # noqa: D102
+    def pushButton_stop_clicked(self):
         logger.debug("Stop requested.")
         # disable all interactive features
         self.pushButton_start.setEnabled(False)
@@ -607,7 +618,7 @@ class GUI(QMainWindow):
         self.eye_link.stop()
 
     @pyqtSlot()
-    def pushButton_prominence_clicked(self):  # noqa: D102
+    def pushButton_prominence_clicked(self):
         state = self.doubleSpinBox_prominence.isEnabled()
         self.doubleSpinBox_prominence.setEnabled(not state)
         self.pushButton_prominence.setChecked(state)
@@ -627,7 +638,7 @@ class GUI(QMainWindow):
             )
 
     @pyqtSlot()
-    def pushButton_width_clicked(self):  # noqa: D102
+    def pushButton_width_clicked(self):
         state = self.doubleSpinBox_width.isEnabled()
         self.doubleSpinBox_width.setEnabled(not state)
         self.pushButton_width.setChecked(state)
@@ -648,7 +659,7 @@ class GUI(QMainWindow):
             )
 
     @pyqtSlot()
-    def doubleSpinBox_valueChanged(self):  # noqa: D102
+    def doubleSpinBox_valueChanged(self):
         height = self.doubleSpinBox_height.value()
         prominence = self.doubleSpinBox_prominence.value()
         width = self.doubleSpinBox_width.value()
@@ -672,19 +683,19 @@ class GUI(QMainWindow):
         )
 
     @pyqtSlot()
-    def doubleSpinBox_volume_valueChanged(self):  # noqa: D102
+    def doubleSpinBox_volume_valueChanged(self):
         volume = self.doubleSpinBox_volume.value()
         self.dial_volume.setProperty("value", volume)
         self._update_volume(volume)
 
     @pyqtSlot()
-    def dial_volume_valueChanged(self):  # noqa: D102
+    def dial_volume_valueChanged(self):
         volume = self.dial_volume.value()
         self.doubleSpinBox_volume.setProperty("value", volume)
         self._update_volume(volume)
 
     @pyqtSlot()
-    def pushButton_volume_clicked(self):  # noqa: D102
+    def pushButton_volume_clicked(self):
         # sanity-check
         assert self.dial_volume.value() == self.doubleSpinBox_volume.value()
         logger.debug("Playing sound at volume %.2f.", self.dial_volume.value())
@@ -695,8 +706,30 @@ class GUI(QMainWindow):
         process.join()
 
     @pyqtSlot()
-    def pushButton_calibrate_clicked(self):  # noqa: D102
+    def pushButton_calibrate_clicked(self):
         self.eye_link.calibrate()
+
+    @pyqtSlot()
+    def pushButton_cross_clicked(self):
+        state = False if self.win is None else True
+        self.pushButton_cross.setChecked(not state)
+
+        if state:
+            logger.debug("Removing fixation cross window.")
+            self.win.close()
+            self.win = None
+        else:
+            logger.debug("Displaying fixation cross window.")
+            if not isinstance(self.eye_link, EyelinkMock):
+                self.win = self.eye_link.win
+            else:
+                self.win = Window(
+                    fullscr=True,
+                    monitor=Monitor("myMonitor", width=53.0, distance=70.0),
+                    winType="pyglet",
+                    units="pix",
+                    screen=1,
+                )
 
 
 class Block(QLabel):

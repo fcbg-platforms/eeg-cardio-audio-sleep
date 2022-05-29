@@ -596,7 +596,7 @@
     <property name="geometry">
      <rect>
       <x>660</x>
-      <y>200</y>
+      <y>190</y>
       <width>100</width>
       <height>32</height>
      </rect>
@@ -618,9 +618,9 @@
     <property name="geometry">
      <rect>
       <x>660</x>
-      <y>240</y>
+      <y>228</y>
       <width>100</width>
-      <height>32</height>
+      <height>28</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -631,6 +631,25 @@
     </property>
     <property name="text">
      <string>Calibrate</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_cross">
+    <property name="geometry">
+     <rect>
+      <x>660</x>
+      <y>262</y>
+      <width>100</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="text">
+     <string>Fixation Cross</string>
     </property>
    </widget>
   </widget>

@@ -505,6 +505,12 @@ class GUI(QMainWindow):
             self.args_mapping["asynchronous"][4],
         )
 
+    def closeEvent(self, event):
+        """Event called when closing the GUI."""
+        if self.win is not None:
+            self.win.close()
+        event.accept()
+
     # -------------------------------------------------------------------------
     def connect_signals_to_slots(self):  # noqa: D102
         self.pushButton_start.clicked.connect(self.pushButton_start_clicked)

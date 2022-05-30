@@ -40,6 +40,7 @@ from ..utils import (
     test_volume,
 )
 from ..utils._docs import fill_doc
+from ..utils._imports import import_optional_dependency
 
 
 @fill_doc
@@ -286,6 +287,10 @@ class GUI(QMainWindow):
         )
         self.pushButton_cross.setCheckable(True)
         self.pushButton_cross.setChecked(False)
+        if sys.platform == 'linux':
+            wx = import_optional_dependency("wx", raise_error=False)
+            if wx is None:
+                self.pushButton_cross.setEnabled(False)
         GUI._add_label(self, 660, 190, 100, 32, "eye_tracker", "Eye Tracker")
 
         # add separation lines
@@ -613,6 +618,8 @@ class GUI(QMainWindow):
         self.doubleSpinBox_width.setEnabled(False)
         self.dial_volume.setEnabled(False)
         self.doubleSpinBox_volume.setEnabled(False)
+        self.pushButton_calibrate.setEnabled(False)
+        self.pushButton_cross.setEnabled(False)
 
         # stop task process
         self.timer.stop()

@@ -287,7 +287,7 @@ class GUI(QMainWindow):
         )
         self.pushButton_cross.setCheckable(True)
         self.pushButton_cross.setChecked(False)
-        if sys.platform == 'linux':
+        if sys.platform == "linux":
             wx = import_optional_dependency("wx", raise_error=False)
             if wx is None:
                 self.pushButton_cross.setEnabled(False)

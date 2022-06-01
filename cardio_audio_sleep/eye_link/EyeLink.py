@@ -74,7 +74,7 @@ class Eyelink(EYELink):
             vstr = self.el_tracker.getTrackerVersionString()
             eyelink_ver = int(vstr.split()[-1].split(".")[0])
             logger.debug(
-                "Running experiment on %s, version %d", (vstr, eyelink_ver)
+                "Running experiment on %s, version %d", vstr, eyelink_ver
             )
 
         # File and Link data control

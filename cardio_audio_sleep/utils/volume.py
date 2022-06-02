@@ -5,7 +5,7 @@ from psychopy.clock import wait
 
 def test_volume(volume):
     """Play a pure tone at the given volume."""
-    from ..audio import Tone
+    from stimuli.audio import Tone
 
     sound = Tone(volume, duration=0.1, frequency=1000)
     if sys.platform.startswith("win"):

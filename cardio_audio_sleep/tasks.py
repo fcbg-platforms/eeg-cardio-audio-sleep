@@ -67,7 +67,7 @@ def synchronous(
     sequence_timings : list
         List of timings at which an R-peak occurred.
     """
-    from .audio import Tone
+    from stimuli.audio import Tone
     from .detector import Detector
 
     # Create sound stimuli
@@ -149,7 +149,7 @@ def isochronous(
         Delay between 2 stimulus in seconds.
     %(volume)s
     """
-    from .audio import Tone
+    from stimuli.audio import Tone
 
     # Create sound stimuli
     sound = Tone(volume, frequency=1000)
@@ -216,7 +216,7 @@ def asynchronous(
         was delivered.
     %(volume)s
     """
-    from .audio import Tone
+    from stimuli.audio import Tone
 
     # Create sound stimuli
     sound = Tone(volume, frequency=1000)

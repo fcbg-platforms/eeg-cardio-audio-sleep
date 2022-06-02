@@ -127,6 +127,8 @@ def synchronous(
     if queue is not None:
         queue.put(sequence_timings)
 
+    del detector
+
     return sequence_timings
 
 

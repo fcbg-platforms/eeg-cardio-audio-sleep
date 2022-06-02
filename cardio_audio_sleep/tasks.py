@@ -68,6 +68,7 @@ def synchronous(
         List of timings at which an R-peak occurred.
     """
     from stimuli.audio import Tone
+
     from .detector import Detector
 
     # Create sound stimuli
@@ -121,6 +122,8 @@ def synchronous(
 
     if queue is not None:
         queue.put(sequence_timings)
+
+    del detector
 
     return sequence_timings
 

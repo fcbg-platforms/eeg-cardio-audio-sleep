@@ -239,6 +239,10 @@ class Detector:
         linear_fit = z[0] * times + z[1]
         return self._ecg_buffer - linear_fit
 
+    def __del__(self):
+        """Destructor method."""
+        del self._sr  # disconnects stream receiver
+
     # --------------------------------------------------------------------
     @property
     def sr(self):

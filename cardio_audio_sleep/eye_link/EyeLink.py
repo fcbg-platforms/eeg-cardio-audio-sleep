@@ -177,6 +177,7 @@ class Eyelink(EYELink):
         # Show the task instructions
         task_msg = "\nPress ENTER twice to display tracker menu"
         self.show_msg(task_msg)
+        self.win.winHandle.activate()
         try:
             self.el_tracker.doTrackerSetup()
         except RuntimeError:

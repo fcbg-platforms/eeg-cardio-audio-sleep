@@ -74,7 +74,7 @@ class Eyelink(EYELink):
             vstr = self.el_tracker.getTrackerVersionString()
             eyelink_ver = int(vstr.split()[-1].split(".")[0])
             logger.debug(
-                "Running experiment on %s, version %d", (vstr, eyelink_ver)
+                "Running experiment on %s, version %d", vstr, eyelink_ver
             )
 
         # File and Link data control
@@ -177,6 +177,7 @@ class Eyelink(EYELink):
         # Show the task instructions
         task_msg = "\nPress ENTER twice to display tracker menu"
         self.show_msg(task_msg)
+        self.win.winHandle.activate()
         try:
             self.el_tracker.doTrackerSetup()
         except RuntimeError:

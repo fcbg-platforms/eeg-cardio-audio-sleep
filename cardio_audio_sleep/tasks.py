@@ -67,11 +67,12 @@ def synchronous(
     sequence_timings : list
         List of timings at which an R-peak occurred.
     """
-    from .audio import Tone
+    from stimuli.audio import Tone
+
     from .detector import Detector
 
     # Create sound stimuli
-    sound = Tone(volume, frequency=1000)
+    sound = Tone(volume, frequency=1000, duration=0.1)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -122,6 +123,8 @@ def synchronous(
     if queue is not None:
         queue.put(sequence_timings)
 
+    del detector
+
     return sequence_timings
 
 
@@ -149,10 +152,10 @@ def isochronous(
         Delay between 2 stimulus in seconds.
     %(volume)s
     """
-    from .audio import Tone
+    from stimuli.audio import Tone
 
     # Create sound stimuli
-    sound = Tone(volume, frequency=1000)
+    sound = Tone(volume, frequency=1000, duration=0.1)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -216,10 +219,10 @@ def asynchronous(
         was delivered.
     %(volume)s
     """
-    from .audio import Tone
+    from stimuli.audio import Tone
 
     # Create sound stimuli
-    sound = Tone(volume, frequency=1000)
+    sound = Tone(volume, frequency=1000, duration=0.1)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)

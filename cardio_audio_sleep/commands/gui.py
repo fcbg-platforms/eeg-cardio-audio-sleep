@@ -40,6 +40,7 @@ from ..utils import (
     test_volume,
 )
 from ..utils._docs import fill_doc
+from ..utils._imports import import_optional_dependency
 
 
 @fill_doc
@@ -286,6 +287,10 @@ class GUI(QMainWindow):
         )
         self.pushButton_cross.setCheckable(True)
         self.pushButton_cross.setChecked(False)
+        if sys.platform == "linux":
+            wx = import_optional_dependency("wx", raise_error=False)
+            if wx is None:
+                self.pushButton_cross.setEnabled(False)
         GUI._add_label(self, 660, 190, 100, 32, "eye_tracker", "Eye Tracker")
 
         # add separation lines
@@ -559,6 +564,9 @@ class GUI(QMainWindow):
         self.pushButton_volume.setEnabled(False)
         self.pushButton_calibrate.setEnabled(False)
 
+        # disable cross button
+        self.pushButton_cross.setEnabled(False)
+
         # launch first block
         self.start_new_block(first=True)
 
@@ -571,12 +579,6 @@ class GUI(QMainWindow):
         self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)
 
-        # enable test sound and eye-link calibration buttons
-        if not sys.platform.startswith("win"):
-            self.pushButton_volume.setEnabled(True)
-        if not isinstance(self.eye_link, EyelinkMock):
-            self.pushButton_calibrate.setEnabled(True)
-
         # change text on button
         if self.pushButton_pause.isChecked():
             logger.debug("Pause requested.")
@@ -587,6 +589,12 @@ class GUI(QMainWindow):
             except psutil.NoSuchProcess:
                 logger.warning("No process found to suspend.")
             self.trigger.signal(self.tdef.pause)
+
+            # enable test sound and eye-link calibration buttons
+            if not sys.platform.startswith("win"):
+                self.pushButton_volume.setEnabled(True)
+            if not isinstance(self.eye_link, EyelinkMock):
+                self.pushButton_calibrate.setEnabled(True)
         else:
             logger.debug("Resume requested.")
             self.pushButton_pause.setText("Pause")
@@ -596,6 +604,10 @@ class GUI(QMainWindow):
             except psutil.NoSuchProcess:
                 logger.warning("No process found to resume.")
             self.trigger.signal(self.tdef.resume)
+
+            # disable test sound and eye-link calibration buttons
+            self.pushButton_volume.setEnabled(False)
+            self.pushButton_calibrate.setEnabled(False)
 
     @pyqtSlot()
     def pushButton_stop_clicked(self):
@@ -613,6 +625,8 @@ class GUI(QMainWindow):
         self.doubleSpinBox_width.setEnabled(False)
         self.dial_volume.setEnabled(False)
         self.doubleSpinBox_volume.setEnabled(False)
+        self.pushButton_calibrate.setEnabled(False)
+        self.pushButton_cross.setEnabled(False)
 
         # stop task process
         self.timer.stop()

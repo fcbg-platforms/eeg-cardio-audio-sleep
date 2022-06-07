@@ -67,11 +67,15 @@ pds = 'cardio_audio_sleep.commands.main:pds'
 test = 'cardio_audio_sleep.commands.main:test'
 
 [tool.setuptools]
-include-package-data = true
+include-package-data = false
 
 [tool.setuptools.packages.find]
 include = ['cardio_audio_sleep*']
 exclude = ['cardio_audio_sleep*tests']
+
+[tool.setuptools.package-data]
+"cardio_audio_sleep.config" = ["*.ini"]
+"cardio_audio_sleep.visuals" = ["*.png"]
 
 [tool.black]
 line-length = 79

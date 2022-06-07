@@ -51,13 +51,8 @@ dependencies = [
 style = ['black', 'codespell', 'isort', 'flake8', 'pydocstyle[toml]']
 build = ['build', 'twine']
 all = [
-    'black',
-    'build',
-    'codespell',
-    'isort',
-    'flake8',
-    'pydocstyle[toml]',
-    'twine',
+    'cardio_audio_sleep[style]',
+    'cardio_audio_sleep[build]',
 ]
 
 [project.urls]
@@ -76,7 +71,7 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 include = ['cardio_audio_sleep*']
-exclude = ['^.*tests']
+exclude = ['cardio_audio_sleep*tests']
 
 [tool.black]
 line-length = 79

@@ -1,14 +1,14 @@
 from configparser import ConfigParser
 from pathlib import Path
+from typing import Tuple
 
 from bsl.triggers import TriggerDef
 
 from ..utils._checks import _check_type, _check_value
 
 
-def load_triggers():
-    """
-    Load triggers from triggers.ini into a TriggerDef instance.
+def load_triggers() -> TriggerDef:
+    """Load triggers from triggers.ini into a TriggerDef instance.
 
     Returns
     -------
@@ -43,7 +43,7 @@ def load_triggers():
     return tdef
 
 
-def load_config(dev: bool = False):
+def load_config(dev: bool = False) -> Tuple[dict, str]:
     """Load config from config.ini.
 
     Parameters

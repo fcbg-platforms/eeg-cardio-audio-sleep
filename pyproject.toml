@@ -48,11 +48,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-style = ['black', 'codespell', 'isort', 'flake8', 'pydocstyle[toml]']
 build = ['build', 'twine']
+style = ['black', 'codespell', 'isort', 'flake8', 'pydocstyle[toml]']
 all = [
-    'cardio_audio_sleep[style]',
     'cardio_audio_sleep[build]',
+    'cardio_audio_sleep[style]',
 ]
 
 [project.urls]

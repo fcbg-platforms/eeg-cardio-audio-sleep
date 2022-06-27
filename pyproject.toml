@@ -74,6 +74,7 @@ include = ['cardio_audio_sleep*']
 exclude = ['cardio_audio_sleep*tests']
 
 [tool.setuptools.package-data]
+"cardio_audio_sleep.audio" = ["*/*.wav"]
 "cardio_audio_sleep.config" = ["*.ini"]
 "cardio_audio_sleep.visuals" = ["*.png"]
 

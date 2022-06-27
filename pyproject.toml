@@ -44,7 +44,7 @@ dependencies = [
     'psutil',
     'PyQt5',
     'pyxdf',
-    'stimuli',
+    'stimuli>=0.4.0',
 ]
 
 [project.optional-dependencies]

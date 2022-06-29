@@ -10,6 +10,7 @@ from psychopy.visual import TextStim, Window
 from PyQt5.QtCore import QRect, QSize, Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import QColor, QFont, QPalette
 from PyQt5.QtWidgets import (
+    QComboBox,
     QDial,
     QDoubleSpinBox,
     QFrame,
@@ -39,6 +40,7 @@ from ..utils import (
     search_ANT_amplifier,
     test_volume,
 )
+from ..utils._checks import _check_value
 from ..utils._docs import fill_doc
 from ..utils._imports import import_optional_dependency
 
@@ -159,7 +161,7 @@ class GUI(QMainWindow):
         """Load the graphical user interface."""
         # main window
         self.setWindowTitle("Cardio-Audio-Sleep experiment")
-        self.setFixedSize(QSize(800, 300))
+        self.setFixedSize(QSize(1000, 300))
         self.setSizePolicy(GUI._sizePolicy(self))
         self.setContextMenuPolicy(Qt.NoContextMenu)
 
@@ -171,7 +173,7 @@ class GUI(QMainWindow):
         self.blocks = list()
         for k in range(5):
             block = Block(self.central_widget, "")
-            block.setGeometry(QRect(50 + 145 * k, 20, 120, 80))
+            block.setGeometry(QRect(50 + 185 * k, 20, 160, 80))
             block.setAlignment(Qt.AlignCenter)
             block.setObjectName(f"block{k}")
             if k in (0, 1):  # disable block 0 and 1 (past)
@@ -179,21 +181,24 @@ class GUI(QMainWindow):
             self.blocks.append(block)
 
         # add labels
-        GUI._add_label(self, 50, 115, 265, 20, "past", "Previous blocks")
-        GUI._add_label(self, 340, 115, 120, 20, "current", "Current")
-        GUI._add_label(self, 485, 115, 265, 20, "future", "Next blocks")
+        GUI._add_label(
+            self, 50, 115, 345, 20, "past", "Previous blocks", "center"
+        )
+        GUI._add_label(self, 420, 115, 160, 20, "current", "Current", "center")
+        GUI._add_label(
+            self, 605, 115, 345, 20, "future", "Next blocks", "center"
+        )
 
         # add start / pause / stop push buttons
         self.pushButton_start = GUI._add_pushButton(
-            self, 25, 150, 240, 32, "pushButton_start", "Start"
+            self, 25, 150, 300, 32, "pushButton_start", "Start"
         )
         self.pushButton_pause = GUI._add_pushButton(
-            self, 280, 150, 240, 32, "pushButton_pause", "Pause"
+            self, 350, 150, 300, 32, "pushButton_pause", "Pause"
         )
         self.pushButton_stop = GUI._add_pushButton(
-            self, 535, 150, 240, 32, "pushButton_stop", "Stop"
+            self, 675, 150, 300, 32, "pushButton_stop", "Stop"
         )
-
         self.pushButton_pause.setEnabled(False)
         self.pushButton_pause.setCheckable(True)
         self.pushButton_stop.setEnabled(False)
@@ -201,9 +206,9 @@ class GUI(QMainWindow):
         # add peak detection settings
         self.doubleSpinBox_height = GUI._add_doubleSpinBox(
             self,
-            350,
+            620,
             194,
-            100,
+            90,
             28,
             "doubleSpinBox_height",
             min_=1.0,
@@ -213,9 +218,9 @@ class GUI(QMainWindow):
         )
         self.doubleSpinBox_prominence = GUI._add_doubleSpinBox(
             self,
-            350,
+            620,
             228,
-            100,
+            90,
             28,
             "doubleSpinBox_prominence",
             min_=400.0,
@@ -225,9 +230,9 @@ class GUI(QMainWindow):
         )
         self.doubleSpinBox_width = GUI._add_doubleSpinBox(
             self,
-            350,
+            620,
             262,
-            100,
+            90,
             28,
             "doubleSpinBox_width",
             min_=1.0,
@@ -236,22 +241,24 @@ class GUI(QMainWindow):
             value=defaults["width"],
         )
         self.pushButton_prominence = GUI._add_pushButton(
-            self, 470, 228, 113, 28, "pushButton_prominence", "Disable"
+            self, 720, 228, 113, 28, "pushButton_prominence", "Disable"
         )
         self.pushButton_prominence.setCheckable(True)
         self.pushButton_prominence.setChecked(False)
         self.pushButton_width = GUI._add_pushButton(
-            self, 470, 262, 113, 28, "pushButton_width", "Disable"
+            self, 720, 262, 113, 28, "pushButton_width", "Disable"
         )
         self.pushButton_width.setCheckable(True)
         self.pushButton_width.setChecked(False)
-        GUI._add_label(self, 230, 194, 120, 28, "height", "Height")
-        GUI._add_label(self, 230, 228, 120, 28, "prominence", "Prominence")
-        GUI._add_label(self, 230, 262, 120, 28, "width", "Width")
+        GUI._add_label(self, 530, 194, 90, 28, "height", "Height", "left")
+        GUI._add_label(
+            self, 530, 228, 90, 28, "prominence", "Prominence", "left"
+        )
+        GUI._add_label(self, 530, 262, 90, 28, "width", "Width", "left")
 
         # add volume controls
         self.dial_volume = QDial(self.central_widget)
-        self.dial_volume.setGeometry(QRect(25, 230, 61, 61))
+        self.dial_volume.setGeometry(QRect(20, 230, 61, 61))
         self.dial_volume.setSizePolicy(GUI._sizePolicy(self.dial_volume))
         self.dial_volume.setMinimum(0)
         self.dial_volume.setMaximum(100)
@@ -259,7 +266,7 @@ class GUI(QMainWindow):
         self.dial_volume.setObjectName("dial_volume")
         self.doubleSpinBox_volume = GUI._add_doubleSpinBox(
             self,
-            100,
+            95,
             247,
             80,
             24,
@@ -270,20 +277,40 @@ class GUI(QMainWindow):
             value=defaults["volume"],
         )
         self.pushButton_volume = GUI._add_pushButton(
-            self, 95, 200, 80, 32, "pushButton_volume", "Test"
+            self, 90, 200, 80, 32, "pushButton_volume", "Test"
         )
         if sys.platform.startswith("win"):
             self.pushButton_volume.setEnabled(False)
-        GUI._add_label(self, 25, 200, 60, 32, "volume", "Volume")
+        GUI._add_label(self, 20, 200, 60, 32, "volume", "Volume", "center")
+
+        # add instrument sound controls
+        self.comboBox_synchronous = GUI._add_comboBox(
+            self, 330, 194, 160, 28, "comboBox_synchronous"
+        )
+        self.comboBox_isochronous = GUI._add_comboBox(
+            self, 330, 228, 160, 28, "comboBox_isochronous"
+        )
+        self.comboBox_asynchronous = GUI._add_comboBox(
+            self, 330, 262, 160, 28, "comboBox_asynchronous"
+        )
+        GUI._add_label(
+            self, 210, 194, 90, 28, "synchronous", "Synchronous", "left"
+        )
+        GUI._add_label(
+            self, 210, 228, 90, 28, "isochronous", "Isochronous", "left"
+        )
+        GUI._add_label(
+            self, 210, 262, 90, 28, "asynchronous", "Asynchronous", "left"
+        )
 
         # add Eye-tracker controls
         self.pushButton_calibrate = GUI._add_pushButton(
-            self, 660, 228, 100, 28, "pushButton_calibrate", "Calibrate"
+            self, 850, 228, 140, 28, "pushButton_calibrate", "Calibrate"
         )
         if isinstance(eye_link, EyelinkMock):
             self.pushButton_calibrate.setEnabled(False)
         self.pushButton_cross = GUI._add_pushButton(
-            self, 660, 262, 100, 28, "pushButton_cross", "Fixation Cross"
+            self, 850, 262, 140, 28, "pushButton_cross", "Fixation Cross"
         )
         self.pushButton_cross.setCheckable(True)
         self.pushButton_cross.setChecked(False)
@@ -291,12 +318,15 @@ class GUI(QMainWindow):
             wx = import_optional_dependency("wx", raise_error=False)
             if wx is None:
                 self.pushButton_cross.setEnabled(False)
-        GUI._add_label(self, 660, 190, 100, 32, "eye_tracker", "Eye Tracker")
+        GUI._add_label(
+            self, 850, 195, 140, 32, "eye_tracker", "Eye Tracker", "center"
+        )
 
         # add separation lines
-        GUI._add_line(self, 0, 178, 800, 20, "line1", "h")
-        GUI._add_line(self, 190, 188, 20, 112, "line2", "v")
-        GUI._add_line(self, 600, 188, 20, 112, "line2", "v")
+        GUI._add_line(self, 0, 178, 1000, 20, "line1", "h")
+        GUI._add_line(self, 180, 188, 20, 112, "line2", "v")
+        GUI._add_line(self, 830, 188, 20, 112, "line3", "v")
+        GUI._add_line(self, 510, 188, 20, 112, "line4", "v")
 
         # set central widget
         self.setCentralWidget(self.central_widget)
@@ -312,13 +342,21 @@ class GUI(QMainWindow):
         h: float,
         name: str,
         text: str,
+        alignment: str,
     ) -> QLabel:
         """Add a fix label."""
+        _check_value(alignment, ("left", "center", "right"), "alignment")
         label = QLabel(window.central_widget)
         label.setGeometry(QRect(x, y, w, h))
         label.setSizePolicy(GUI._sizePolicy(label))
+        label.setContextMenuPolicy(Qt.NoContextMenu)
         label.setAutoFillBackground(True)
-        label.setAlignment(Qt.AlignCenter)
+        if alignment == "left":
+            label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        elif alignment == "center":
+            label.setAlignment(Qt.AlignCenter)
+        elif alignment == "right":
+            label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         label.setObjectName(name)
         label.setText(text)
         return label
@@ -337,6 +375,7 @@ class GUI(QMainWindow):
         line = QFrame(window.central_widget)
         line.setGeometry(QRect(x, y, w, h))
         line.setSizePolicy(GUI._sizePolicy(line))
+        line.setContextMenuPolicy(Qt.NoContextMenu)
         if orientation == "h":
             line.setFrameShape(QFrame.HLine)
         elif orientation == "v":
@@ -364,6 +403,7 @@ class GUI(QMainWindow):
         pushButton = QPushButton(window.central_widget)
         pushButton.setGeometry(QRect(x, y, w, h))
         pushButton.setSizePolicy(GUI._sizePolicy(pushButton))
+        pushButton.setContextMenuPolicy(Qt.NoContextMenu)
         pushButton.setObjectName(name)
         pushButton.setText(text)
         return pushButton
@@ -385,6 +425,7 @@ class GUI(QMainWindow):
         doubleSpinBox = QDoubleSpinBox(window.central_widget)
         doubleSpinBox.setGeometry(QRect(x, y, w, h))
         doubleSpinBox.setSizePolicy(GUI._sizePolicy(doubleSpinBox))
+        doubleSpinBox.setContextMenuPolicy(Qt.NoContextMenu)
         doubleSpinBox.setObjectName(name)
         if min_ is not None:
             doubleSpinBox.setMinimum(min_)
@@ -395,6 +436,23 @@ class GUI(QMainWindow):
         if value is not None:
             doubleSpinBox.setProperty("value", value)
         return doubleSpinBox
+
+    @staticmethod
+    def _add_comboBox(
+        window: QMainWindow,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        name: str,
+    ) -> QComboBox:
+        """Add a combo-box."""
+        comboBox = QComboBox(window.central_widget)
+        comboBox.setGeometry(QRect(x, y, w, h))
+        comboBox.setSizePolicy(GUI._sizePolicy(comboBox))
+        comboBox.setContextMenuPolicy(Qt.NoContextMenu)
+        comboBox.setObjectName(name)
+        return comboBox
 
     @staticmethod
     def _sizePolicy(widget: QWidget):

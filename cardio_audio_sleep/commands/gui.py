@@ -1,6 +1,7 @@
 import multiprocessing as mp
 import sys
-from typing import Optional
+from pathlib import Path
+from typing import Optional, Tuple
 
 import numpy as np
 import psutil
@@ -68,13 +69,14 @@ class GUI(QMainWindow):
         defaults = dict(height=97.0, prominence=500.0, width=None, volume=0)
 
         # load configuration
+        instrument_categories = GUI.load_instrument_categories()
         self.load_config(ecg_ch_name, defaults, eye_link, dev)
 
         # define window for fixation cross
         self.win = None
 
         # load GUI
-        self.load_ui(defaults, eye_link)
+        self.load_ui(defaults, eye_link, instrument_categories)
         self.connect_signals_to_slots()
 
         # block generation
@@ -90,6 +92,16 @@ class GUI(QMainWindow):
         # define Qt Timer
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update)
+
+    @staticmethod
+    def load_instrument_categories():
+        """Load the available instrument categories."""
+        directory = Path(__file__).parent.parent / "audio"
+        assert directory.exists() and directory.is_dir()  # sanity-check
+        instrument_categories = tuple(
+            [elt.name for elt in directory.iterdir() if elt.is_dir()]
+        )
+        return instrument_categories
 
     def load_config(
         self,
@@ -157,7 +169,12 @@ class GUI(QMainWindow):
         }
 
     # -------------------------------------------------------------------------
-    def load_ui(self, defaults: dict, eye_link: EYELink):
+    def load_ui(
+        self,
+        defaults: dict,
+        eye_link: EYELink,
+        instrument_categories: Tuple[str, ...],
+    ):
         """Load the graphical user interface."""
         # main window
         self.setWindowTitle("Cardio-Audio-Sleep experiment")
@@ -293,6 +310,13 @@ class GUI(QMainWindow):
         self.comboBox_asynchronous = GUI._add_comboBox(
             self, 330, 262, 160, 28, "comboBox_asynchronous"
         )
+        for comboBox in (
+            self.comboBox_synchronous,
+            self.comboBox_isochronous,
+            self.comboBox_asynchronous,
+        ):
+            comboBox.addItems(instrument_categories)
+
         GUI._add_label(
             self, 210, 194, 90, 28, "synchronous", "Synchronous", "left"
         )

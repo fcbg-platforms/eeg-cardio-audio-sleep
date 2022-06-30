@@ -150,6 +150,7 @@ class GUI(QMainWindow):
                 defaults["prominence"],
                 defaults["width"],
                 defaults["volume"],
+                "wind",  # TODO: remove hardcoding
                 self.queue,
             ],
             "isochronous": [
@@ -158,6 +159,7 @@ class GUI(QMainWindow):
                 None,
                 None,
                 defaults["volume"],
+                "wind",  # TODO: remove hardcoding
             ],
             "asynchronous": [
                 self.trigger,
@@ -165,6 +167,7 @@ class GUI(QMainWindow):
                 None,
                 None,
                 defaults["volume"],
+                "wind",  # TODO: remove hardcoding
             ],
         }
 

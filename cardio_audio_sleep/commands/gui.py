@@ -150,7 +150,7 @@ class GUI(QMainWindow):
                 defaults["prominence"],
                 defaults["width"],
                 defaults["volume"],
-                "wind",  # TODO: remove hardcoding
+                "brass",  # TODO: remove hardcoding
                 self.queue,
             ],
             "isochronous": [
@@ -167,7 +167,7 @@ class GUI(QMainWindow):
                 None,
                 None,
                 defaults["volume"],
-                "wind",  # TODO: remove hardcoding
+                "string",  # TODO: remove hardcoding
             ],
         }
 

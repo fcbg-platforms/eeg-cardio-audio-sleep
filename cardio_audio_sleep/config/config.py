@@ -40,6 +40,17 @@ def load_triggers() -> TriggerDef:
                 f"Key '{key}' is missing from trigger definition."
             )
 
+    directory = Path(__file__).parent.parent / "audio"
+    assert directory.exists() and directory.is_dir()  # sanity-check
+    instrument_categories = tuple(
+        [elt.name for elt in directory.iterdir() if elt.is_dir()]
+    )
+    for instrument in instrument_categories:
+        if not hasattr(tdef, instrument):
+            raise ValueError(
+                f"Key '{instrument}' is missing from trigger definition."
+            )
+
     return tdef
 
 

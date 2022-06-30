@@ -27,6 +27,12 @@ docdict[
 volume : float
     Sound volume between 0 (mute) and 100."""
 docdict[
+    "instrument"
+] = """
+instrument : str
+    Name of the instrument category from which the post-tone stimuli sounds are
+    picked from."""
+docdict[
     "sequence"
 ] = """
 sequence : array

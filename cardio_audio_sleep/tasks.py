@@ -12,6 +12,7 @@ from psychopy.clock import wait
 
 from . import logger
 from .triggers import Trigger
+from .utils import pick_instrument_sound
 from .utils._checks import (
     _check_sequence,
     _check_sequence_timings,
@@ -32,6 +33,7 @@ def synchronous(
     peak_prominence: Optional[float],
     peak_width: Optional[float],
     volume: float,
+    instrument: str,
     queue: Optional[Queue] = None,
 ) -> list:  # noqa: D401
     """Synchronous block where sounds are sync to the heartbeat.
@@ -58,6 +60,7 @@ def synchronous(
     peak_width : float | None
         Minimum peak width expressed in ms. Default to None.
     %(volume)s
+    %(instrument)s
     queue : Queue
         Queue where the sequence_timings are stored. If None, this argument is
         ignored.
@@ -67,17 +70,19 @@ def synchronous(
     sequence_timings : list
         List of timings at which an R-peak occurred.
     """
-    from stimuli.audio import Tone
+    from stimuli.audio import Sound, Tone
 
     from .detector import Detector
 
-    # Create sound stimuli
+    # create sound stimuli
     sound = Tone(volume, frequency=1000, duration=0.1)
+    sound_instru = Sound(pick_instrument_sound(instrument))
+    sound_instru.volume = volume
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
 
-    # Create peak detector
+    # create peak detector
     detector = Detector(
         stream_name,
         ecg_ch_name,
@@ -88,16 +93,34 @@ def synchronous(
     )
     detector.prefill_buffer()
 
-    # Create counter/timers
-    counter = 0
-
-    # Create containers for sequence timings
-    sequence_timings = list()
-
-    # Task loop
+    # task loop
     trigger.signal(tdef.sync_start)
     wait(0.2, hogCPUperiod=0)
 
+    logger.info("Starting to deliver pure tone sounds.")
+    sequence_timings = _synchronous_loop(sound, sequence, detector, trigger)
+    logger.info("Starting to deliver instrument sounds.")
+    sequence_instru = [tdef.by_name[instrument]] * 3
+    _synchronous_loop(sound_instru, sequence_instru, detector, trigger)
+
+    wait(1, hogCPUperiod=0)
+    trigger.signal(tdef.sync_stop)
+
+    if queue is not None:
+        queue.put(sequence_timings)
+
+    del detector
+
+    return sequence_timings
+
+
+def _synchronous_loop(sound, sequence, detector, trigger):
+    """Main loop of the synchronous task."""
+    # create counter/timers
+    counter = 0
+    # create containers for sequence timings
+    sequence_timings = list()
+    # loop
     while counter <= len(sequence) - 1:
         detector.update_loop()
         pos = detector.new_peaks()
@@ -117,14 +140,6 @@ def synchronous(
             # and give CPU time to other processes
             wait(0.1, hogCPUperiod=0)
 
-    wait(1, hogCPUperiod=0)
-    trigger.signal(tdef.sync_stop)
-
-    if queue is not None:
-        queue.put(sequence_timings)
-
-    del detector
-
     return sequence_timings
 
 
@@ -135,6 +150,7 @@ def isochronous(
     sequence: ArrayLike,
     delay: float,
     volume: float,
+    instrument: str,
 ):
     """Isochronous block where sounds are delivered at a fix interval.
 
@@ -151,11 +167,14 @@ def isochronous(
     delay : float
         Delay between 2 stimulus in seconds.
     %(volume)s
+    %(instrument)s
     """
-    from stimuli.audio import Tone
+    from stimuli.audio import Sound, Tone
 
-    # Create sound stimuli
+    # create sound stimuli
     sound = Tone(volume, frequency=1000, duration=0.1)
+    sound_instru = Sound(pick_instrument_sound(instrument))
+    sound_instru.volume = volume
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -167,13 +186,25 @@ def isochronous(
         )
     assert sound.duration < delay  # sanity-check
 
-    # Create counter
-    counter = 0
-
-    # Task loop
+    # task loop
     trigger.signal(tdef.iso_start)
     wait(0.2, hogCPUperiod=0)
 
+    logger.info("Starting to deliver pure tone sounds.")
+    _isochronous_loop(sound, sequence, delay, trigger)
+    logger.info("Starting to deliver instrument sounds.")
+    sequence_instru = [tdef.by_name[instrument]] * 3
+    _isochronous_loop(sound_instru, sequence_instru, delay, trigger)
+
+    wait(1, hogCPUperiod=0)
+    trigger.signal(tdef.iso_stop)
+
+
+def _isochronous_loop(sound, sequence, delay, trigger):
+    """Main loop of the isochronous task."""
+    # create counter/timers
+    counter = 0
+    # loop
     while counter <= len(sequence) - 1:
         now = ptb.GetSecs()
         trigger.signal(sequence[counter])
@@ -187,9 +218,6 @@ def isochronous(
         wait(delay - stim_delay)
         counter += 1
 
-    wait(1, hogCPUperiod=0)
-    trigger.signal(tdef.iso_stop)
-
 
 @fill_doc
 def asynchronous(
@@ -198,6 +226,7 @@ def asynchronous(
     sequence: ArrayLike,
     sequence_timings: ArrayLike,
     volume: float,
+    instrument: str,
 ):
     """Asynchronous block where a synchronous sequence is repeated.
 
@@ -218,11 +247,14 @@ def asynchronous(
         Array of length BLOCK_SIZE containing the timing at which the stimulus
         was delivered.
     %(volume)s
+    %(instrument)s
     """
-    from stimuli.audio import Tone
+    from stimuli.audio import Sound, Tone
 
     # Create sound stimuli
     sound = Tone(volume, frequency=1000, duration=0.1)
+    sound_instru = Sound(pick_instrument_sound(instrument))
+    sound_instru.volume = volume
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -234,13 +266,26 @@ def asynchronous(
     delays = np.diff(sequence_timings)  # a[i+1] - a[i]
     assert all(sound.duration < delay for delay in delays)  # sanity-check
 
-    # Create counter
-    counter = 0
-
     # Task loop
     trigger.signal(tdef.async_start)
     wait(0.2, hogCPUperiod=0)
 
+    logger.info("Starting to deliver pure tone sounds.")
+    _asynchronous_loop(sound, sequence, delays, trigger)
+    logger.info("Starting to deliver instrument sounds.")
+    sequence_instru = [tdef.by_name[instrument]] * 3
+    delays_instru = np.random.choice(delays, size=3)
+    _asynchronous_loop(sound_instru, sequence_instru, delays_instru, trigger)
+
+    wait(1, hogCPUperiod=0)
+    trigger.signal(tdef.async_stop)
+
+
+def _asynchronous_loop(sound, sequence, delays, trigger):
+    """Main loop of the asynchronous task."""
+    # create counter/timers
+    counter = 0
+    # loop
     while counter <= len(sequence) - 1:
         now = ptb.GetSecs()
         trigger.signal(sequence[counter])
@@ -256,9 +301,6 @@ def asynchronous(
             counter += 1
         else:
             break  # no more delays since it was the last stimuli
-
-    wait(1, hogCPUperiod=0)
-    trigger.signal(tdef.async_stop)
 
 
 @fill_doc

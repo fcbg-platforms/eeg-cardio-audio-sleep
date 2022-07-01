@@ -139,7 +139,7 @@ def _synchronous_loop(sound, sequence, detector, trigger):
             counter += 1
             # wait for sound to be delivered before updating again
             # and give CPU time to other processes
-            wait(sound.duration, hogCPUperiod=0)
+            wait(sound.duration + 0.005, hogCPUperiod=0)
 
     return sequence_timings
 
@@ -217,7 +217,9 @@ def _isochronous_loop(sound, sequence, delay, trigger):
         stim_delay = ptb.GetSecs() - now
 
         # next
-        wait(delay - stim_delay)
+        wait_delay = delay - stim_delay
+        hogCPUperiod = wait_delay - sound.duration - 0.005
+        wait(wait_delay, 0 if hogCPUperiod < 0 else hogCPUperiod)
         counter += 1
 
 
@@ -300,7 +302,9 @@ def _asynchronous_loop(sound, sequence, delays, trigger):
 
         # next
         if counter != len(sequence) - 1:
-            wait(delays[counter] - stim_delay)
+            wait_delay = delays[counter] - stim_delay
+            hogCPUperiod = wait_delay - sound.duration - 0.005
+            wait(wait_delay, 0 if hogCPUperiod < 0 else hogCPUperiod)
             counter += 1
         else:
             break  # no more delays since it was the last stimuli

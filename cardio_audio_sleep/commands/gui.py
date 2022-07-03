@@ -69,15 +69,23 @@ class GUI(QMainWindow):
         defaults = dict(height=97.0, prominence=500.0, width=None, volume=0)
 
         # load configuration
-        instrument_categories = GUI.load_instrument_categories()
         self.load_config(ecg_ch_name, defaults, eye_link, dev)
 
         # define window for fixation cross
         self.win = None
 
         # load GUI
-        self.load_ui(defaults, eye_link, instrument_categories)
+        self.load_ui(defaults, eye_link)
         self.connect_signals_to_slots()
+
+        # set instrument categories
+        instrument_categories = GUI.load_instrument_categories()
+        for comboBox in (
+            self.comboBox_synchronous,
+            self.comboBox_isochronous,
+            self.comboBox_asynchronous,
+        ):
+            comboBox.addItems(instrument_categories)
 
         # block generation
         self.all_blocks = list()
@@ -150,7 +158,7 @@ class GUI(QMainWindow):
                 defaults["prominence"],
                 defaults["width"],
                 defaults["volume"],
-                "brass",  # TODO: remove hardcoding
+                None,
                 self.queue,
             ],
             "isochronous": [
@@ -159,7 +167,7 @@ class GUI(QMainWindow):
                 None,
                 None,
                 defaults["volume"],
-                "wind",  # TODO: remove hardcoding
+                None,
             ],
             "asynchronous": [
                 self.trigger,
@@ -167,7 +175,7 @@ class GUI(QMainWindow):
                 None,
                 None,
                 defaults["volume"],
-                "string",  # TODO: remove hardcoding
+                None,
             ],
         }
 
@@ -176,7 +184,6 @@ class GUI(QMainWindow):
         self,
         defaults: dict,
         eye_link: EYELink,
-        instrument_categories: Tuple[str, ...],
     ):
         """Load the graphical user interface."""
         # main window
@@ -313,12 +320,6 @@ class GUI(QMainWindow):
         self.comboBox_asynchronous = GUI._add_comboBox(
             self, 330, 262, 160, 28, "comboBox_asynchronous"
         )
-        for comboBox in (
-            self.comboBox_synchronous,
-            self.comboBox_isochronous,
-            self.comboBox_asynchronous,
-        ):
-            comboBox.addItems(instrument_categories)
 
         GUI._add_label(
             self, 210, 194, 90, 28, "synchronous", "Synchronous", "left"
@@ -629,6 +630,17 @@ class GUI(QMainWindow):
         self.dial_volume.valueChanged.connect(self.dial_volume_valueChanged)
         self.pushButton_volume.clicked.connect(self.pushButton_volume_clicked)
 
+        # instrument categories
+        self.comboBox_synchronous.currentTextChanged.connect(
+            self.comboBox_currentTextChanged
+        )
+        self.comboBox_isochronous.currentTextChanged.connect(
+            self.comboBox_currentTextChanged
+        )
+        self.comboBox_asynchronous.currentTextChanged.connect(
+            self.comboBox_currentTextChanged
+        )
+
         # eye-tracking
         self.pushButton_calibrate.clicked.connect(
             self.pushButton_calibrate_clicked
@@ -773,19 +785,20 @@ class GUI(QMainWindow):
         )
         width = width if self.doubleSpinBox_width.isEnabled() else None
 
-        self.args_mapping["synchronous"][5] = height
-        self.args_mapping["synchronous"][6] = prominence
-        self.args_mapping["synchronous"][7] = width
-
         logger.debug(
-            "(Height, Prominence, Width) set to (%s, %s, %s) -> (%s, %s, %s)",
-            height,
-            None if prominence is None else round(prominence, 2),
-            None if width is None else round(width, 2),
+            "(Height, Prominence, Width) set from (%s, %s, %s) to "
+            "(%s, %s, %s).",
             self.args_mapping["synchronous"][5],
             self.args_mapping["synchronous"][6],
             self.args_mapping["synchronous"][7],
+            height,
+            None if prominence is None else round(prominence, 2),
+            None if width is None else round(width, 2),
         )
+
+        self.args_mapping["synchronous"][5] = height
+        self.args_mapping["synchronous"][6] = prominence
+        self.args_mapping["synchronous"][7] = width
 
     @pyqtSlot()
     def doubleSpinBox_volume_valueChanged(self):
@@ -809,6 +822,27 @@ class GUI(QMainWindow):
         )
         process.start()
         process.join()
+
+    @pyqtSlot()
+    def comboBox_currentTextChanged(self):
+        instru_sync = self.comboBox_synchronous.currentText()
+        instru_iso = self.comboBox_isochronous.currentText()
+        instru_async = self.comboBox_asynchronous.currentText()
+
+        logger.debug(
+            "Instruments (Sync, Iso, Async) set from (%s, %s, %s) to "
+            "(%s, %s, %s).",
+            self.args_mapping["synchronous"][9],
+            self.args_mapping["isochronous"][5],
+            self.args_mapping["asynchronous"][5],
+            instru_sync,
+            instru_iso,
+            instru_async,
+        )
+
+        self.args_mapping["synchronous"][9] = instru_sync
+        self.args_mapping["isochronous"][5] = instru_iso
+        self.args_mapping["asynchronous"][5] = instru_async
 
     @pyqtSlot()
     def pushButton_calibrate_clicked(self):

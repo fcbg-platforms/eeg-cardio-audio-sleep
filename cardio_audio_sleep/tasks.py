@@ -33,7 +33,7 @@ def synchronous(
     peak_prominence: Optional[float],
     peak_width: Optional[float],
     volume: float,
-    instrument: str,
+    instrument: Optional[str] = None,
     queue: Optional[Queue] = None,
 ) -> list:  # noqa: D401
     """Synchronous block where sounds are sync to the heartbeat.
@@ -76,9 +76,10 @@ def synchronous(
 
     # create sound stimuli
     sound = Tone(volume, frequency=1000, duration=0.1)
-    sound_instru = Sound(pick_instrument_sound(instrument))
-    sound_instru.volume = volume
-    sound_instru.crop(None, 0.5)
+    if instrument is not None:
+        sound_instru = Sound(pick_instrument_sound(instrument))
+        sound_instru.volume = volume
+        sound_instru.crop(None, 0.5)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -100,9 +101,10 @@ def synchronous(
 
     logger.info("Starting to deliver pure tone sounds.")
     sequence_timings = _synchronous_loop(sound, sequence, detector, trigger)
-    logger.info("Starting to deliver instrument sounds.")
-    sequence_instru = [tdef.by_name[instrument]] * 3
-    _synchronous_loop(sound_instru, sequence_instru, detector, trigger)
+    if instrument is not None:
+        logger.info("Starting to deliver instrument sounds.")
+        sequence_instru = [tdef.by_name[instrument]] * 3
+        _synchronous_loop(sound_instru, sequence_instru, detector, trigger)
 
     wait(1, hogCPUperiod=0)
     trigger.signal(tdef.sync_stop)
@@ -151,7 +153,7 @@ def isochronous(
     sequence: ArrayLike,
     delay: float,
     volume: float,
-    instrument: str,
+    instrument: Optional[str] = None,
 ):
     """Isochronous block where sounds are delivered at a fix interval.
 
@@ -174,9 +176,10 @@ def isochronous(
 
     # create sound stimuli
     sound = Tone(volume, frequency=1000, duration=0.1)
-    sound_instru = Sound(pick_instrument_sound(instrument))
-    sound_instru.volume = volume
-    sound_instru.crop(None, 0.5)
+    if instrument is not None:
+        sound_instru = Sound(pick_instrument_sound(instrument))
+        sound_instru.volume = volume
+        sound_instru.crop(None, 0.5)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -194,9 +197,10 @@ def isochronous(
 
     logger.info("Starting to deliver pure tone sounds.")
     _isochronous_loop(sound, sequence, delay, trigger)
-    logger.info("Starting to deliver instrument sounds.")
-    sequence_instru = [tdef.by_name[instrument]] * 3
-    _isochronous_loop(sound_instru, sequence_instru, delay, trigger)
+    if instrument is not None:
+        logger.info("Starting to deliver instrument sounds.")
+        sequence_instru = [tdef.by_name[instrument]] * 3
+        _isochronous_loop(sound_instru, sequence_instru, delay, trigger)
 
     wait(1, hogCPUperiod=0)
     trigger.signal(tdef.iso_stop)
@@ -230,7 +234,7 @@ def asynchronous(
     sequence: ArrayLike,
     sequence_timings: ArrayLike,
     volume: float,
-    instrument: str,
+    instrument: Optional[str] = None,
 ):
     """Asynchronous block where a synchronous sequence is repeated.
 
@@ -257,9 +261,10 @@ def asynchronous(
 
     # Create sound stimuli
     sound = Tone(volume, frequency=1000, duration=0.1)
-    sound_instru = Sound(pick_instrument_sound(instrument))
-    sound_instru.volume = volume
-    sound_instru.crop(None, 0.5)
+    if instrument is not None:
+        sound_instru = Sound(pick_instrument_sound(instrument))
+        sound_instru.volume = volume
+        sound_instru.crop(None, 0.5)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -277,10 +282,13 @@ def asynchronous(
 
     logger.info("Starting to deliver pure tone sounds.")
     _asynchronous_loop(sound, sequence, delays, trigger)
-    logger.info("Starting to deliver instrument sounds.")
-    sequence_instru = [tdef.by_name[instrument]] * 3
-    delays_instru = np.random.choice(delays, size=3)
-    _asynchronous_loop(sound_instru, sequence_instru, delays_instru, trigger)
+    if instrument is not None:
+        logger.info("Starting to deliver instrument sounds.")
+        sequence_instru = [tdef.by_name[instrument]] * 3
+        delays_instru = np.random.choice(delays, size=3)
+        _asynchronous_loop(
+            sound_instru, sequence_instru, delays_instru, trigger
+        )
 
     wait(1, hogCPUperiod=0)
     trigger.signal(tdef.async_stop)

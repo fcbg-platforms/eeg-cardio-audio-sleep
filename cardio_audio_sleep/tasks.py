@@ -117,7 +117,7 @@ def synchronous(
     return sequence_timings
 
 
-def _synchronous_loop(sound, sequence, detector, trigger):
+def _synchronous_loop(sound, sequence, detector, trigger):  # noqa: D401
     """Main loop of the synchronous task."""
     # create counter/timers
     counter = 0
@@ -206,7 +206,7 @@ def isochronous(
     trigger.signal(tdef.iso_stop)
 
 
-def _isochronous_loop(sound, sequence, delay, trigger):
+def _isochronous_loop(sound, sequence, delay, trigger):  # noqa: D401
     """Main loop of the isochronous task."""
     # create counter/timers
     counter = 0
@@ -294,7 +294,7 @@ def asynchronous(
     trigger.signal(tdef.async_stop)
 
 
-def _asynchronous_loop(sound, sequence, delays, trigger):
+def _asynchronous_loop(sound, sequence, delays, trigger):  # noqa: D401
     """Main loop of the asynchronous task."""
     # create counter/timers
     counter = 0

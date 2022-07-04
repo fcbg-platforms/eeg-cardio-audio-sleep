@@ -29,9 +29,9 @@ volume : float
 docdict[
     "instrument"
 ] = """
-instrument : str
-    Name of the instrument category from which the post-tone stimuli sounds are
-    picked from."""
+instrument : Path | None
+    Path to the instrument sound to play. If None, instrument sounds are
+    disabled."""
 docdict[
     "sequence"
 ] = """

@@ -1,7 +1,7 @@
 import multiprocessing as mp
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 
 import numpy as np
 import psutil
@@ -33,11 +33,12 @@ from ..tasks import (
     isochronous,
     synchronous,
 )
-from ..triggers import Trigger
+from ..triggers import Trigger, TriggerInstrument
 from ..utils import (
     generate_async_timings,
     generate_blocks_sequence,
     generate_sequence,
+    pick_instrument_sound,
     search_ANT_amplifier,
     test_volume,
 )
@@ -70,22 +71,14 @@ class GUI(QMainWindow):
 
         # load configuration
         self.load_config(ecg_ch_name, defaults, eye_link, dev)
+        instrument_categories = GUI.load_instrument_categories()
 
         # define window for fixation cross
         self.win = None
 
         # load GUI
-        self.load_ui(defaults, eye_link)
+        self.load_ui(defaults, eye_link, instrument_categories)
         self.connect_signals_to_slots()
-
-        # set instrument categories
-        instrument_categories = GUI.load_instrument_categories()
-        for comboBox in (
-            self.comboBox_synchronous,
-            self.comboBox_isochronous,
-            self.comboBox_asynchronous,
-        ):
-            comboBox.addItems(instrument_categories)
 
         # block generation
         self.all_blocks = list()
@@ -129,6 +122,9 @@ class GUI(QMainWindow):
             trigger = MockTrigger()
         self.eye_link = eye_link
         self.trigger = Trigger(trigger, self.eye_link)
+
+        # create instrument trigger
+        self.trigger_instrument = TriggerInstrument()
 
         # search for LSL stream
         stream_name = search_ANT_amplifier()
@@ -184,6 +180,7 @@ class GUI(QMainWindow):
         self,
         defaults: dict,
         eye_link: EYELink,
+        instrument_categories: Tuple[str],
     ):
         """Load the graphical user interface."""
         # main window
@@ -320,6 +317,12 @@ class GUI(QMainWindow):
         self.comboBox_asynchronous = GUI._add_comboBox(
             self, 330, 262, 160, 28, "comboBox_asynchronous"
         )
+        for comboBox in (
+            self.comboBox_synchronous,
+            self.comboBox_isochronous,
+            self.comboBox_asynchronous,
+        ):
+            comboBox.addItems(instrument_categories)
 
         GUI._add_label(
             self, 210, 194, 90, 28, "synchronous", "Synchronous", "left"
@@ -534,6 +537,7 @@ class GUI(QMainWindow):
                 self.tdef,
             )
 
+            # delay/sequence timings
             if btype == "isochronous":
                 args[3] = np.median(np.diff(self.sequence_timings))
                 logger.info("Delay for isochronous: %.2f (s).", args[3])
@@ -562,6 +566,19 @@ class GUI(QMainWindow):
                     "Average delay for asynchronous: %.2f (s).",
                     np.median(np.diff(args[3])),
                 )
+
+            # instrument sounds
+            if btype == "synchronous":
+                category = self.comboBox_synchronous.currentText()
+            elif btype == "isochronous":
+                category = self.comboBox_isochronous.currentText()
+            elif btype == "asynchronous":
+                category = self.comboBox_asynchronous.currentText()
+            idx = 9 if btype == "synchronous" else 5
+            args[idx] = pick_instrument_sound(category)
+            self.trigger_instrument.signal(
+                args[idx].parent.name + "/" + args[idx].name
+            )
 
         # start new process
         self.process = mp.Process(
@@ -600,6 +617,7 @@ class GUI(QMainWindow):
         """Event called when closing the GUI."""
         if self.win is not None:
             self.win.close()
+        self.trigger_instrument.close()
         event.accept()
 
     # -------------------------------------------------------------------------
@@ -629,17 +647,6 @@ class GUI(QMainWindow):
         )
         self.dial_volume.valueChanged.connect(self.dial_volume_valueChanged)
         self.pushButton_volume.clicked.connect(self.pushButton_volume_clicked)
-
-        # instrument categories
-        self.comboBox_synchronous.currentTextChanged.connect(
-            self.comboBox_currentTextChanged
-        )
-        self.comboBox_isochronous.currentTextChanged.connect(
-            self.comboBox_currentTextChanged
-        )
-        self.comboBox_asynchronous.currentTextChanged.connect(
-            self.comboBox_currentTextChanged
-        )
 
         # eye-tracking
         self.pushButton_calibrate.clicked.connect(
@@ -822,27 +829,6 @@ class GUI(QMainWindow):
         )
         process.start()
         process.join()
-
-    @pyqtSlot()
-    def comboBox_currentTextChanged(self):
-        instru_sync = self.comboBox_synchronous.currentText()
-        instru_iso = self.comboBox_isochronous.currentText()
-        instru_async = self.comboBox_asynchronous.currentText()
-
-        logger.debug(
-            "Instruments (Sync, Iso, Async) set from (%s, %s, %s) to "
-            "(%s, %s, %s).",
-            self.args_mapping["synchronous"][9],
-            self.args_mapping["isochronous"][5],
-            self.args_mapping["asynchronous"][5],
-            instru_sync,
-            instru_iso,
-            instru_async,
-        )
-
-        self.args_mapping["synchronous"][9] = instru_sync
-        self.args_mapping["isochronous"][5] = instru_iso
-        self.args_mapping["asynchronous"][5] = instru_async
 
     @pyqtSlot()
     def pushButton_calibrate_clicked(self):

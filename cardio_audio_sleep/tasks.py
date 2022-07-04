@@ -2,6 +2,7 @@
 
 import datetime
 from multiprocessing import Queue
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
@@ -12,7 +13,6 @@ from psychopy.clock import wait
 
 from . import logger
 from .triggers import Trigger
-from .utils import pick_instrument_sound
 from .utils._checks import (
     _check_sequence,
     _check_sequence_timings,
@@ -33,7 +33,7 @@ def synchronous(
     peak_prominence: Optional[float],
     peak_width: Optional[float],
     volume: float,
-    instrument: Optional[str] = None,
+    instrument: Optional[Path] = None,
     queue: Optional[Queue] = None,
 ) -> list:  # noqa: D401
     """Synchronous block where sounds are sync to the heartbeat.
@@ -77,7 +77,7 @@ def synchronous(
     # create sound stimuli
     sound = Tone(volume, frequency=1000, duration=0.1)
     if instrument is not None:
-        sound_instru = Sound(pick_instrument_sound(instrument))
+        sound_instru = Sound(instrument)
         sound_instru.volume = volume
         sound_instru.crop(None, 0.5)
 
@@ -103,7 +103,7 @@ def synchronous(
     sequence_timings = _synchronous_loop(sound, sequence, detector, trigger)
     if instrument is not None:
         logger.info("Starting to deliver instrument sounds.")
-        sequence_instru = [tdef.by_name[instrument]] * 3
+        sequence_instru = [tdef.by_name[instrument.parent.name]] * 3
         _synchronous_loop(sound_instru, sequence_instru, detector, trigger)
 
     wait(1, hogCPUperiod=0)
@@ -153,7 +153,7 @@ def isochronous(
     sequence: ArrayLike,
     delay: float,
     volume: float,
-    instrument: Optional[str] = None,
+    instrument: Optional[Path] = None,
 ):
     """Isochronous block where sounds are delivered at a fix interval.
 
@@ -177,7 +177,7 @@ def isochronous(
     # create sound stimuli
     sound = Tone(volume, frequency=1000, duration=0.1)
     if instrument is not None:
-        sound_instru = Sound(pick_instrument_sound(instrument))
+        sound_instru = Sound(instrument)
         sound_instru.volume = volume
         sound_instru.crop(None, 0.5)
 
@@ -199,7 +199,7 @@ def isochronous(
     _isochronous_loop(sound, sequence, delay, trigger)
     if instrument is not None:
         logger.info("Starting to deliver instrument sounds.")
-        sequence_instru = [tdef.by_name[instrument]] * 3
+        sequence_instru = [tdef.by_name[instrument.parent.name]] * 3
         _isochronous_loop(sound_instru, sequence_instru, delay, trigger)
 
     wait(1, hogCPUperiod=0)
@@ -234,7 +234,7 @@ def asynchronous(
     sequence: ArrayLike,
     sequence_timings: ArrayLike,
     volume: float,
-    instrument: Optional[str] = None,
+    instrument: Optional[Path] = None,
 ):
     """Asynchronous block where a synchronous sequence is repeated.
 
@@ -262,7 +262,7 @@ def asynchronous(
     # Create sound stimuli
     sound = Tone(volume, frequency=1000, duration=0.1)
     if instrument is not None:
-        sound_instru = Sound(pick_instrument_sound(instrument))
+        sound_instru = Sound(instrument)
         sound_instru.volume = volume
         sound_instru.crop(None, 0.5)
 
@@ -284,7 +284,7 @@ def asynchronous(
     _asynchronous_loop(sound, sequence, delays, trigger)
     if instrument is not None:
         logger.info("Starting to deliver instrument sounds.")
-        sequence_instru = [tdef.by_name[instrument]] * 3
+        sequence_instru = [tdef.by_name[instrument.parent.name]] * 3
         delays_instru = np.random.choice(delays, size=3)
         _asynchronous_loop(
             sound_instru, sequence_instru, delays_instru, trigger

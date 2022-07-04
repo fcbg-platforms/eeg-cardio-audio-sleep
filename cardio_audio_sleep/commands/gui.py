@@ -128,7 +128,7 @@ class GUI(QMainWindow):
         elif trigger_type == "mock":
             trigger = MockTrigger()
         self.eye_link = eye_link
-        self.trigger = Trigger(trigger, self.eye_link, instruments=True)
+        self.trigger = Trigger(trigger, self.eye_link)
 
         # search for LSL stream
         stream_name = search_ANT_amplifier()

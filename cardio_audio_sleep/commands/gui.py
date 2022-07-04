@@ -72,6 +72,7 @@ class GUI(QMainWindow):
         # load configuration
         self.load_config(ecg_ch_name, defaults, eye_link, dev)
         instrument_categories = GUI.load_instrument_categories()
+        self.instrument_sounds = list()
 
         # define window for fixation cross
         self.win = None
@@ -575,10 +576,9 @@ class GUI(QMainWindow):
             elif btype == "asynchronous":
                 category = self.comboBox_asynchronous.currentText()
             idx = 9 if btype == "synchronous" else 5
-            args[idx] = pick_instrument_sound(category)
-            self.trigger_instrument.signal(
-                args[idx].parent.name + "/" + args[idx].name
-            )
+            args[idx] = pick_instrument_sound(category, self.instrument_sounds)
+            self.trigger_instrument.signal(args[idx].name)
+            self.instrument_sounds.append(args[idx].name)
 
         # start new process
         self.process = mp.Process(

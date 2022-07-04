@@ -98,6 +98,10 @@ def synchronous(
     # task loop
     trigger.signal(tdef.sync_start)
     wait(0.2, hogCPUperiod=0)
+    if instrument is not None:
+        trigger.signal_instrument(
+            sound.fname.parent.name + "/" + sound.fname.name
+        )
 
     logger.info("Starting to deliver pure tone sounds.")
     sequence_timings = _synchronous_loop(sound, sequence, detector, trigger)
@@ -194,6 +198,10 @@ def isochronous(
     # task loop
     trigger.signal(tdef.iso_start)
     wait(0.2, hogCPUperiod=0)
+    if instrument is not None:
+        trigger.signal_instrument(
+            sound.fname.parent.name + "/" + sound.fname.name
+        )
 
     logger.info("Starting to deliver pure tone sounds.")
     _isochronous_loop(sound, sequence, delay, trigger)
@@ -279,6 +287,10 @@ def asynchronous(
     # Task loop
     trigger.signal(tdef.async_start)
     wait(0.2, hogCPUperiod=0)
+    if instrument is not None:
+        trigger.signal_instrument(
+            sound.fname.parent.name + "/" + sound.fname.name
+        )
 
     logger.info("Starting to deliver pure tone sounds.")
     _asynchronous_loop(sound, sequence, delays, trigger)

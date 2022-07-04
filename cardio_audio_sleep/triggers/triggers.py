@@ -59,8 +59,10 @@ class Trigger:
             Value sent on the LSL outlet.
         """
         if self._outlet is None:
-            logger.error("The LSL outlet to push instrument filenames was not "
-                         "created. Skipping.")
+            logger.error(
+                "The LSL outlet to push instrument filenames was not "
+                "created. Skipping."
+            )
             return None
         _check_type(value, (str,), "value")
         self._oulet.push_sample([value])

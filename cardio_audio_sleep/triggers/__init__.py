@@ -1,3 +1,3 @@
 """Trigger module."""
 
-from .triggers import Trigger  # noqa: F401
+from .triggers import Trigger, TriggerInstrument  # noqa: F401

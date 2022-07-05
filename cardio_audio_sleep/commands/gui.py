@@ -103,6 +103,7 @@ class GUI(QMainWindow):
         instrument_categories = tuple(
             [elt.name for elt in directory.iterdir() if elt.is_dir()]
         )
+        assert len(instrument_categories) != 0  # sanity-check
         return instrument_categories
 
     def load_config(

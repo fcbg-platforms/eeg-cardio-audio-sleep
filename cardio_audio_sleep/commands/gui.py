@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import random
 import sys
 from pathlib import Path
 from typing import Optional, Tuple
@@ -72,6 +73,7 @@ class GUI(QMainWindow):
         # load configuration
         self.load_config(ecg_ch_name, defaults, eye_link, dev)
         instrument_categories = GUI.load_instrument_categories()
+        self.instrument_files = None
         self.instrument_sounds = list()
 
         # define window for fixation cross
@@ -156,24 +158,24 @@ class GUI(QMainWindow):
                 defaults["prominence"],
                 defaults["width"],
                 defaults["volume"],
-                None,
+                None,  # instrument sound
                 self.queue,
             ],
             "isochronous": [
                 self.trigger,
                 self.tdef,
-                None,
-                None,
+                None,  # sequence
+                None,  # delay
                 defaults["volume"],
-                None,
+                None,  # instrument sound
             ],
             "asynchronous": [
                 self.trigger,
                 self.tdef,
-                None,
-                None,
+                None,  # sequence
+                None,  # sequence timings
                 defaults["volume"],
-                None,
+                None,  # instrument sound
             ],
         }
 
@@ -570,16 +572,11 @@ class GUI(QMainWindow):
                 )
 
             # instrument sounds
-            if btype == "synchronous":
-                category = self.comboBox_synchronous.currentText()
-            elif btype == "isochronous":
-                category = self.comboBox_isochronous.currentText()
-            elif btype == "asynchronous":
-                category = self.comboBox_asynchronous.currentText()
-            idx = 9 if btype == "synchronous" else 5
-            args[idx] = pick_instrument_sound(category, self.instrument_sounds)
-            self.trigger_instrument.signal(args[idx].name)
-            self.instrument_sounds.append(args[idx].name)
+            if self.instrument_files is not None:
+                idx = 9 if btype == "synchronous" else 5
+                args[idx] = random.choice(self.instrument_files[btype])
+                self.trigger_instrument.signal(args[idx].name)
+                self.instrument_sounds.append(args[idx].name)
 
         # start new process
         self.process = mp.Process(
@@ -671,6 +668,17 @@ class GUI(QMainWindow):
 
         # disable cross button
         self.pushButton_cross.setEnabled(False)
+
+        # pick instruments and disable instrument selection
+        self.instrument_files = pick_instrument_sound(
+            self.comboBox_synchronous.currentText(),
+            self.comboBox_isochronous.currentText(),
+            self.comboBox_asynchronous.currentText(),
+            3,
+        )
+        self.comboBox_synchronous.setEnabled(False)
+        self.comboBox_isochronous.setEnabled(False)
+        self.comboBox_asynchronous.setEnabled(False)
 
         # launch first block
         self.start_new_block(first=True)

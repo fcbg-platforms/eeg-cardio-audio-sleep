@@ -54,11 +54,13 @@ def load_triggers() -> TriggerDef:
     return tdef
 
 
-def load_config(dev: bool = False) -> Tuple[dict, str]:
+def load_config(fname: str, dev: bool = False) -> Tuple[dict, str]:
     """Load config from config.ini.
 
     Parameters
     ----------
+    fname : str
+        Name of the config file to load (with the externsion included).
     dev : bool
         If True, the config-dev.ini file is used instead.
 
@@ -66,12 +68,15 @@ def load_config(dev: bool = False) -> Tuple[dict, str]:
     -------
     config : dict
     """
+    _check_type(fname, (str,), "fname")
     _check_type(dev, (bool,), "dev")
 
     directory = Path(__file__).parent
     config = ConfigParser(inline_comment_prefixes=("#", ";"))
     config.optionxform = str
-    fname = "config-dev.ini" if dev else "config.ini"
+    stem, ext = fname.split(".")
+    assert ext == "ini"
+    fname = stem + "-dev." + ext if dev else fname
     config.read(str(directory / fname))
 
     keys = (

@@ -63,7 +63,7 @@ class GUI(QMainWindow):
     def __init__(self, ecg_ch_name: str, eye_link: EYELink, dev: bool = False):
         super().__init__()
 
-        # define mp Queue
+        # define multiprocessing queue to retrieve timings
         self.queue = mp.Queue()
 
         # defaults for the peak detection
@@ -114,7 +114,7 @@ class GUI(QMainWindow):
         dev: bool,
     ):
         """Set the variables and tasks arguments."""
-        self.config, trigger_type = load_config(dev)
+        self.config, trigger_type = load_config("config-sleep.ini", dev)
         self.tdef = load_triggers()
 
         # combine trigger with eye-link

@@ -220,6 +220,7 @@ class Eyelink(EYELink):
         except Exception:
             pass
         try:
+            self.win.flip()  # flush win.callOnFlip() and win.timeOnFlip()
             self.win.close()
         except Exception:
             pass

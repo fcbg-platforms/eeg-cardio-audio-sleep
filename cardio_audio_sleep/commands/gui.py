@@ -850,6 +850,7 @@ class GUI(QMainWindow):
 
         if state:
             logger.debug("Removing fixation cross window.")
+            self.win.flip()  # flush win.callOnFlip() and win.timeOnFlip()
             self.win.close()
             self.win = None
         else:

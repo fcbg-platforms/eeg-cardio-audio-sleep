@@ -3,10 +3,11 @@ from pathlib import Path
 
 import pylink
 
-from psychopy import core, event, logging, monitors, visual
+from psychopy import core, event, logging, visual
 
 from .. import logger
 from .._typing import EYELink
+from ..config.constants import SCREEN_SIZE
 from ..utils._checks import _check_type
 from .EyeLinkCoreGraphicsPsychoPy import EyeLinkCoreGraphicsPsychoPy
 
@@ -120,13 +121,13 @@ class Eyelink(EYELink):
 
         # Step 4: set up a graphics environment for calibration
         self.win = visual.Window(
-            size=(1024, 768),
+            size=SCREEN_SIZE,
             winType="pyglet",
             monitor=None,
             screen=1,
             fullscr=True,
             allowGUI=False,
-            units="norm",
+            units="pix",
         )
 
         # get the native screen resolution used by PsychoPy

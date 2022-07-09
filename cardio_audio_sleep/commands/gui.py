@@ -7,7 +7,6 @@ from typing import Optional, Tuple
 import numpy as np
 import psutil
 from bsl.triggers import MockTrigger, ParallelPortTrigger
-from psychopy.monitors import Monitor
 from psychopy.visual import ShapeStim, Window
 from PyQt5.QtCore import QRect, QSize, Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import QColor, QFont, QPalette
@@ -26,6 +25,7 @@ from PyQt5.QtWidgets import (
 from .. import logger
 from .._typing import EYELink
 from ..config import load_config, load_triggers
+from ..config.constants import SCREEN_SIZE
 from ..eye_link import EyelinkMock
 from ..tasks import (
     asynchronous,
@@ -217,19 +217,23 @@ class GUI(QMainWindow):
             self, 605, 115, 345, 20, "future", "Next blocks", "center"
         )
 
-        # add start / pause / stop push buttons
+        # add start / pause / stop / recollection push buttons
         self.pushButton_start = GUI._add_pushButton(
-            self, 25, 150, 300, 32, "pushButton_start", "Start"
+            self, 20, 150, 225, 32, "pushButton_start", "Start"
         )
         self.pushButton_pause = GUI._add_pushButton(
-            self, 350, 150, 300, 32, "pushButton_pause", "Pause"
+            self, 265, 150, 225, 32, "pushButton_pause", "Pause"
         )
         self.pushButton_stop = GUI._add_pushButton(
-            self, 675, 150, 300, 32, "pushButton_stop", "Stop"
+            self, 510, 150, 225, 32, "pushButton_stop", "Stop"
+        )
+        self.pushButton_recollection = GUI._add_pushButton(
+            self, 755, 150, 225, 32, "pushButton_recollection", "Recollection"
         )
         self.pushButton_pause.setEnabled(False)
         self.pushButton_pause.setCheckable(True)
         self.pushButton_stop.setEnabled(False)
+        self.pushButton_recollection.setEnabled(False)
 
         # add peak detection settings
         self.doubleSpinBox_height = GUI._add_doubleSpinBox(
@@ -614,6 +618,7 @@ class GUI(QMainWindow):
     def closeEvent(self, event):
         """Event called when closing the GUI."""
         if self.win is not None:
+            self.win.flip()  # flush win.callOnFlip() and win.timeOnFlip()
             self.win.close()
         self.trigger_instrument.close()
         event.accept()
@@ -623,6 +628,9 @@ class GUI(QMainWindow):
         self.pushButton_start.clicked.connect(self.pushButton_start_clicked)
         self.pushButton_pause.clicked.connect(self.pushButton_pause_clicked)
         self.pushButton_stop.clicked.connect(self.pushButton_stop_clicked)
+        self.pushButton_recollection.clicked.connect(
+            self.pushButton_recollection_clicked
+        )
 
         # detection settings
         self.doubleSpinBox_height.valueChanged.connect(
@@ -729,15 +737,6 @@ class GUI(QMainWindow):
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(False)
         self.pushButton_stop.setEnabled(False)
-        self.pushButton_volume.setEnabled(False)
-        self.pushButton_calibrate.setEnabled(False)
-        self.pushButton_prominence.setEnabled(False)
-        self.pushButton_width.setEnabled(False)
-        self.doubleSpinBox_height.setEnabled(False)
-        self.doubleSpinBox_prominence.setEnabled(False)
-        self.doubleSpinBox_width.setEnabled(False)
-        self.dial_volume.setEnabled(False)
-        self.doubleSpinBox_volume.setEnabled(False)
         self.pushButton_calibrate.setEnabled(False)
         self.pushButton_cross.setEnabled(False)
 
@@ -749,6 +748,32 @@ class GUI(QMainWindow):
 
         # stop eye-tracking
         self.eye_link.stop()
+        # remove fixation cross window
+        if self.win is not None:
+            self.win.flip()  # flush win.callOnFlip() and win.timeOnFlip()
+            self.win.close()
+            self.win = None
+
+        # enable recollection
+        if not sys.platform.startswith("win"):
+            self.pushButton_volume.setEnabled(True)
+        self.pushButton_recollection.setEnabled(True)
+
+    @pyqtSlot()
+    def pushButton_recollection_clicked(self):
+        logger.debug("Recollection requested.")
+        # disable test sound button
+        self.pushButton_volume.setEnabled(False)
+        # create window
+        win = Window(
+            size=SCREEN_SIZE,
+            winType="pyglet",
+            monitor=None,
+            screen=1,
+            fullscr=True,
+            allowGUI=False,
+            units="norm",
+        )
 
     @pyqtSlot()
     def pushButton_prominence_clicked(self):
@@ -859,7 +884,7 @@ class GUI(QMainWindow):
                 self.win = self.eye_link.win
             else:
                 self.win = Window(
-                    size=(1024, 768),
+                    size=SCREEN_SIZE,
                     winType="pyglet",
                     monitor=None,
                     screen=1,

@@ -24,7 +24,7 @@ from .utils._docs import fill_doc
 
 @fill_doc
 def synchronous(
-    trigger: Trigger,
+    trigger,
     tdef: TriggerDef,
     sequence: ArrayLike,
     stream_name: str,
@@ -79,7 +79,6 @@ def synchronous(
     if instrument is not None:
         sound_instru = Sound(instrument)
         sound_instru.volume = volume
-        sound_instru.crop(None, 0.5)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -148,7 +147,7 @@ def _synchronous_loop(sound, sequence, detector, trigger):  # noqa: D401
 
 @fill_doc
 def isochronous(
-    trigger: Trigger,
+    trigger,
     tdef: TriggerDef,
     sequence: ArrayLike,
     delay: float,
@@ -179,7 +178,6 @@ def isochronous(
     if instrument is not None:
         sound_instru = Sound(instrument)
         sound_instru.volume = volume
-        sound_instru.crop(None, 0.5)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -229,7 +227,7 @@ def _isochronous_loop(sound, sequence, delay, trigger):  # noqa: D401
 
 @fill_doc
 def asynchronous(
-    trigger: Trigger,
+    trigger,
     tdef: TriggerDef,
     sequence: ArrayLike,
     sequence_timings: ArrayLike,
@@ -264,7 +262,6 @@ def asynchronous(
     if instrument is not None:
         sound_instru = Sound(instrument)
         sound_instru.volume = volume
-        sound_instru.crop(None, 0.5)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)

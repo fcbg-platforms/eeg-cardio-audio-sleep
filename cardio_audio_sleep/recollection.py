@@ -3,19 +3,13 @@ import time
 from psychopy.hardware.keyboard import Keyboard
 from psychopy.visual import ButtonStim, ShapeStim, Slider, TextStim, Window
 
+from .config import load_triggers
+from .tasks import asynchronous, isochronous, synchronous
 
-def recollection():
+
+def recollection(win: Window, args_mapping: dict, dev: bool):
     """Recollection task."""
-    # prepare window
-    win = Window(
-        size=(1024, 768),
-        winType="pyglet",
-        monitor=None,
-        screen=1,
-        fullscr=True,
-        allowGUI=False,
-        units="norm",
-    )
+    # prepare keyboard for interaction
     keyboard = Keyboard()
     win.callOnFlip(keyboard.clearEvents, eventType="keyboard")
     # prepare text component for category routine
@@ -24,6 +18,8 @@ def recollection():
         text="1: percussion\n2: string\n3: wind",
         height=0.05,
     )
+    # load trigger values
+    tdef = load_triggers()
     # run routines
     try:
         _instructions(win, keyboard)

@@ -890,7 +890,6 @@ class GUI(QMainWindow):
                     screen=1,
                     fullscr=True,
                     allowGUI=False,
-                    units="norm",
                 )
             cross = ShapeStim(
                 win=self.win,

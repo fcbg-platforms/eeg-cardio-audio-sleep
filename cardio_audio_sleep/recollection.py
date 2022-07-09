@@ -9,32 +9,30 @@ def recollection():
     # prepare window
     win = Window(
         size=(1024, 768),
-        fullscr=True,
-        screen=0,
         winType="pyglet",
-        allowGUI=False,
         monitor=None,
+        screen=0,
+        fullscr=True,
+        allowGUI=False,
         units="norm",
     )
     keyboard = Keyboard()
     win.callOnFlip(keyboard.clearEvents, eventType="keyboard")
-
     # prepare text component for category routine
     text_category = TextStim(
         win=win,
         text="1: percussion\n2: string\n3: wind",
         height=0.05,
     )
+    # run routines
     try:
-        # run routines
         _instructions(win, keyboard)
         _fixation_cross(win)
         _category(win, keyboard, text_category)
         _confidence(win)
     except Exception:
         raise
-    finally:
-        # close
+    finally:  # close
         win.flip()  # flip one last time before closing to flush events
         win.close()
 
@@ -80,16 +78,13 @@ def _fixation_cross(win: Window):
 
 def _category(win: Window, keyboard: Keyboard, text_category: TextStim):
     """Category routine."""
-    # draw instructions
     text_category.setAutoDraw(True)
     win.flip()
-    # wait for '1', '2', '3'
-    while True:
+    while True:  # wait for '1', '2', '3'
         keys = keyboard.getKeys(keyList=["1", "2", "3"], waitRelease=False)
         if len(keys) != 0:
             print([key.name for key in keys])
             break
-    # remove instructions on next flip
     text_category.setAutoDraw(False)
 
 
@@ -98,22 +93,22 @@ def _confidence(win: Window):
     text = TextStim(
         win=win,
         text="How confident are you?",
-        pos=(0, 0.3),
         height=0.05,
+        pos=(0, 0.3),
     )
     slider = Slider(
         win=win,
-        startValue=5,
-        labels=["low", "high"],
         ticks=(1, 2, 3, 4, 5, 6, 7, 8, 9),
         granularity=1.0,
+        startValue=5,
+        labels=["low", "high"],
         labelHeight=0.05,
     )
     button = ButtonStim(
         win,
         text="Confirm",
-        pos=(0.5, -0.3),
         letterHeight=0.05,
+        pos=(0.5, -0.3),
         size=(0.18, 0.1),
     )
     # draw components
@@ -121,10 +116,8 @@ def _confidence(win: Window):
     slider.setAutoDraw(True)
     button.setAutoDraw(True)
     win.flip()
-    # wait for button click
-    while not button.isClicked:
+    while not button.isClicked:  # wait for button click
         win.flip()
-    # remove components on next flip
     text.setAutoDraw(False)
     slider.setAutoDraw(False)
     button.setAutoDraw(False)

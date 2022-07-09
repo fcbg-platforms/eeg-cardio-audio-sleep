@@ -27,19 +27,21 @@ def recollection():
     # prepare text component for category routine
     text_category = TextStim(
         win=win,
-        text='1: wind\n2: brass\n3: percussion',
+        text='1: percussion\n2: string\n3: wind',
         height=0.03,
     )
-
-    # run routines
-    _instructions(win, keyboard)
-    _fixation_cross(win)
-    _category(win, keyboard, text_category)
-    _confidence(win)
-
-    # close
-    win.flip()  # flip one last time before closing to flush events
-    win.close()
+    try:
+        # run routines
+        _instructions(win, keyboard)
+        _fixation_cross(win)
+        _category(win, keyboard, text_category)
+        _confidence(win)
+    except Exception:
+        raise
+    finally:
+        # close
+        win.flip()  # flip one last time before closing to flush events
+        win.close()
 
 
 def _instructions(win: Window, keyboard: Keyboard):
@@ -49,9 +51,9 @@ def _instructions(win: Window, keyboard: Keyboard):
         text='You will hear 15 pure tones followed by an instrument sound.\n'
              'After the instrument sound, enter the sound category on the '
              'keyboard:\n\n'
-             '- Press 1 for wind\n'
-             '- Press 2 for brass\n'
-             '- Press 3 for percussion\n\n'
+             '- Press 1 for percussion\n'
+             '- Press 2 for string\n'
+             '- Press 3 for wind\n\n'
              'Press SPACE to continue.',
         height=0.03,
     )

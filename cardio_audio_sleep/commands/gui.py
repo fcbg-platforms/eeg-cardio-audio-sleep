@@ -106,7 +106,7 @@ class GUI(QMainWindow):
             [elt.name for elt in directory.iterdir() if elt.is_dir()]
         )
         assert len(instrument_categories) != 0  # sanity-check
-        return instrument_categories
+        return sorted(instrument_categories)
 
     def load_config(
         self,

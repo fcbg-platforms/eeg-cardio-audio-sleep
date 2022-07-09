@@ -25,11 +25,12 @@ import string
 import sys
 
 import numpy
-import psychopy
 import pylink
 from PIL import Image, ImageDraw
-from psychopy import core, event, logging, visual
 from psychopy.tools.coordinatetools import pol2cart
+
+import psychopy
+from psychopy import core, event, logging, visual
 
 # Show only critical log message in the console
 logging.console.setLevel(logging.CRITICAL)

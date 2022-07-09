@@ -11,18 +11,18 @@ def recollection():
         size=(1024, 768),
         fullscr=True,
         screen=0,
-        winType='pyglet',
+        winType="pyglet",
         allowGUI=False,
         monitor=None,
-        units='norm',
+        units="norm",
     )
     keyboard = Keyboard()
-    win.callOnFlip(keyboard.clearEvents, eventType='keyboard')
+    win.callOnFlip(keyboard.clearEvents, eventType="keyboard")
 
     # prepare text component for category routine
     text_category = TextStim(
         win=win,
-        text='1: percussion\n2: string\n3: wind',
+        text="1: percussion\n2: string\n3: wind",
         height=0.05,
     )
     try:
@@ -43,19 +43,19 @@ def _instructions(win: Window, keyboard: Keyboard):
     """Instruction routine."""
     text = TextStim(
         win=win,
-        text='You will hear 15 pure tones followed by an instrument sound.\n'
-             'After the instrument sound, enter the sound category on the '
-             'keyboard:\n\n'
-             '- Press 1 for percussion\n'
-             '- Press 2 for string\n'
-             '- Press 3 for wind\n\n'
-             'Press SPACE to continue.',
+        text="You will hear 15 pure tones followed by an instrument sound.\n"
+        "After the instrument sound, enter the sound category on the "
+        "keyboard:\n\n"
+        "- Press 1 for percussion\n"
+        "- Press 2 for string\n"
+        "- Press 3 for wind\n\n"
+        "Press SPACE to continue.",
         height=0.05,
     )
     text.setAutoDraw(True)
     win.flip()
     while True:  # wait for 'space'
-        keys = keyboard.getKeys(keyList=['space'], waitRelease=False)
+        keys = keyboard.getKeys(keyList=["space"], waitRelease=False)
         if len(keys) != 0:
             break
         win.flip()
@@ -66,11 +66,11 @@ def _fixation_cross(win: Window):
     """Fixation cross routine."""
     cross = ShapeStim(
         win=win,
-        vertices='cross',
-        units='height',
+        vertices="cross",
+        units="height",
         size=(0.05, 0.05),
-        lineColor='white',
-        fillColor='white',
+        lineColor="white",
+        fillColor="white",
     )
     cross.setAutoDraw(True)
     win.flip()
@@ -85,9 +85,9 @@ def _category(win: Window, keyboard: Keyboard, text_category: TextStim):
     win.flip()
     # wait for '1', '2', '3'
     while True:
-        keys = keyboard.getKeys(keyList=['1', '2', '3'], waitRelease=False)
+        keys = keyboard.getKeys(keyList=["1", "2", "3"], waitRelease=False)
         if len(keys) != 0:
-            print ([key.name for key in keys])
+            print([key.name for key in keys])
             break
     # remove instructions on next flip
     text_category.setAutoDraw(False)
@@ -97,7 +97,7 @@ def _confidence(win: Window):
     """Confidence routine."""
     text = TextStim(
         win=win,
-        text='How confident are you?',
+        text="How confident are you?",
         pos=(0, 0.3),
         height=0.05,
     )
@@ -109,8 +109,9 @@ def _confidence(win: Window):
         granularity=1.0,
         labelHeight=0.05,
     )
-    button = ButtonStim(win,
-        text='Confirm',
+    button = ButtonStim(
+        win,
+        text="Confirm",
         pos=(0.5, -0.3),
         letterHeight=0.05,
         size=(0.18, 0.1),

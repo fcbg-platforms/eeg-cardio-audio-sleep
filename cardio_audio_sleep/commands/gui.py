@@ -8,7 +8,7 @@ import numpy as np
 import psutil
 from bsl.triggers import MockTrigger, ParallelPortTrigger
 from psychopy.monitors import Monitor
-from psychopy.visual import TextStim, Window
+from psychopy.visual import ShapeStim, Window
 from PyQt5.QtCore import QRect, QSize, Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import QColor, QFont, QPalette
 from PyQt5.QtWidgets import (
@@ -859,13 +859,23 @@ class GUI(QMainWindow):
                 self.win = self.eye_link.win
             else:
                 self.win = Window(
-                    fullscr=True,
-                    monitor=Monitor("myMonitor", width=53.0, distance=70.0),
+                    size=(1024, 768),
                     winType="pyglet",
-                    units="pix",
+                    monitor=None,
                     screen=1,
+                    fullscr=True,
+                    allowGUI=False,
+                    units="norm",
                 )
-            TextStim(self.win, text="+", height=100).draw()
+            cross = ShapeStim(
+                win=self.win,
+                vertices="cross",
+                units="height",
+                size=(0.05, 0.05),
+                lineColor="white",
+                fillColor="white",
+            )
+            cross.setAutoDraw(True)
             self.win.flip()
 
 

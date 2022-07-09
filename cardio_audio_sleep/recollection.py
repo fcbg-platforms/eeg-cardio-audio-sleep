@@ -11,7 +11,7 @@ def recollection():
         size=(1024, 768),
         winType="pyglet",
         monitor=None,
-        screen=0,
+        screen=1,
         fullscr=True,
         allowGUI=False,
         units="norm",

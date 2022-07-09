@@ -119,13 +119,14 @@ class Eyelink(EYELink):
         )
 
         # Step 4: set up a graphics environment for calibration
-        mon = monitors.Monitor("myMonitor", width=53.0, distance=70.0)
         self.win = visual.Window(
-            fullscr=True,
-            monitor=mon,
+            size=(1024, 768),
             winType="pyglet",
-            units="pix",
+            monitor=None,
             screen=1,
+            fullscr=True,
+            allowGUI=False,
+            units="norm",
         )
 
         # get the native screen resolution used by PsychoPy

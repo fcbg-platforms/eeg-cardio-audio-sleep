@@ -217,19 +217,24 @@ class GUI(QMainWindow):
             self, 605, 115, 345, 20, "future", "Next blocks", "center"
         )
 
-        # add start / pause / stop / recollection push buttons
+        # add example / start / pause / stop / recollection push buttons
+        self.pushButton_example = GUI._add_pushButton(
+            self, 20, 150, 176, 32, "pushButton_example", "Example"
+        )
         self.pushButton_start = GUI._add_pushButton(
-            self, 20, 150, 225, 32, "pushButton_start", "Start"
+            self, 216, 150, 176, 32, "pushButton_start", "Start"
         )
         self.pushButton_pause = GUI._add_pushButton(
-            self, 265, 150, 225, 32, "pushButton_pause", "Pause"
+            self, 412, 150, 176, 32, "pushButton_pause", "Pause"
         )
         self.pushButton_stop = GUI._add_pushButton(
-            self, 510, 150, 225, 32, "pushButton_stop", "Stop"
+            self, 608, 150, 176, 32, "pushButton_stop", "Stop"
         )
         self.pushButton_recollection = GUI._add_pushButton(
-            self, 755, 150, 225, 32, "pushButton_recollection", "Recollection"
+            self, 804, 150, 176, 32, "pushButton_recollection", "Recollection"
         )
+        if sys.platform.startswith("win"):
+            self.pushButton_example.setEnabled(False)
         self.pushButton_pause.setEnabled(False)
         self.pushButton_pause.setCheckable(True)
         self.pushButton_stop.setEnabled(False)
@@ -625,6 +630,9 @@ class GUI(QMainWindow):
 
     # -------------------------------------------------------------------------
     def connect_signals_to_slots(self):  # noqa: D102
+        self.pushButton_example.clicked.connect(
+            self.pushButton_example_clicked
+        )
         self.pushButton_start.clicked.connect(self.pushButton_start_clicked)
         self.pushButton_pause.clicked.connect(self.pushButton_pause_clicked)
         self.pushButton_stop.clicked.connect(self.pushButton_stop_clicked)
@@ -661,8 +669,13 @@ class GUI(QMainWindow):
         self.pushButton_cross.clicked.connect(self.pushButton_cross_clicked)
 
     @pyqtSlot()
+    def pushButton_example_clicked(self):
+        logger.debug("Example requested.")
+
+    @pyqtSlot()
     def pushButton_start_clicked(self):
         logger.debug("Start requested.")
+        self.pushButton_example.setEnabled(False)
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)

@@ -28,6 +28,7 @@ from .._typing import EYELink
 from ..config import load_config, load_triggers
 from ..config.constants import SCREEN_SIZE
 from ..eye_link import EyelinkMock
+from ..recollection import recollection
 from ..tasks import (
     asynchronous,
     baseline,
@@ -72,7 +73,8 @@ class GUI(QMainWindow):
         defaults = dict(height=97.0, prominence=500.0, width=None, volume=0)
 
         # load configuration
-        self.load_config(ecg_ch_name, defaults, eye_link, dev)
+        self._dev = dev
+        self.load_config(ecg_ch_name, defaults, eye_link, self._dev)
         instrument_categories = GUI.load_instrument_categories()
         self.instrument_file_example = {
             "synchronous": None,
@@ -142,7 +144,8 @@ class GUI(QMainWindow):
         self.trigger_instrument = TriggerInstrument()
 
         # search for LSL stream
-        stream_name = search_ANT_amplifier()
+        self._stream_name = search_ANT_amplifier()
+        self._ecg_ch_name = ecg_ch_name
 
         # Create task mapping
         self.task_mapping = {
@@ -163,8 +166,8 @@ class GUI(QMainWindow):
                 self.trigger,
                 self.tdef,
                 None,  # sequence
-                stream_name,
-                ecg_ch_name,
+                self._stream_name,
+                self._ecg_ch_name,
                 defaults["height"],
                 defaults["prominence"],
                 defaults["width"],
@@ -839,12 +842,6 @@ class GUI(QMainWindow):
         self.doubleSpinBox_volume.setEnabled(False)
         self.pushButton_volume.setEnabled(False)
 
-        # disable peak detection settings as we can't change once it started
-        self.doubleSpinBox_height.setEnabled(False)
-        self.doubleSpinBox_prominence.setEnabled(False)
-        self.doubleSpinBox_width.setEnabled(False)
-        self.pushButton_prominence.setEnabled(False)
-        self.pushButton_width.setEnabled(False)
         # disable recollection button
         self.pushButton_recollection.setEnabled(False)
 
@@ -905,6 +902,60 @@ class GUI(QMainWindow):
             fullscr=True,
             allowGUI=False,
             units="norm",
+        )
+
+        # prepare tasks arguments
+        args_mapping = {
+            "synchronous": [
+                self.trigger.trigger,
+                self.tdef,
+                None,  # sequence
+                self._stream_name,
+                self._ecg_ch_name,
+                self.doubleSpinBox_height.value(),
+                self.doubleSpinBox_prominence.value()
+                if self.doubleSpinBox_prominence.isEnabled()
+                else None,
+                self.doubleSpinBox_width.value()
+                if self.doubleSpinBox_width.isEnabled()
+                else None,
+                self.doubleSpinBox_volume.value(),
+                None,  # instrument sound
+                None,  # mp.Queue to retrieve the timings
+            ],
+            "isochronous": [
+                self.trigger.trigger,
+                self.tdef,
+                None,  # sequence
+                None,  # delay
+                self.doubleSpinBox_volume.value(),
+                None,  # instrument sound
+            ],
+            "asynchronous": [
+                self.trigger.trigger,
+                self.tdef,
+                None,  # sequence
+                None,  # sequence timings
+                self.doubleSpinBox_volume.value(),
+                None,  # instrument sound
+            ],
+        }
+
+        # disable peak detection settings as we can't change once it started
+        self.doubleSpinBox_height.setEnabled(False)
+        self.doubleSpinBox_prominence.setEnabled(False)
+        self.doubleSpinBox_width.setEnabled(False)
+        self.pushButton_prominence.setEnabled(False)
+        self.pushButton_width.setEnabled(False)
+
+        # start recollection
+        recollection(
+            win,
+            args_mapping,
+            self.trigger_instrument,
+            self.instrument_file_sleep,
+            self.instrument_file_recollection,
+            self._dev,
         )
 
     @pyqtSlot()

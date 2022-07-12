@@ -730,15 +730,12 @@ class GUI(QMainWindow):
         instru_iso = self.comboBox_isochronous.currentText()
         instru_async = self.comboBox_asynchronous.currentText()
         assert len(set((instru_sync, instru_iso, instru_async))) == 3
-        if all(elt is None for elt in self.instrument_file_example.values()):
-            exclude = []
-            logger.debug("[Start] Instrument pick with empty exclude.")
-        else:
-            exclude = list(chain(*self.instrument_file_example.values()))
-            logger.debug(
-                "[Start] Instrument pick with %s excluded.",
-                [elt.name for elt in exclude],
-            )
+        exclude = list(chain(*self.instrument_file_example.values()))
+        exclude = [elt for elt in exclude if elt is not None]
+        logger.debug(
+            "[Start] Instrument pick with %s excluded.",
+            [elt.name for elt in exclude],
+        )
         self.instrument_file_sleep = pick_instrument_sound(
             instru_sync,
             instru_iso,
@@ -839,6 +836,51 @@ class GUI(QMainWindow):
         logger.debug("[Recollection] Recollection requested.")
         # disable test sound button
         self.pushButton_volume.setEnabled(False)
+        # disable recollection button
+        self.pushButton_recollection.setEnabled(False)
+
+        # pick instruments
+        exclude = list(chain(*self.instrument_file_example.values())) + list(
+            chain(*self.instrument_file_sleep.values())
+        )
+        exclude = [elt for elt in exclude if elt is not None]
+        logger.debug(
+            "[Recollection] Instrument pick with %s excluded.",
+            [elt.name for elt in exclude],
+        )
+        self.instrument_file_recollection = pick_instrument_sound(
+            self.comboBox_synchronous.currentText(),
+            self.comboBox_isochronous.currentText(),
+            self.comboBox_asynchronous.currentText(),
+            exclude,
+            2,
+        )
+
+        logger.debug(
+            "[Recollection] The selected sounds for the synchronous category "
+            "are %s",
+            [
+                elt.name
+                for elt in self.instrument_file_recollection["synchronous"]
+            ],
+        )
+        logger.debug(
+            "[Recollection] The selected sounds for the isochronous category "
+            "are %s",
+            [
+                elt.name
+                for elt in self.instrument_file_recollection["isochronous"]
+            ],
+        )
+        logger.debug(
+            "[Recollection] The selected sounds for the asynchronous category "
+            "are %s",
+            [
+                elt.name
+                for elt in self.instrument_file_recollection["asynchronous"]
+            ],
+        )
+
         # create window
         win = Window(
             size=SCREEN_SIZE,

@@ -1,6 +1,7 @@
 import multiprocessing as mp
 import random
 import sys
+from itertools import chain
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -73,8 +74,21 @@ class GUI(QMainWindow):
         # load configuration
         self.load_config(ecg_ch_name, defaults, eye_link, dev)
         instrument_categories = GUI.load_instrument_categories()
-        self.instrument_files = None
-        self.instrument_sounds = list()
+        self.instrument_file_example = {
+            "synchronous": None,
+            "isochronous": None,
+            "asynchronous": None,
+        }
+        self.instrument_file_sleep = {
+            "synchronous": None,
+            "isochronous": None,
+            "asynchronous": None,
+        }
+        self.instrument_file_recollection = {
+            "synchronous": None,
+            "isochronous": None,
+            "asynchronous": None,
+        }
 
         # define window for fixation cross
         self.win = None
@@ -230,8 +244,8 @@ class GUI(QMainWindow):
         self.pushButton_recollection = GUI._add_pushButton(
             self, 804, 150, 176, 32, "pushButton_recollection", "Recollection"
         )
-        if sys.platform.startswith("win"):
-            self.pushButton_example.setEnabled(False)
+        # if sys.platform.startswith("win"):
+        #     self.pushButton_example.setEnabled(False)
         self.pushButton_pause.setEnabled(False)
         self.pushButton_pause.setCheckable(True)
         self.pushButton_stop.setEnabled(False)
@@ -560,11 +574,15 @@ class GUI(QMainWindow):
                 )
 
             # instrument sounds
-            if self.instrument_files is not None:
+            if self.instrument_file_sleep[btype] is not None:
                 idx = 9 if btype == "synchronous" else 5
-                args[idx] = random.choice(self.instrument_files[btype])
+                args[idx] = random.choice(self.instrument_file_sleep[btype])
+                logger.debug(
+                    "Instrument sound for next %s block set to %s",
+                    btype,
+                    args[idx].name,
+                )
                 self.trigger_instrument.signal(args[idx].name)
-                self.instrument_sounds.append(args[idx].name)
 
         # start new process
         self.process = mp.Process(
@@ -605,6 +623,11 @@ class GUI(QMainWindow):
             self.win.flip()  # flush win.callOnFlip() and win.timeOnFlip()
             self.win.close()
         self.trigger_instrument.close()
+        try:
+            if self.process.is_alive():
+                self.process.kill()
+        except Exception:
+            pass
         event.accept()
 
     # -------------------------------------------------------------------------
@@ -649,11 +672,44 @@ class GUI(QMainWindow):
 
     @pyqtSlot()
     def pushButton_example_clicked(self):
-        logger.debug("Example requested.")
+        logger.debug("[Example] Example requested.")
+
+        # retrieve the set categories
+        instru_sync = self.comboBox_synchronous.currentText()
+        instru_iso = self.comboBox_isochronous.currentText()
+        instru_async = self.comboBox_asynchronous.currentText()
+        assert len(set((instru_sync, instru_iso, instru_async))) == 3
+
+        # pick the sound for sync, iso and async categories
+        if all(elt is None for elt in self.instrument_file_example.values()):
+            self.instrument_file_example = pick_instrument_sound(
+                instru_sync,
+                instru_iso,
+                instru_async,
+                [],
+                1,
+            )
+        # sanity-check
+        assert all(
+            len(elt) == 1 for elt in self.instrument_file_example.values()
+        )
+
+        logger.debug(
+            "[Example] The selected sound for the synchronous category is %s",
+            self.instrument_file_example["synchronous"][0].name,
+        )
+        logger.debug(
+            "[Example] The selected sound for the isochronous category is %s",
+            self.instrument_file_example["isochronous"][0].name,
+        )
+        logger.debug(
+            "[Example] The selected sound for the asynchronous category is %s",
+            self.instrument_file_example["asynchronous"][0].name,
+        )
 
     @pyqtSlot()
     def pushButton_start_clicked(self):
-        logger.debug("Start requested.")
+        logger.debug("[Start] Start requested.")
         self.pushButton_example.setEnabled(False)
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(True)
@@ -670,15 +726,42 @@ class GUI(QMainWindow):
         self.pushButton_cross.setEnabled(False)
 
         # pick instruments and disable instrument selection
-        self.instrument_files = pick_instrument_sound(
-            self.comboBox_synchronous.currentText(),
-            self.comboBox_isochronous.currentText(),
-            self.comboBox_asynchronous.currentText(),
-            3,
+        instru_sync = self.comboBox_synchronous.currentText()
+        instru_iso = self.comboBox_isochronous.currentText()
+        instru_async = self.comboBox_asynchronous.currentText()
+        assert len(set((instru_sync, instru_iso, instru_async))) == 3
+        if all(elt is None for elt in self.instrument_file_example.values()):
+            exclude = []
+            logger.debug("[Start] Instrument pick with empty exclude.")
+        else:
+            exclude = list(chain(*self.instrument_file_example.values()))
+            logger.debug(
+                "[Start] Instrument pick with %s excluded.",
+                [elt.name for elt in exclude],
+            )
+        self.instrument_file_sleep = pick_instrument_sound(
+            instru_sync,
+            instru_iso,
+            instru_async,
+            exclude,
+            2,
         )
         self.comboBox_synchronous.setEnabled(False)
         self.comboBox_isochronous.setEnabled(False)
         self.comboBox_asynchronous.setEnabled(False)
+
+        logger.debug(
+            "[Start] The selected sounds for the synchronous category are %s",
+            [elt.name for elt in self.instrument_file_sleep["synchronous"]],
+        )
+        logger.debug(
+            "[Start] The selected sounds for the isochronous category are %s",
+            [elt.name for elt in self.instrument_file_sleep["isochronous"]],
+        )
+        logger.debug(
+            "[Start] The selected sounds for the asynchronous category are %s",
+            [elt.name for elt in self.instrument_file_sleep["asynchronous"]],
+        )
 
         # launch first block
         self.start_new_block(first=True)
@@ -694,13 +777,13 @@ class GUI(QMainWindow):
 
         # change text on button
         if self.pushButton_pause.isChecked():
-            logger.debug("Pause requested.")
+            logger.debug("[Pause] Pause requested.")
             self.pushButton_pause.setText("Resume")
             self.timer.stop()
             try:
                 self.psutil_process.suspend()
             except psutil.NoSuchProcess:
-                logger.warning("No process found to suspend.")
+                logger.warning("[Pause] No process found to suspend.")
             self.trigger.signal(self.tdef.pause)
 
             # enable test sound and eye-link calibration buttons
@@ -709,13 +792,13 @@ class GUI(QMainWindow):
             if not isinstance(self.eye_link, EyelinkMock):
                 self.pushButton_calibrate.setEnabled(True)
         else:
-            logger.debug("Resume requested.")
+            logger.debug("[Resume] Resume requested.")
             self.pushButton_pause.setText("Pause")
             self.timer.start(2000)
             try:
                 self.psutil_process.resume()
             except psutil.NoSuchProcess:
-                logger.warning("No process found to resume.")
+                logger.warning("[Resume] No process found to resume.")
             self.trigger.signal(self.tdef.resume)
 
             # disable test sound and eye-link calibration buttons
@@ -724,7 +807,7 @@ class GUI(QMainWindow):
 
     @pyqtSlot()
     def pushButton_stop_clicked(self):
-        logger.debug("Stop requested.")
+        logger.debug("[Stop] Stop requested.")
         # disable all interactive features
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(False)
@@ -753,7 +836,7 @@ class GUI(QMainWindow):
 
     @pyqtSlot()
     def pushButton_recollection_clicked(self):
-        logger.debug("Recollection requested.")
+        logger.debug("[Recollection] Recollection requested.")
         # disable test sound button
         self.pushButton_volume.setEnabled(False)
         # create window

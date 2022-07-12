@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import List, Tuple, Union
 
 import numpy as np
 
@@ -9,6 +10,7 @@ def pick_instrument_sound(
     instrument_sync: str,
     instrument_iso: str,
     instrument_async: str,
+    exclude: Union[List[Path], Tuple[Path, ...]],
     n: int,
 ):
     """Pick N instrument sound from the instrument category.
@@ -21,6 +23,8 @@ def pick_instrument_sound(
         Instrument category for the isochronous condition.
     instrument_async : str
         Instrument category for the asynchronous condition.
+    exclude : list of Path | tuple of Path
+        List of instrument files to exclude.
     n : int
         Number of sounds to pick for each condition.
 
@@ -32,6 +36,9 @@ def pick_instrument_sound(
     _check_type(instrument_sync, (str,), "instrument_sync")
     _check_type(instrument_iso, (str,), "instrument_sync")
     _check_type(instrument_async, (str,), "instrument_sync")
+    _check_type(exclude, (list, tuple), "exclude")
+    for elt in exclude:
+        _check_type(elt, (Path,))
     _check_type(n, ("int",), "n")
     assert 0 < n
 
@@ -54,10 +61,10 @@ def pick_instrument_sound(
         files = [
             elt
             for elt in (directory / instrument).iterdir()
-            if elt.suffix == ".wav"
+            if elt.suffix == ".wav" and elt not in exclude
         ]
         if len(files) < n:
             raise RuntimeError("Not enough sound files to pick from.")
-        instrument_files[condition] = np.random.choice(files, 3)
+        instrument_files[condition] = np.random.choice(files, n, replace=False)
 
     return instrument_files

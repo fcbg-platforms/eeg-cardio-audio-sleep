@@ -834,8 +834,17 @@ class GUI(QMainWindow):
     @pyqtSlot()
     def pushButton_recollection_clicked(self):
         logger.debug("[Recollection] Recollection requested.")
-        # disable test sound button
+        # disable volume buttons as we can't change it once it started
+        self.dial_volume.setEnabled(False)
+        self.doubleSpinBox_volume.setEnabled(False)
         self.pushButton_volume.setEnabled(False)
+
+        # disable peak detection settings as we can't change once it started
+        self.doubleSpinBox_height.setEnabled(False)
+        self.doubleSpinBox_prominence.setEnabled(False)
+        self.doubleSpinBox_width.setEnabled(False)
+        self.pushButton_prominence.setEnabled(False)
+        self.pushButton_width.setEnabled(False)
         # disable recollection button
         self.pushButton_recollection.setEnabled(False)
 
@@ -880,6 +889,12 @@ class GUI(QMainWindow):
                 for elt in self.instrument_file_recollection["asynchronous"]
             ],
         )
+
+        # close fixation cross window if it was open
+        if self.win is not None:
+            logger.debug("[Recollection] Removing fixation cross window.")
+            self.win.flip()  # flush win.callOnFlip() and win.timeOnFlip()
+            self.win.close()
 
         # create window
         win = Window(
@@ -991,7 +1006,7 @@ class GUI(QMainWindow):
         self.pushButton_cross.setChecked(not state)
 
         if state:
-            logger.debug("Removing fixation cross window.")
+            logger.debug("[Cross] Removing fixation cross window.")
             self.win.flip()  # flush win.callOnFlip() and win.timeOnFlip()
             self.win.close()
             self.win = None

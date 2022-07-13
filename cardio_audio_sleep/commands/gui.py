@@ -879,6 +879,16 @@ class GUI(QMainWindow):
             self.pushButton_volume.setEnabled(True)
         if not sys.platform == "darwin":
             self.pushButton_recollection.setEnabled(True)
+        else:
+            # in this case disable everything since nothing else can be done
+            self.dial_volume.setEnabled(False)
+            self.doubleSpinBox_volume.setEnabled(False)
+            self.pushButton_volume.setEnabled(False)
+            self.doubleSpinBox_height.setEnabled(False)
+            self.doubleSpinBox_prominence.setEnabled(False)
+            self.doubleSpinBox_width.setEnabled(False)
+            self.pushButton_prominence.setEnabled(False)
+            self.pushButton_width.setEnabled(False)
 
     @pyqtSlot()
     def pushButton_recollection_clicked(self):

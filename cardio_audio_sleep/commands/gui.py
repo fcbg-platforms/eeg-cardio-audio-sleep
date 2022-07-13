@@ -173,6 +173,7 @@ class GUI(QMainWindow):
                 defaults["width"],
                 defaults["volume"],
                 None,  # instrument sound
+                3,  # number of instrument sounds
                 self.queue,
             ],
             "isochronous": [
@@ -182,6 +183,7 @@ class GUI(QMainWindow):
                 None,  # delay
                 defaults["volume"],
                 None,  # instrument sound
+                3,  # number of instrument sounds
             ],
             "asynchronous": [
                 self.trigger,
@@ -190,6 +192,7 @@ class GUI(QMainWindow):
                 None,  # sequence timings
                 defaults["volume"],
                 None,  # instrument sound
+                3,  # number of instrument sounds
             ],
         }
 
@@ -921,6 +924,7 @@ class GUI(QMainWindow):
                 else None,
                 self.doubleSpinBox_volume.value(),
                 None,  # instrument sound
+                1,  # number of instrument sounds
                 None,  # mp.Queue to retrieve the timings
             ],
             "isochronous": [
@@ -930,6 +934,7 @@ class GUI(QMainWindow):
                 None,  # delay
                 self.doubleSpinBox_volume.value(),
                 None,  # instrument sound
+                1,  # number of instrument sounds
             ],
             "asynchronous": [
                 self.trigger.trigger,
@@ -938,6 +943,7 @@ class GUI(QMainWindow):
                 None,  # sequence timings
                 self.doubleSpinBox_volume.value(),
                 None,  # instrument sound
+                1,  # number of instrument sounds
             ],
         }
 

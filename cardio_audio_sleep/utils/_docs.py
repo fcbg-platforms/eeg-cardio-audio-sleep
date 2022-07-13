@@ -33,6 +33,12 @@ instrument : Path | None
     Path to the instrument sound to play. If None, instrument sounds are
     disabled."""
 docdict[
+    "n_instrument"
+] = """
+n_instrument : int
+    Number of instrument sounds played after the pure tone if instrument is not
+    None."""
+docdict[
     "sequence"
 ] = """
 sequence : array

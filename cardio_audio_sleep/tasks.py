@@ -34,6 +34,7 @@ def synchronous(
     peak_width: Optional[float],
     volume: float,
     instrument: Optional[Path] = None,
+    n_instrument: int = 3,
     queue: Optional[Queue] = None,
 ) -> list:  # noqa: D401
     """Synchronous block where sounds are sync to the heartbeat.
@@ -61,6 +62,7 @@ def synchronous(
         Minimum peak width expressed in ms. Default to None.
     %(volume)s
     %(instrument)s
+    %(n_instrument)s
     queue : Queue
         Queue where the sequence_timings are stored. If None, this argument is
         ignored.
@@ -102,7 +104,7 @@ def synchronous(
     sequence_timings = _synchronous_loop(sound, sequence, detector, trigger)
     if instrument is not None:
         logger.info("Starting to deliver instrument sounds.")
-        sequence_instru = [tdef.by_name[instrument.parent.name]] * 3
+        sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
         _synchronous_loop(sound_instru, sequence_instru, detector, trigger)
 
     wait(1, hogCPUperiod=0)
@@ -153,6 +155,7 @@ def isochronous(
     delay: float,
     volume: float,
     instrument: Optional[Path] = None,
+    n_instrument: int = 3,
 ):
     """Isochronous block where sounds are delivered at a fix interval.
 
@@ -170,6 +173,7 @@ def isochronous(
         Delay between 2 stimulus in seconds.
     %(volume)s
     %(instrument)s
+    %(n_instrument)s
     """
     from stimuli.audio import Sound, Tone
 
@@ -197,7 +201,7 @@ def isochronous(
     _isochronous_loop(sound, sequence, delay, trigger)
     if instrument is not None:
         logger.info("Starting to deliver instrument sounds.")
-        sequence_instru = [tdef.by_name[instrument.parent.name]] * 3
+        sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
         _isochronous_loop(sound_instru, sequence_instru, delay, trigger)
 
     wait(1, hogCPUperiod=0)
@@ -233,6 +237,7 @@ def asynchronous(
     sequence_timings: ArrayLike,
     volume: float,
     instrument: Optional[Path] = None,
+    n_instrument: int = 3,
 ):
     """Asynchronous block where a synchronous sequence is repeated.
 
@@ -254,6 +259,7 @@ def asynchronous(
         was delivered.
     %(volume)s
     %(instrument)s
+    %(n_instrument)s
     """
     from stimuli.audio import Sound, Tone
 
@@ -281,7 +287,7 @@ def asynchronous(
     _asynchronous_loop(sound, sequence, delays, trigger)
     if instrument is not None:
         logger.info("Starting to deliver instrument sounds.")
-        sequence_instru = [tdef.by_name[instrument.parent.name]] * 3
+        sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
         delays_instru = np.random.choice(delays, size=3)
         _asynchronous_loop(
             sound_instru, sequence_instru, delays_instru, trigger

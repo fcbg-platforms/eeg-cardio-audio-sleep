@@ -44,7 +44,7 @@ def recollection(
     if not dev:
         recollection_tests += recollection_tests
     np.random.shuffle(recollection_tests)
-    # make sure we are starting with a stim
+    # make sure we are starting with a sync
     first_sync = [elt[0] for elt in recollection_tests].index("synchronous")
     recollection_tests[0], recollection_tests[first_sync] = (
         recollection_tests[first_sync],

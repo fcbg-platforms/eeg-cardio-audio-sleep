@@ -35,8 +35,9 @@ def recollection(
     # list out and randomize the tests
     recollection_tests = list()
     for condition in ("synchronous", "isochronous", "asynchronous"):
-        for file in chain(*instrument_files_sleep.values()):
-            recollection_tests.append((condition, file))
+        if not dev:
+            for file in chain(*instrument_files_sleep.values()):
+                recollection_tests.append((condition, file))
         for file in chain(*instrument_files_recollection.values()):
             recollection_tests.append((condition, file))
     # double if not in dev mode

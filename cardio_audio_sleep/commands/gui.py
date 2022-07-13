@@ -774,18 +774,36 @@ class GUI(QMainWindow):
         self.comboBox_isochronous.setEnabled(False)
         self.comboBox_asynchronous.setEnabled(False)
 
-        logger.debug(
-            "[Start] The selected sounds for the synchronous category are %s",
-            [elt.name for elt in self.instrument_file_sleep["synchronous"]],
-        )
-        logger.debug(
-            "[Start] The selected sounds for the isochronous category are %s",
-            [elt.name for elt in self.instrument_file_sleep["isochronous"]],
-        )
-        logger.debug(
-            "[Start] The selected sounds for the asynchronous category are %s",
-            [elt.name for elt in self.instrument_file_sleep["asynchronous"]],
-        )
+        if self.instrument_file_sleep["synchronous"] is None:
+            logger.debug("[Start] The instrument sounds for the synchronous "
+                         "category are disabled.")
+        else:
+            logger.debug(
+                "[Start] The selected sounds for the synchronous category "
+                "are %s",
+                [elt.name
+                 for elt in self.instrument_file_sleep["synchronous"]],
+            )
+        if self.instrument_file_sleep["isochronous"] is None:
+            logger.debug("[Start] The instrument sounds for the isochronous "
+                         "category are disabled.")
+        else:
+            logger.debug(
+                "[Start] The selected sounds for the isochronous category "
+                "are %s",
+                [elt.name
+                 for elt in self.instrument_file_sleep["isochronous"]],
+            )
+        if self.instrument_file_sleep["asynchronous"] is None:
+            logger.debug("[Start] The instrument sounds for the asynchronous "
+                         "category are disabled.")
+        else:
+            logger.debug(
+                "[Start] The selected sounds for the asynchronous category "
+                "are %s",
+                [elt.name
+                 for elt in self.instrument_file_sleep["asynchronous"]],
+            )
 
         # launch first block
         self.start_new_block(first=True)

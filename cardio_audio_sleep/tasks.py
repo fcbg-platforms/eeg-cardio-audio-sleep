@@ -107,7 +107,6 @@ def synchronous(
         sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
         _synchronous_loop(sound_instru, sequence_instru, detector, trigger)
 
-    wait(1, hogCPUperiod=0)
     trigger.signal(tdef.sync_stop)
 
     if queue is not None:
@@ -200,11 +199,11 @@ def isochronous(
     logger.info("Starting to deliver pure tone sounds.")
     _isochronous_loop(sound, sequence, delay, trigger)
     if instrument is not None:
+        wait(delay - sound.duration - 0.005, hogCPUperiod=0)
         logger.info("Starting to deliver instrument sounds.")
         sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
         _isochronous_loop(sound_instru, sequence_instru, delay, trigger)
 
-    wait(1, hogCPUperiod=0)
     trigger.signal(tdef.iso_stop)
 
 
@@ -223,10 +222,14 @@ def _isochronous_loop(sound, sequence, delay, trigger):  # noqa: D401
         stim_delay = ptb.GetSecs() - now
 
         # next
-        wait_delay = delay - stim_delay
-        hogCPUperiod = wait_delay - sound.duration - 0.005
-        wait(wait_delay, 0 if hogCPUperiod < 0 else hogCPUperiod)
-        counter += 1
+        if counter != len(sequence) - 1:
+            wait_delay = delay - stim_delay
+            hogCPUperiod = wait_delay - sound.duration - 0.005
+            counter += 1
+            wait(wait_delay, 0 if hogCPUperiod < 0 else hogCPUperiod)
+        else:
+            wait(sound.duration + 0.005, hogCPUperiod=0)
+            break  # no more delays since it was the last stimuli
 
 
 @fill_doc
@@ -286,6 +289,7 @@ def asynchronous(
     logger.info("Starting to deliver pure tone sounds.")
     _asynchronous_loop(sound, sequence, delays, trigger)
     if instrument is not None:
+        wait(delays[-1] - sound.duration - 0.005, hogCPUperiod=0)
         logger.info("Starting to deliver instrument sounds.")
         sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
         delays_instru = np.random.choice(delays, size=3)
@@ -293,7 +297,6 @@ def asynchronous(
             sound_instru, sequence_instru, delays_instru, trigger
         )
 
-    wait(1, hogCPUperiod=0)
     trigger.signal(tdef.async_stop)
 
 
@@ -315,9 +318,10 @@ def _asynchronous_loop(sound, sequence, delays, trigger):  # noqa: D401
         if counter != len(sequence) - 1:
             wait_delay = delays[counter] - stim_delay
             hogCPUperiod = wait_delay - sound.duration - 0.005
-            wait(wait_delay, 0 if hogCPUperiod < 0 else hogCPUperiod)
             counter += 1
+            wait(wait_delay, 0 if hogCPUperiod < 0 else hogCPUperiod)
         else:
+            wait(sound.duration + 0.005, hogCPUperiod=0)
             break  # no more delays since it was the last stimuli
 
 

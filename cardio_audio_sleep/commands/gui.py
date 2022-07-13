@@ -173,7 +173,7 @@ class GUI(QMainWindow):
                 defaults["width"],
                 defaults["volume"],
                 None,  # instrument sound
-                3,  # number of instrument sounds
+                self.config["synchronous"]["n_instrument"],
                 self.queue,
             ],
             "isochronous": [
@@ -183,7 +183,7 @@ class GUI(QMainWindow):
                 None,  # delay
                 defaults["volume"],
                 None,  # instrument sound
-                3,  # number of instrument sounds
+                self.config["isochronous"]["n_instrument"],
             ],
             "asynchronous": [
                 self.trigger,
@@ -192,7 +192,7 @@ class GUI(QMainWindow):
                 None,  # sequence timings
                 defaults["volume"],
                 None,  # instrument sound
-                3,  # number of instrument sounds
+                self.config["asynchronous"]["n_instrument"],
             ],
         }
 
@@ -924,7 +924,7 @@ class GUI(QMainWindow):
                 else None,
                 self.doubleSpinBox_volume.value(),
                 None,  # instrument sound
-                1,  # number of instrument sounds
+                None,  # number of instrument sounds
                 None,  # mp.Queue to retrieve the timings
             ],
             "isochronous": [
@@ -934,7 +934,7 @@ class GUI(QMainWindow):
                 None,  # delay
                 self.doubleSpinBox_volume.value(),
                 None,  # instrument sound
-                1,  # number of instrument sounds
+                None,  # number of instrument sounds
             ],
             "asynchronous": [
                 self.trigger.trigger,
@@ -943,7 +943,7 @@ class GUI(QMainWindow):
                 None,  # sequence timings
                 self.doubleSpinBox_volume.value(),
                 None,  # instrument sound
-                1,  # number of instrument sounds
+                None,  # number of instrument sounds
             ],
         }
 

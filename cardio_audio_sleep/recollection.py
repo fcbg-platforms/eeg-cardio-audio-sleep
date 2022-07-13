@@ -63,6 +63,9 @@ def recollection(
 
     # load config
     config, _ = load_config("config-recollection.ini", dev)
+    args_mapping["synchronous"][10] = config["synchronous"]["n_instrument"]
+    args_mapping["isochronous"][6] = config["isochronous"]["n_instrument"]
+    args_mapping["asynchronous"][6] = config["asynchronous"]["n_instrument"]
 
     # run routines
     try:

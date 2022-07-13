@@ -732,10 +732,24 @@ class GUI(QMainWindow):
         self.pushButton_cross.setEnabled(False)
 
         # pick instruments and disable instrument selection
-        instru_sync = self.comboBox_synchronous.currentText()
-        instru_iso = self.comboBox_isochronous.currentText()
-        instru_async = self.comboBox_asynchronous.currentText()
-        assert len(set((instru_sync, instru_iso, instru_async))) == 3
+        if self.config["synchronous"]["instrument"]:
+            instru_sync = self.comboBox_synchronous.currentText()
+        else:
+            instru_sync = None
+        if self.config["isochronous"]["instrument"]:
+            instru_iso = self.comboBox_isochronous.currentText()
+        else:
+            instru_iso = None
+        if self.config["asynchronous"]["instrument"]:
+            instru_async = self.comboBox_asynchronous.currentText()
+        else:
+            instru_async = None
+        categories = [
+            elt
+            for elt in (instru_sync, instru_iso, instru_async)
+            if elt is not None
+        ]
+        assert len(set(categories)) == len(categories)  # uniqueness
         exclude = list(chain(*self.instrument_file_example.values()))
         exclude = [elt for elt in exclude if elt is not None]
         logger.debug(
@@ -849,6 +863,10 @@ class GUI(QMainWindow):
         self.pushButton_recollection.setEnabled(False)
 
         # pick instruments
+        instru_sync = self.comboBox_synchronous.currentText()
+        instru_iso = self.comboBox_isochronous.currentText()
+        instru_async = self.comboBox_asynchronous.currentText()
+        assert len(set((instru_sync, instru_iso, instru_async))) == 3
         exclude = list(chain(*self.instrument_file_example.values())) + list(
             chain(*self.instrument_file_sleep.values())
         )
@@ -858,11 +876,15 @@ class GUI(QMainWindow):
             [elt.name for elt in exclude],
         )
         self.instrument_file_recollection = pick_instrument_sound(
-            self.comboBox_synchronous.currentText(),
-            self.comboBox_isochronous.currentText(),
-            self.comboBox_asynchronous.currentText(),
+            instru_sync,
+            instru_iso,
+            instru_async,
             exclude,
             2,
+        )
+        # sanity-check
+        assert all(
+            len(elt) == 2 for elt in self.instrument_file_recollection.values()
         )
 
         logger.debug(

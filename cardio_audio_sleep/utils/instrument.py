@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -7,9 +7,9 @@ from ._checks import _check_type, _check_value
 
 
 def pick_instrument_sound(
-    instrument_sync: str,
-    instrument_iso: str,
-    instrument_async: str,
+    instrument_sync: Optional[str],
+    instrument_iso: Optional[str],
+    instrument_async: Optional[str],
     exclude: Union[List[Path], Tuple[Path, ...]],
     n: int,
 ):
@@ -17,11 +17,11 @@ def pick_instrument_sound(
 
     Parameters
     ----------
-    instrument_sync : str
+    instrument_sync : str | None
         Instrument category for the synchronous condition.
-    instrument_iso : str
+    instrument_iso : str | None
         Instrument category for the isochronous condition.
-    instrument_async : str
+    instrument_async : str | None
         Instrument category for the asynchronous condition.
     exclude : list of Path | tuple of Path
         List of instrument files to exclude.
@@ -33,9 +33,9 @@ def pick_instrument_sound(
     instrument_files : Path
         Path to the .wav sound picked.
     """
-    _check_type(instrument_sync, (str,), "instrument_sync")
-    _check_type(instrument_iso, (str,), "instrument_sync")
-    _check_type(instrument_async, (str,), "instrument_sync")
+    _check_type(instrument_sync, (str, None), "instrument_sync")
+    _check_type(instrument_iso, (str, None), "instrument_sync")
+    _check_type(instrument_async, (str, None), "instrument_sync")
     _check_type(exclude, (list, tuple), "exclude")
     for elt in exclude:
         _check_type(elt, (Path,))
@@ -47,9 +47,14 @@ def pick_instrument_sound(
     instrument_categories = tuple(
         [elt.name for elt in directory.iterdir() if elt.is_dir()]
     )
-    _check_value(instrument_sync, instrument_categories, "instrument_sync")
-    _check_value(instrument_iso, instrument_categories, "instrument_iso")
-    _check_value(instrument_async, instrument_categories, "instrument_async")
+    if instrument_sync is not None:
+        _check_value(instrument_sync, instrument_categories, "instrument_sync")
+    if instrument_iso is not None:
+        _check_value(instrument_iso, instrument_categories, "instrument_iso")
+    if instrument_async is not None:
+        _check_value(
+            instrument_async, instrument_categories, "instrument_async"
+        )
 
     instruments = dict(
         synchronous=instrument_sync,
@@ -58,6 +63,9 @@ def pick_instrument_sound(
     )
     instrument_files = dict()
     for condition, instrument in instruments.items():
+        if instrument is None:
+            instrument_files[condition] = None
+            continue
         files = [
             elt
             for elt in (directory / instrument).iterdir()

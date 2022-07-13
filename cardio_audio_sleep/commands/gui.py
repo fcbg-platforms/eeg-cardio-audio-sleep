@@ -250,8 +250,8 @@ class GUI(QMainWindow):
         self.pushButton_recollection = GUI._add_pushButton(
             self, 804, 150, 176, 32, "pushButton_recollection", "Recollection"
         )
-        # if sys.platform.startswith("win"):
-        #     self.pushButton_example.setEnabled(False)
+        if not sys.platform == "linux":
+            self.pushButton_example.setEnabled(False)
         self.pushButton_pause.setEnabled(False)
         self.pushButton_pause.setCheckable(True)
         self.pushButton_stop.setEnabled(False)
@@ -333,7 +333,7 @@ class GUI(QMainWindow):
         self.pushButton_volume = GUI._add_pushButton(
             self, 90, 200, 80, 32, "pushButton_volume", "Test"
         )
-        if sys.platform.startswith("win"):
+        if not sys.platform == "linux":
             self.pushButton_volume.setEnabled(False)
         GUI._add_label(self, 20, 200, 60, 32, "volume", "Volume", "center")
 
@@ -750,8 +750,15 @@ class GUI(QMainWindow):
             if elt is not None
         ]
         assert len(set(categories)) == len(categories)  # uniqueness
-        exclude = list(chain(*self.instrument_file_example.values()))
-        exclude = [elt for elt in exclude if elt is not None]
+        exclude = list(
+            chain(
+                *[
+                    elt
+                    for elt in self.instrument_file_example.values()
+                    if elt is not None
+                ]
+            )
+        )
         logger.debug(
             "[Start] Instrument pick with %s excluded.",
             [elt.name for elt in exclude],
@@ -804,7 +811,7 @@ class GUI(QMainWindow):
             self.trigger.signal(self.tdef.pause)
 
             # enable test sound and eye-link calibration buttons
-            if not sys.platform.startswith("win"):
+            if sys.platform == "linux":
                 self.pushButton_volume.setEnabled(True)
             if not isinstance(self.eye_link, EyelinkMock):
                 self.pushButton_calibrate.setEnabled(True)
@@ -833,10 +840,13 @@ class GUI(QMainWindow):
         self.pushButton_cross.setEnabled(False)
 
         # stop task process
-        self.timer.stop()
-        self.process.join(1)
-        if self.process.is_alive():
-            self.process.kill()
+        try:
+            self.timer.stop()
+            self.process.join(1)
+            if self.process.is_alive():
+                self.process.kill()
+        except Exception:
+            pass
 
         # stop eye-tracking
         self.eye_link.stop()
@@ -847,9 +857,10 @@ class GUI(QMainWindow):
             self.win = None
 
         # enable recollection
-        if not sys.platform.startswith("win"):
+        if sys.platform == "linux":
             self.pushButton_volume.setEnabled(True)
-        self.pushButton_recollection.setEnabled(True)
+        if not sys.platform == "darwin":
+            self.pushButton_recollection.setEnabled(True)
 
     @pyqtSlot()
     def pushButton_recollection_clicked(self):

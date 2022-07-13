@@ -750,15 +750,12 @@ class GUI(QMainWindow):
             if elt is not None
         ]
         assert len(set(categories)) == len(categories)  # uniqueness
-        exclude = list(
-            chain(
-                *[
-                    elt
-                    for elt in self.instrument_file_example.values()
-                    if elt is not None
-                ]
-            )
-        )
+        exclude = [
+            elt
+            for elt in self.instrument_file_example.values()
+            if elt is not None
+        ]
+        exclude = list(chain(*exclude))
         logger.debug(
             "[Start] Instrument pick with %s excluded.",
             [elt.name for elt in exclude],
@@ -918,10 +915,19 @@ class GUI(QMainWindow):
         instru_iso = self.comboBox_isochronous.currentText()
         instru_async = self.comboBox_asynchronous.currentText()
         assert len(set((instru_sync, instru_iso, instru_async))) == 3
-        exclude = list(chain(*self.instrument_file_example.values())) + list(
-            chain(*self.instrument_file_sleep.values())
-        )
-        exclude = [elt for elt in exclude if elt is not None]
+        exclude_example = [
+            elt
+            for elt in self.instrument_file_example.values()
+            if elt is not None
+        ]
+        exclude_example = list(chain(*exclude_example))
+        exclude_sleep = [
+            elt
+            for elt in self.instrument_file_sleep.values()
+            if elt is not None
+        ]
+        exclude_sleep = list(chain(*exclude_sleep))
+        exclude = exclude_example + exclude_sleep
         logger.debug(
             "[Recollection] Instrument pick with %s excluded.",
             [elt.name for elt in exclude],
@@ -1031,6 +1037,7 @@ class GUI(QMainWindow):
         recollection(
             win,
             args_mapping,
+            self.trigger.trigger,
             self.trigger_instrument,
             self.instrument_file_sleep,
             self.instrument_file_recollection,

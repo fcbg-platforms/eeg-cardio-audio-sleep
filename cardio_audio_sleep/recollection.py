@@ -2,13 +2,18 @@ from itertools import chain
 from typing import Callable, Union
 
 import numpy as np
-from bsl.triggers import LSLTrigger
+from bsl.triggers import (
+    LSLTrigger,
+    MockTrigger,
+    ParallelPortTrigger,
+    TriggerDef,
+)
 from numpy.typing import NDArray
 from psychopy.hardware.keyboard import Keyboard
 from psychopy.visual import ButtonStim, ShapeStim, Slider, TextStim, Window
 
 from . import logger
-from .config import load_config
+from .config import load_config, load_triggers
 from .tasks import asynchronous, isochronous, synchronous
 from .utils import generate_async_timings, generate_sequence
 
@@ -16,6 +21,7 @@ from .utils import generate_async_timings, generate_sequence
 def recollection(
     win: Window,
     args_mapping: dict,
+    trigger: Union[MockTrigger, ParallelPortTrigger],
     trigger_instrument: LSLTrigger,
     instrument_files_sleep: dict,
     instrument_files_recollection: dict,
@@ -36,7 +42,12 @@ def recollection(
     recollection_tests = list()
     for condition in ("synchronous", "isochronous", "asynchronous"):
         if not dev:
-            for file in chain(*instrument_files_sleep.values()):
+            files = [
+                elt
+                for elt in instrument_files_sleep.values()
+                if elt is not None
+            ]
+            for file in chain(*files):
                 recollection_tests.append((condition, file))
         for file in chain(*instrument_files_recollection.values()):
             recollection_tests.append((condition, file))
@@ -69,6 +80,24 @@ def recollection(
     args_mapping["synchronous"][10] = config["synchronous"]["n_instrument"]
     args_mapping["isochronous"][6] = config["isochronous"]["n_instrument"]
     args_mapping["asynchronous"][6] = config["asynchronous"]["n_instrument"]
+
+    # load trigger
+    tdef_ = load_triggers()
+    key2remove = list()
+    for key in tdef_.by_name:
+        if "response" in key:
+            continue
+        key2remove.append(key)
+    for key in key2remove:
+        tdef_.remove(key)
+    mapping = {
+        "percussion_response": "1",
+        "string_response": "2",
+        "wind_response": "3",
+    }
+    tdef = TriggerDef()
+    for key, value in tdef_.by_name.items():
+        tdef.add(mapping[key], value)
 
     # run routines
     try:
@@ -112,7 +141,7 @@ def recollection(
 
             _instructions(win, keyboard)
             result = _fixation_cross(win, task_mapping[condition], tuple(args))
-            _category(win, keyboard, text_category)
+            _category(win, trigger, tdef, keyboard, text_category)
             _confidence(win)
             if result is not None:
                 assert condition == "synchronous"  # sanity-check
@@ -166,14 +195,21 @@ def _fixation_cross(
     return result
 
 
-def _category(win: Window, keyboard: Keyboard, text_category: TextStim):
+def _category(
+    win: Window,
+    trigger: Union[MockTrigger, ParallelPortTrigger],
+    tdef: TriggerDef,
+    keyboard: Keyboard,
+    text_category: TextStim,
+):
     """Category routine."""
     text_category.setAutoDraw(True)
     win.flip()
     while True:  # wait for '1', '2', '3'
         keys = keyboard.getKeys(keyList=["1", "2", "3"], waitRelease=False)
         if len(keys) != 0:
-            print([key.name for key in keys])
+            assert len(keys) == 1
+            trigger.signal(tdef.by_name[keys[0]])
             break
     text_category.setAutoDraw(False)
 

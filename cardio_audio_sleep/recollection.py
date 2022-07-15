@@ -60,7 +60,7 @@ def recollection(
         for k, (condition, instrument) in enumerate(recollection_tests):
             logger.info(
                 "[Recollection] %i / %i : %s condition with %s sound.",
-                k,
+                k + 1,
                 len(recollection_tests),
                 condition,
                 instrument.name,
@@ -169,13 +169,13 @@ def _load_config(
     # list out instrument categories
     instrument_categories = load_instrument_categories()
     mapping = {
-        f"{instrument}_response": k + 1
+        f"{instrument}_response": str(k + 1)
         for k, instrument in enumerate(instrument_categories)
     }
     assert mapping == {
-        "percussion_response": 1,
-        "string_response": 2,
-        "wind_response": 3,
+        "percussion_response": "1",
+        "string_response": "2",
+        "wind_response": "3",
     }
     tdef = TriggerDef()
     for key, value in tdef_.by_name.items():

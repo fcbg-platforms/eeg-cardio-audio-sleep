@@ -2,7 +2,6 @@ import multiprocessing as mp
 import random
 import sys
 from itertools import chain
-from pathlib import Path
 from typing import Optional, Tuple
 
 import numpy as np

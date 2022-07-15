@@ -33,9 +33,9 @@ def synchronous(
     peak_prominence: Optional[float],
     peak_width: Optional[float],
     volume: float,
-    instrument: Optional[Path] = None,
-    n_instrument: int = 3,
-    queue: Optional[Queue] = None,
+    instrument: Optional[Path],
+    n_instrument: int,
+    queue: Optional[Queue],
 ) -> list:  # noqa: D401
     """Synchronous block where sounds are sync to the heartbeat.
 
@@ -153,8 +153,8 @@ def isochronous(
     sequence: ArrayLike,
     delay: float,
     volume: float,
-    instrument: Optional[Path] = None,
-    n_instrument: int = 3,
+    instrument: Optional[Path],
+    n_instrument: int,
 ):
     """Isochronous block where sounds are delivered at a fix interval.
 
@@ -239,8 +239,8 @@ def asynchronous(
     sequence: ArrayLike,
     sequence_timings: ArrayLike,
     volume: float,
-    instrument: Optional[Path] = None,
-    n_instrument: int = 3,
+    instrument: Optional[Path],
+    n_instrument: int,
 ):
     """Asynchronous block where a synchronous sequence is repeated.
 
@@ -258,8 +258,7 @@ def asynchronous(
             - async_stop
     %(sequence)s
     sequence_timings : array
-        Array of length BLOCK_SIZE containing the timing at which the stimulus
-        was delivered.
+        Array containing the timing at which the stimulus was delivered.
     %(volume)s
     %(instrument)s
     %(n_instrument)s
@@ -339,7 +338,7 @@ def baseline(
         Trigger definition instance. Must contain the keys:
             - baseline_start
             - baseline_stop
-    duration : int
+    duration : float
         Duration of the resting-state block in seconds.
     %(task_verbose)s
     """
@@ -378,7 +377,7 @@ def inter_block(duration: float, verbose: bool = True):
 
     Parameters
     ----------
-    duration : int
+    duration : float
         Duration of the inter-block in seconds.
     %(task_verbose)s
     """

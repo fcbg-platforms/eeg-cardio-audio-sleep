@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import Callable, Union
+from typing import Callable, Tuple, Union
 
 import numpy as np
 from bsl.triggers import (
@@ -15,7 +15,11 @@ from psychopy.visual import ButtonStim, ShapeStim, Slider, TextStim, Window
 from . import logger
 from .config import load_config, load_triggers
 from .tasks import asynchronous, isochronous, synchronous
-from .utils import generate_async_timings, generate_sequence
+from .utils import (
+    generate_async_timings,
+    generate_sequence,
+    load_instrument_categories,
+)
 
 
 def recollection(
@@ -32,72 +36,24 @@ def recollection(
     keyboard = Keyboard()
     win.callOnFlip(keyboard.clearEvents, eventType="keyboard")
     # prepare text component for category routine
-    text_category = TextStim(
-        win=win,
-        text="1: percussion\n2: string\n3: wind",
-        height=0.05,
-    )
+    text_category = _prepare_category(win)
 
     # list out and randomize the tests
-    recollection_tests = list()
-    for condition in ("synchronous", "isochronous", "asynchronous"):
-        if not dev:
-            files = [
-                elt
-                for elt in instrument_files_sleep.values()
-                if elt is not None
-            ]
-            for file in chain(*files):
-                recollection_tests.append((condition, file))
-        for file in chain(*instrument_files_recollection.values()):
-            recollection_tests.append((condition, file))
-    # double if not in dev mode
-    if not dev:
-        recollection_tests += recollection_tests
-    np.random.shuffle(recollection_tests)
-    # make sure we are starting with a sync
-    first_sync = [elt[0] for elt in recollection_tests].index("synchronous")
-    recollection_tests[0], recollection_tests[first_sync] = (
-        recollection_tests[first_sync],
-        recollection_tests[0],
+    recollection_tests = _list_recollection_tests(
+        instrument_files_sleep,
+        instrument_files_recollection,
+        dev,
     )
-
     # prepare the task functions
     task_mapping = {
         "synchronous": synchronous,
         "isochronous": isochronous,
         "asynchronous": asynchronous,
     }
-
+    # load config
+    args_mapping, config, tdef = _load_config(args_mapping, dev)
     # variable to store the timings from the synchronous condition
     sequence_timings = None
-
-    # load config
-    config, _ = load_config("config-recollection.ini", dev)
-    assert config["synchronous"]["instrument"]
-    assert config["isochronous"]["instrument"]
-    assert config["asynchronous"]["instrument"]
-    args_mapping["synchronous"][10] = config["synchronous"]["n_instrument"]
-    args_mapping["isochronous"][6] = config["isochronous"]["n_instrument"]
-    args_mapping["asynchronous"][6] = config["asynchronous"]["n_instrument"]
-
-    # load trigger
-    tdef_ = load_triggers()
-    key2remove = list()
-    for key in tdef_.by_name:
-        if "response" in key:
-            continue
-        key2remove.append(key)
-    for key in key2remove:
-        tdef_.remove(key)
-    mapping = {
-        "percussion_response": "1",
-        "string_response": "2",
-        "wind_response": "3",
-    }
-    tdef = TriggerDef()
-    for key, value in tdef_.by_name.items():
-        tdef.add(mapping[key], value)
 
     # run routines
     try:
@@ -153,6 +109,80 @@ def recollection(
         win.close()
 
 
+def _list_recollection_tests(
+    instrument_files_sleep: dict,
+    instrument_files_recollection: dict,
+    dev: bool,
+):
+    """List the condition/sound tests to run."""
+    conditions = ("synchronous", "isochronous", "asynchronous")
+    assert all(elt in instrument_files_sleep for elt in conditions)
+    assert all(elt in instrument_files_recollection for elt in conditions)
+    recollection_tests = list()
+    for condition in conditions:
+        if not dev:
+            files = [
+                elt
+                for elt in instrument_files_sleep.values()
+                if elt is not None
+            ]
+            for file in chain(*files):
+                recollection_tests.append((condition, file))
+        for file in chain(*instrument_files_recollection.values()):
+            recollection_tests.append((condition, file))
+    # double if not in dev mode
+    if not dev:
+        recollection_tests += recollection_tests
+    # shuffle
+    np.random.shuffle(recollection_tests)
+    # make sure we are starting with a sync
+    first_sync = [elt[0] for elt in recollection_tests].index("synchronous")
+    recollection_tests[0], recollection_tests[first_sync] = (
+        recollection_tests[first_sync],
+        recollection_tests[0],
+    )
+    return recollection_tests
+
+
+def _load_config(
+    args_mapping: dict, dev: bool
+) -> Tuple[dict, dict, TriggerDef]:
+    """Load config and prepare arguments."""
+    # load config
+    config, _ = load_config("config-recollection.ini", dev)
+    assert config["synchronous"]["instrument"]
+    assert config["isochronous"]["instrument"]
+    assert config["asynchronous"]["instrument"]
+    args_mapping["synchronous"][10] = config["synchronous"]["n_instrument"]
+    args_mapping["isochronous"][6] = config["isochronous"]["n_instrument"]
+    args_mapping["asynchronous"][6] = config["asynchronous"]["n_instrument"]
+
+    # load trigger
+    tdef_ = load_triggers()
+    key2remove = list()
+    for key in tdef_.by_name:
+        if "response" in key:
+            continue
+        key2remove.append(key)
+    for key in key2remove:
+        tdef_.remove(key)
+    # list out instrument categories
+    instrument_categories = load_instrument_categories()
+    mapping = {
+        f"{instrument}_response": k + 1
+        for k, instrument in enumerate(instrument_categories)
+    }
+    assert mapping == {
+        "percussion_response": 1,
+        "string_response": 2,
+        "wind_response": 3,
+    }
+    tdef = TriggerDef()
+    for key, value in tdef_.by_name.items():
+        tdef.add(mapping[key], value)
+    return args_mapping, config, tdef
+
+
 def _instructions(win: Window, keyboard: Keyboard):
     """Instruction routine."""
     text = TextStim(
@@ -193,6 +223,16 @@ def _fixation_cross(
     result = task(*args)
     cross.setAutoDraw(False)
     return result
+
+
+def _prepare_category(win: Window):
+    """Prepare components for category routine."""
+    text_category = TextStim(
+        win=win,
+        text="1: percussion\n2: string\n3: wind",
+        height=0.05,
+    )
+    return text_category
 
 
 def _category(

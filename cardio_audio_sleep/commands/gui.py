@@ -41,6 +41,7 @@ from ..utils import (
     generate_async_timings,
     generate_blocks_sequence,
     generate_sequence,
+    load_instrument_categories,
     pick_instrument_sound,
     search_ANT_amplifier,
     test_volume,
@@ -75,7 +76,7 @@ class GUI(QMainWindow):
         # load configuration
         self._dev = dev
         self.load_config(ecg_ch_name, defaults, eye_link, self._dev)
-        instrument_categories = GUI.load_instrument_categories()
+        instrument_categories = load_instrument_categories()
         self.instrument_file_example = {
             "synchronous": None,
             "isochronous": None,
@@ -109,17 +110,6 @@ class GUI(QMainWindow):
         # define Qt Timer
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update)
-
-    @staticmethod
-    def load_instrument_categories():
-        """Load the available instrument categories."""
-        directory = Path(__file__).parent.parent / "audio"
-        assert directory.exists() and directory.is_dir()  # sanity-check
-        instrument_categories = tuple(
-            [elt.name for elt in directory.iterdir() if elt.is_dir()]
-        )
-        assert len(instrument_categories) != 0  # sanity-check
-        return sorted(instrument_categories)
 
     def load_config(
         self,

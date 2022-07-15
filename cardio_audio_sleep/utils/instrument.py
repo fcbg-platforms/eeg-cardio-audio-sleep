@@ -1,9 +1,20 @@
 from pathlib import Path
-from typing import List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
 from ._checks import _check_type, _check_value
+
+
+def load_instrument_categories() -> List[str]:
+    """Load the available instrument categories."""
+    directory = Path(__file__).parent.parent / "audio"
+    assert directory.exists() and directory.is_dir()  # sanity-check
+    instrument_categories = tuple(
+        [elt.name for elt in directory.iterdir() if elt.is_dir()]
+    )
+    assert len(instrument_categories) != 0  # sanity-check
+    return sorted(instrument_categories)
 
 
 def pick_instrument_sound(
@@ -12,7 +23,7 @@ def pick_instrument_sound(
     instrument_async: Optional[str],
     exclude: Union[List[Path], Tuple[Path, ...]],
     n: int,
-):
+) -> Dict[str, Path]:
     """Pick N instrument sound from the instrument category.
 
     Parameters
@@ -30,8 +41,8 @@ def pick_instrument_sound(
 
     Returns
     -------
-    instrument_files : Path
-        Path to the .wav sound picked.
+    instrument_files : dict
+        Dictionary with the path to the .wav sound picked for each condition.
     """
     _check_type(instrument_sync, (str, None), "instrument_sync")
     _check_type(instrument_iso, (str, None), "instrument_sync")
@@ -44,9 +55,7 @@ def pick_instrument_sound(
 
     directory = Path(__file__).parent.parent / "audio"
     assert directory.exists() and directory.is_dir()  # sanity-check
-    instrument_categories = tuple(
-        [elt.name for elt in directory.iterdir() if elt.is_dir()]
-    )
+    instrument_categories = load_instrument_categories()
     if instrument_sync is not None:
         _check_value(instrument_sync, instrument_categories, "instrument_sync")
     if instrument_iso is not None:

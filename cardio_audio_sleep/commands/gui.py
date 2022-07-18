@@ -1,10 +1,12 @@
 import multiprocessing as mp
 import random
 import sys
+from datetime import datetime
 from itertools import chain
 from typing import Optional, Tuple
 
 import numpy as np
+import pandas as pd
 import psutil
 from bsl.triggers import MockTrigger, ParallelPortTrigger
 from psychopy.visual import ShapeStim, Window
@@ -1023,7 +1025,7 @@ class GUI(QMainWindow):
         self.pushButton_width.setEnabled(False)
 
         # start recollection
-        recollection(
+        responses = recollection(
             win,
             args_mapping,
             self.trigger.trigger,
@@ -1032,6 +1034,10 @@ class GUI(QMainWindow):
             self.instrument_file_recollection,
             self._dev,
         )
+        df = pd.DataFrame.from_dict(responses)
+        fname = datetime.now().strftime("%Y_%m_%d-%I:%M:%S_responses.csv")
+        directory = Path().home() / "cardio-audio-sleep-responses"
+        df.to_csv(directory / fname)
 
     @pyqtSlot()
     def pushButton_prominence_clicked(self):

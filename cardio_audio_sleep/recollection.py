@@ -62,6 +62,8 @@ def recollection(
     args_mapping, config, tdef = _load_config(args_mapping, dev)
     # variable to store the timings from the synchronous condition
     sequence_timings = None
+    # variable to store the responses
+    responses = dict(condition=[], instrument=[], category=[], confidence=[])
 
     # run routines
     try:
@@ -74,6 +76,9 @@ def recollection(
                 condition,
                 instrument.name,
             )
+            # store condition and instrument name
+            responses["condition"] = condition
+            responses["instrument"] = instrument.name
             # prepare arguments
             args = args_mapping[condition]
             args[2] = generate_sequence(
@@ -111,10 +116,10 @@ def recollection(
                 task_mapping[condition],
                 tuple(args),
             )
-            _category(
+            responses["category"] = _category(
                 win, trigger, tdef, keyboard, images_category, texts_category
             )
-            _confidence(win)
+            responses["confidence"] = _confidence(win)
             if result is not None:
                 assert condition == "synchronous"  # sanity-check
                 sequence_timings = result  # replace previous sequence timings
@@ -123,6 +128,7 @@ def recollection(
     finally:  # close
         win.flip()  # flip one last time before closing to flush events
         win.close()
+    return responses
 
 
 def _list_recollection_tests(
@@ -330,7 +336,7 @@ def _category(
     keyboard: Keyboard,
     images_category: Tuple[ImageStim, ...],
     texts_category: Tuple[ImageStim, ...],
-):
+) -> int:
     """Category routine."""
     for text in texts_category:
         text.setAutoDraw(True)
@@ -347,9 +353,10 @@ def _category(
         text.setAutoDraw(False)
     for img in images_category:
         img.setAutoDraw(False)
+    return int(keys[-1].name)
 
 
-def _confidence(win: Window):
+def _confidence(win: Window) -> float:
     """Confidence routine."""
     text = TextStim(
         win=win,
@@ -379,6 +386,8 @@ def _confidence(win: Window):
     win.flip()
     while not button.isClicked:  # wait for button click
         win.flip()
+    confidence = slider.markerPos
     text.setAutoDraw(False)
     slider.setAutoDraw(False)
     button.setAutoDraw(False)
+    return confidence

@@ -57,6 +57,7 @@ def recollection(
 
     # run routines
     try:
+        _instructions(win, keyboard)
         for k, (condition, instrument) in enumerate(recollection_tests):
             logger.info(
                 "[Recollection] %i / %i : %s condition with %s sound.",
@@ -78,7 +79,7 @@ def recollection(
                 args[3] = np.median(np.diff(sequence_timings))
                 logger.info("Delay for isochronous: %.2f (s).", args[3])
             if condition == "asynchronous":
-                timings = generate_async_timings(sequence_timings)
+                timings = generate_async_timings(sequence_timings, perc=0)
                 args[3] = timings
                 logger.info(
                     "Average delay for asynchronous: %.2f (s).",
@@ -95,7 +96,6 @@ def recollection(
             )
             trigger_instrument.signal(args[idx].name)
 
-            _instructions(win, keyboard)
             result = _fixation_cross(win, task_mapping[condition], tuple(args))
             _category(win, trigger, tdef, keyboard, text_category)
             _confidence(win)
@@ -248,8 +248,8 @@ def _category(
     while True:  # wait for '1', '2', '3'
         keys = keyboard.getKeys(keyList=["1", "2", "3"], waitRelease=False)
         if len(keys) != 0:
-            assert len(keys) == 1
-            trigger.signal(tdef.by_name[keys[0]])
+            logger.debug("Key pressed: %s", [key.name for key in keys])
+            trigger.signal(tdef.by_name[keys[-1].name])
             break
     text_category.setAutoDraw(False)
 

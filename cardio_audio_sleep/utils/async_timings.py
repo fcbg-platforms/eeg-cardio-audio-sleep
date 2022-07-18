@@ -21,6 +21,7 @@ def generate_async_timings(
     sequence_timings : list
         List of timings at which an R-peak occurred.
     perc : float
+        Bottom and top percentage of timings removed.
 
     Returns
     -------

@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import os
 import random
 import sys
 from datetime import datetime
@@ -1037,6 +1038,7 @@ class GUI(QMainWindow):
         df = pd.DataFrame.from_dict(responses)
         fname = datetime.now().strftime("%Y_%m_%d-%I:%M:%S_responses.csv")
         directory = Path().home() / "cardio-audio-sleep-responses"
+        os.makedirs(directory)
         df.to_csv(directory / fname)
 
     @pyqtSlot()

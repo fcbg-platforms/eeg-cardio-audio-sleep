@@ -21,5 +21,32 @@ On Linux, PsychToolbox requires the following libraries:
 sudo apt-get install libusb-1.0-0-dev portaudio19-dev libasound2-dev libsdl2-2.0-0
 ```
 
+The user should have elevated priviledges, either directly or through a group,
+e.g. `psychopy`:
+
+```
+sudo groupadd --force psychopy
+sudo usermod -a -G psychopy $USER
+```
+
+Add the following file:
+
+```
+sudo nano /etc/security/limits.d/99-psychopylimits.conf
+```
+
+with the content:
+
+```
+@psychopy   -  nice       -20
+@psychopy   -  rtprio     50
+@psychopy   -  memlock    unlimited
+```
+
+c.f. https://www.thegeekdiary.com/understanding-etc-security-limits-conf-file-to-set-ulimit/
+for additional information on `ulimit`.
+
+# Eyelink
+
 For EyeLink eye-tracking, `pylink` is required. The wheel should be retrieved
 from [SR Research](https://www.sr-research.com/).

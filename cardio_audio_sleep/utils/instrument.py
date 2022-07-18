@@ -28,8 +28,11 @@ def load_instrument_images() -> Dict[str, str]:
     assert instrument_categories == sorted(instrument_categories_visuals)
     images = dict()
     for instrument in instrument_categories:
-        files = [elt for elt in (directory / instrument).iterdir()
-                 if elt.is_file() and not elt.name.startswith(".")]
+        files = [
+            elt
+            for elt in (directory / instrument).iterdir()
+            if elt.is_file() and not elt.name.startswith(".")
+        ]
         assert len(files) == 1
         images[instrument] = str(files[0])
     return images

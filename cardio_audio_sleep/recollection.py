@@ -10,7 +10,14 @@ from bsl.triggers import (
 )
 from numpy.typing import NDArray
 from psychopy.hardware.keyboard import Keyboard
-from psychopy.visual import ButtonStim, ImageStim, ShapeStim, Slider, TextStim, Window
+from psychopy.visual import (
+    ButtonStim,
+    ImageStim,
+    ShapeStim,
+    Slider,
+    TextStim,
+    Window,
+)
 
 from . import logger
 from .config import load_config, load_triggers
@@ -37,7 +44,7 @@ def recollection(
     keyboard = Keyboard()
     win.callOnFlip(keyboard.clearEvents, eventType="keyboard")
     # prepare text component for category routine
-    text_category = _prepare_category(win)
+    images_category, texts_category = _prepare_category(win)
 
     # list out and randomize the tests
     recollection_tests = _list_recollection_tests(
@@ -104,7 +111,9 @@ def recollection(
                 task_mapping[condition],
                 tuple(args),
             )
-            _category(win, trigger, tdef, keyboard, text_category)
+            _category(
+                win, trigger, tdef, keyboard, images_category, texts_category
+            )
             _confidence(win)
             if result is not None:
                 assert condition == "synchronous"  # sanity-check
@@ -209,19 +218,25 @@ def _instructions(win: Window, keyboard: Keyboard):
         text="Press 1 for percussion",
         height=0.05,
         pos=(-0.5, 0.15),
-        )
+    )
     string_text = TextStim(
         win=win,
         text="Press 2 for string",
         height=0.05,
         pos=(0, 0.15),
-        )
+    )
     wind_text = TextStim(
         win=win,
         text="Press 3 for wind",
         height=0.05,
         pos=(0.5, 0.15),
-        )
+    )
+    continue_text = TextStim(
+        win=win,
+        text="Press SPACE to continue.",
+        height=0.05,
+        pos=(0, -0.65),
+    )
     text.setAutoDraw(True)
     percussion_image.setAutoDraw(True)
     string_image.setAutoDraw(True)
@@ -229,6 +244,7 @@ def _instructions(win: Window, keyboard: Keyboard):
     percussion_text.setAutoDraw(True)
     string_text.setAutoDraw(True)
     wind_text.setAutoDraw(True)
+    continue_text.setAutoDraw(True)
     win.flip()
     while True:  # wait for 'space'
         keys = keyboard.getKeys(keyList=["space"], waitRelease=False)
@@ -242,6 +258,7 @@ def _instructions(win: Window, keyboard: Keyboard):
     percussion_text.setAutoDraw(False)
     string_text.setAutoDraw(False)
     wind_text.setAutoDraw(False)
+    continue_text.setAutoDraw(False)
 
 
 def _fixation_cross(
@@ -275,14 +292,35 @@ def _fixation_cross(
     return result
 
 
-def _prepare_category(win: Window):
+def _prepare_category(
+    win: Window,
+) -> Tuple[Tuple[ImageStim, ...], Tuple[TextStim, ...]]:
     """Prepare components for category routine."""
-    text_category = TextStim(
+    images = load_instrument_images()
+    percussion_image = ImageStim(win, images["percussion"], pos=(-0.5, -0.2))
+    string_image = ImageStim(win, images["string"], pos=(0, -0.2))
+    wind_image = ImageStim(win, images["wind"], pos=(+0.5, -0.2))
+    images = (percussion_image, string_image, wind_image)
+    percussion_text = TextStim(
         win=win,
-        text="1: percussion\n2: string\n3: wind",
+        text="Press 1 for percussion",
         height=0.05,
+        pos=(-0.5, 0.15),
     )
-    return text_category
+    string_text = TextStim(
+        win=win,
+        text="Press 2 for string",
+        height=0.05,
+        pos=(0, 0.15),
+    )
+    wind_text = TextStim(
+        win=win,
+        text="Press 3 for wind",
+        height=0.05,
+        pos=(0.5, 0.15),
+    )
+    texts = (percussion_text, string_text, wind_text)
+    return images, texts
 
 
 def _category(
@@ -290,10 +328,14 @@ def _category(
     trigger: Union[MockTrigger, ParallelPortTrigger],
     tdef: TriggerDef,
     keyboard: Keyboard,
-    text_category: TextStim,
+    images_category: Tuple[ImageStim, ...],
+    texts_category: Tuple[ImageStim, ...],
 ):
     """Category routine."""
-    text_category.setAutoDraw(True)
+    for text in texts_category:
+        text.setAutoDraw(True)
+    for img in images_category:
+        img.setAutoDraw(True)
     win.flip()
     while True:  # wait for '1', '2', '3'
         keys = keyboard.getKeys(keyList=["1", "2", "3"], waitRelease=False)
@@ -301,7 +343,10 @@ def _category(
             logger.debug("Key pressed: %s", [key.name for key in keys])
             trigger.signal(tdef.by_name[keys[-1].name])
             break
-    text_category.setAutoDraw(False)
+    for text in texts_category:
+        text.setAutoDraw(False)
+    for img in images_category:
+        img.setAutoDraw(False)
 
 
 def _confidence(win: Window):

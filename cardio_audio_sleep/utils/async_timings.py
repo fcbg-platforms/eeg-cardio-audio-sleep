@@ -18,14 +18,14 @@ def generate_async_timings(
 
     Parameters
     ----------
-    sequence_timings : list
+    sequence_timings : list | tuple | array
         List of timings at which an R-peak occurred.
     perc : float
         Bottom and top percentage of timings removed.
 
     Returns
     -------
-    sequence_timings : array | None
+    sequence_timings : array
         List of timings at which a stimuli occurs for the asynchronous blocks.
         None is returned if the sequence could not be generated.
     """

@@ -10,7 +10,7 @@ from bsl.triggers import (
 )
 from numpy.typing import NDArray
 from psychopy.hardware.keyboard import Keyboard
-from psychopy.visual import ButtonStim, ShapeStim, Slider, TextStim, Window
+from psychopy.visual import ButtonStim, ImageStim, ShapeStim, Slider, TextStim, Window
 
 from . import logger
 from .config import load_config, load_triggers
@@ -19,6 +19,7 @@ from .utils import (
     generate_async_timings,
     generate_sequence,
     load_instrument_categories,
+    load_instrument_images,
 )
 
 
@@ -96,7 +97,13 @@ def recollection(
             )
             trigger_instrument.signal(args[idx].name)
 
-            result = _fixation_cross(win, task_mapping[condition], tuple(args))
+            result = _fixation_cross(
+                win,
+                k + 1,
+                len(recollection_tests),
+                task_mapping[condition],
+                tuple(args),
+            )
             _category(win, trigger, tdef, keyboard, text_category)
             _confidence(win)
             if result is not None:
@@ -172,7 +179,7 @@ def _load_config(
         f"{instrument}_response": str(k + 1)
         for k, instrument in enumerate(instrument_categories)
     }
-    assert mapping == {
+    assert mapping == {  # hard-coded sanity-check
         "percussion_response": "1",
         "string_response": "2",
         "wind_response": "3",
@@ -188,15 +195,40 @@ def _instructions(win: Window, keyboard: Keyboard):
     text = TextStim(
         win=win,
         text="You will hear 15 pure tones followed by an instrument sound.\n"
-        "After the instrument sound, enter the sound category on the "
-        "keyboard:\n\n"
-        "- Press 1 for percussion\n"
-        "- Press 2 for string\n"
-        "- Press 3 for wind\n\n"
-        "Press SPACE to continue.",
+        "After the instrument sound, enter the instrument category on the "
+        "keyboard.",
         height=0.05,
+        pos=(0, 0.5),
     )
+    images = load_instrument_images()
+    percussion_image = ImageStim(win, images["percussion"], pos=(-0.5, -0.2))
+    string_image = ImageStim(win, images["string"], pos=(0, -0.2))
+    wind_image = ImageStim(win, images["wind"], pos=(+0.5, -0.2))
+    percussion_text = TextStim(
+        win=win,
+        text="Press 1 for percussion",
+        height=0.05,
+        pos=(-0.5, 0.15),
+        )
+    string_text = TextStim(
+        win=win,
+        text="Press 2 for string",
+        height=0.05,
+        pos=(0, 0.15),
+        )
+    wind_text = TextStim(
+        win=win,
+        text="Press 3 for wind",
+        height=0.05,
+        pos=(0.5, 0.15),
+        )
     text.setAutoDraw(True)
+    percussion_image.setAutoDraw(True)
+    string_image.setAutoDraw(True)
+    wind_image.setAutoDraw(True)
+    percussion_text.setAutoDraw(True)
+    string_text.setAutoDraw(True)
+    wind_text.setAutoDraw(True)
     win.flip()
     while True:  # wait for 'space'
         keys = keyboard.getKeys(keyList=["space"], waitRelease=False)
@@ -204,10 +236,20 @@ def _instructions(win: Window, keyboard: Keyboard):
             break
         win.flip()
     text.setAutoDraw(False)
+    percussion_image.setAutoDraw(False)
+    string_image.setAutoDraw(False)
+    wind_image.setAutoDraw(False)
+    percussion_text.setAutoDraw(False)
+    string_text.setAutoDraw(False)
+    wind_text.setAutoDraw(False)
 
 
 def _fixation_cross(
-    win: Window, task: Callable, args: tuple
+    win: Window,
+    idx: int,
+    n_recollection: int,
+    task: Callable,
+    args: tuple,
 ) -> Union[None, NDArray[float]]:
     """Fixation cross routine."""
     cross = ShapeStim(
@@ -219,9 +261,17 @@ def _fixation_cross(
         fillColor="white",
     )
     cross.setAutoDraw(True)
+    text = TextStim(
+        win=win,
+        text=f"{idx} / {n_recollection}",
+        height=0.05,
+        pos=(0, -0.1),
+    )
+    text.setAutoDraw(True)
     win.flip()
     result = task(*args)
     cross.setAutoDraw(False)
+    text.setAutoDraw(False)
     return result
 
 

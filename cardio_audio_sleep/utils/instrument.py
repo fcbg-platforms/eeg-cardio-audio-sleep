@@ -17,6 +17,24 @@ def load_instrument_categories() -> List[str]:
     return sorted(instrument_categories)
 
 
+def load_instrument_images() -> Dict[str, str]:
+    """Load the available instrument categories and their images."""
+    instrument_categories = load_instrument_categories()
+    directory = Path(__file__).parent.parent / "visuals"
+    assert directory.exists() and directory.is_dir()  # sanity-check
+    instrument_categories_visuals = tuple(
+        [elt.name for elt in directory.iterdir() if elt.is_dir()]
+    )
+    assert instrument_categories == sorted(instrument_categories_visuals)
+    images = dict()
+    for instrument in instrument_categories:
+        files = [elt for elt in (directory / instrument).iterdir()
+                 if elt.is_file() and not elt.name.startswith(".")]
+        assert len(files) == 1
+        images[instrument] = str(files[0])
+    return images
+
+
 def pick_instrument_sound(
     instrument_sync: Optional[str],
     instrument_iso: Optional[str],

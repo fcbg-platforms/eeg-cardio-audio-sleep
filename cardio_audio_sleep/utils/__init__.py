@@ -4,6 +4,7 @@ from .async_timings import generate_async_timings  # noqa: F401
 from .blocks import generate_blocks_sequence  # noqa: F401
 from .instrument import (  # noqa: F401
     load_instrument_categories,
+    load_instrument_images,
     pick_instrument_sound,
 )
 from .lsl import search_ANT_amplifier  # noqa: F401

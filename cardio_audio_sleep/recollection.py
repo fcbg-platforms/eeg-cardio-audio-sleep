@@ -78,8 +78,8 @@ def recollection(
                 instrument.name,
             )
             # store condition and instrument name
-            responses["condition"] = condition
-            responses["instrument"] = instrument.name
+            responses["condition"].append(condition)
+            responses["instrument"].append(instrument.name)
             # prepare arguments
             args = args_mapping[condition]
             args[2] = generate_sequence(
@@ -111,7 +111,9 @@ def recollection(
             trigger_instrument.signal(args[idx].name)
 
             if condition != "synchronous":
-                wait(4, hogCPUperiod=0)  # buffer duration of a synchronous block
+                wait(
+                    4, hogCPUperiod=0
+                )  # buffer duration of a synchronous block
 
             result = _fixation_cross(
                 win,
@@ -120,10 +122,17 @@ def recollection(
                 task_mapping[condition],
                 tuple(args),
             )
-            responses["category"] = _category(
-                win, trigger, tdef, keyboard, images_category, texts_category
+            responses["category"].append(
+                _category(
+                    win,
+                    trigger,
+                    tdef,
+                    keyboard,
+                    images_category,
+                    texts_category,
+                )
             )
-            responses["confidence"] = _confidence(win)
+            responses["confidence"].append(_confidence(win))
             if result is not None:
                 assert condition == "synchronous"  # sanity-check
                 sequence_timings = result  # replace previous sequence timings

@@ -111,6 +111,7 @@ def recollection(
             trigger_instrument.signal(args[idx].name)
 
             if condition != "synchronous":
+                win.flip()  # flip before waiting to remove the conf slider
                 wait(
                     4, hogCPUperiod=0
                 )  # buffer duration of a synchronous block

@@ -9,6 +9,7 @@ from bsl.triggers import (
     TriggerDef,
 )
 from numpy.typing import NDArray
+from psychopy.clock import wait
 from psychopy.hardware.keyboard import Keyboard
 from psychopy.visual import (
     ButtonStim,
@@ -108,6 +109,9 @@ def recollection(
                 args[idx].name,
             )
             trigger_instrument.signal(args[idx].name)
+
+            if condition != "synchronous":
+                wait(4, hogCPUperiod=0)  # buffer duration of a synchronous block
 
             result = _fixation_cross(
                 win,

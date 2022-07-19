@@ -110,18 +110,13 @@ def recollection(
             )
             trigger_instrument.signal(args[idx].name)
 
-            if condition != "synchronous":
-                win.flip()  # flip before waiting to remove the conf slider
-                wait(
-                    4, hogCPUperiod=0
-                )  # buffer duration of a synchronous block
-
             result = _fixation_cross(
                 win,
                 k + 1,
                 len(recollection_tests),
                 task_mapping[condition],
                 tuple(args),
+                condition,
             )
             responses["category"].append(
                 _category(
@@ -287,6 +282,7 @@ def _fixation_cross(
     n_recollection: int,
     task: Callable,
     args: tuple,
+    condition_name: str,
 ) -> Union[None, NDArray[float]]:
     """Fixation cross routine."""
     cross = ShapeStim(
@@ -306,6 +302,8 @@ def _fixation_cross(
     )
     text.setAutoDraw(True)
     win.flip()
+    if condition_name != "synchronous":
+        wait(4, hogCPUperiod=0)  # buffer duration of a synchronous block
     result = task(*args)
     cross.setAutoDraw(False)
     text.setAutoDraw(False)

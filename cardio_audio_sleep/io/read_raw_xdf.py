@@ -1,4 +1,7 @@
+from typing import List, Tuple
+
 import mne
+import numpy as np
 from mne.io.pick import _DATA_CH_TYPES_ORDER_DEFAULT
 from pyxdf import load_xdf
 
@@ -20,14 +23,18 @@ def read_raw_xdf(fname):
         MNE raw instance.
     """
     streams, _ = load_xdf(fname)
-    assert len(streams) == 1
-    stream = streams[0]
+    assert len(streams) in (1, 2)
+    _, eeg_stream = find_streams(streams, "eego")[0]
+    try:
+        _, instrument_stream = find_streams(streams, "instruments")[0]
+    except IndexError:
+        instrument_stream = None
     del streams
 
     # retrieve information
-    ch_names, ch_types, units = _get_eeg_ch_info(stream)
-    sfreq = int(stream["info"]["nominal_srate"][0])
-    data = stream["time_series"].T
+    ch_names, ch_types, units = _get_eeg_ch_info(eeg_stream)
+    sfreq = int(eeg_stream["info"]["nominal_srate"][0])
+    data = eeg_stream["time_series"].T
 
     # create MNE raw
     info = mne.create_info(ch_names, sfreq, ch_types)
@@ -67,7 +74,48 @@ def read_raw_xdf(fname):
     # annotations
     raw = add_annotations_from_events(raw)
 
+    if instrument_stream is not None:
+        onsets = list()
+        durations = list()
+        names = list()
+        for ts, name in zip(
+            instrument_stream["time_stamps"],
+            instrument_stream["time_series"],
+        ):
+            idx = np.searchsorted(eeg_stream["time_stamps"], ts)
+            onsets.append(raw.times[idx])
+            durations.append(5)  # fix duration for now
+            names.append(name[0])
+        annotations = mne.Annotations(onsets, durations, names)
+        raw.set_annotations(raw.annotations + annotations)
+
     return raw
+
+
+def find_streams(
+    streams: List[dict],
+    stream_name: str,
+) -> List[Tuple[int, dict]]:
+    """Find the stream including 'stream_name' in the name attribute.
+
+    Parameters
+    ----------
+    streams : list of dict
+        List of streams loaded by pyxdf.
+    stream_name : str
+        Substring that has to be present in the name attribute.
+
+    Returns
+    -------
+    list of tuples : (k: int, stream: dict)
+        k is the idx of stream in streams.
+        stream is the stream that contains stream_name in its name.
+    """
+    return [
+        (k, stream)
+        for k, stream in enumerate(streams)
+        if stream_name in stream["info"]["name"][0]
+    ]
 
 
 def _get_eeg_ch_info(stream):

@@ -1037,7 +1037,7 @@ class GUI(QMainWindow):
             self._dev,
         )
         df = pd.DataFrame.from_dict(responses)
-        fname = datetime.now().strftime("%Y_%m_%d-%I:%M:%S_responses.csv")
+        fname = datetime.now().strftime("%Y_%m_%d-%Ih%Mm%Ss_responses.csv")
         directory = Path().home() / "cardio-audio-sleep-responses"
         os.makedirs(directory)
         df.to_csv(directory / fname)

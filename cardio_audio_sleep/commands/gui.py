@@ -332,13 +332,13 @@ class GUI(QMainWindow):
 
         # add instrument sound controls
         self.comboBox_synchronous = GUI._add_comboBox(
-            self, 330, 194, 160, 28, "comboBox_synchronous"
+            self, 340, 194, 160, 28, "comboBox_synchronous"
         )
         self.comboBox_isochronous = GUI._add_comboBox(
-            self, 330, 228, 160, 28, "comboBox_isochronous"
+            self, 340, 228, 160, 28, "comboBox_isochronous"
         )
         self.comboBox_asynchronous = GUI._add_comboBox(
-            self, 330, 262, 160, 28, "comboBox_asynchronous"
+            self, 340, 262, 160, 28, "comboBox_asynchronous"
         )
         for comboBox in (
             self.comboBox_synchronous,
@@ -348,13 +348,13 @@ class GUI(QMainWindow):
             comboBox.addItems(instrument_categories)
 
         GUI._add_label(
-            self, 210, 194, 90, 28, "synchronous", "Synchronous", "left"
+            self, 210, 194, 100, 28, "synchronous", "Synchronous", "left"
         )
         GUI._add_label(
-            self, 210, 228, 90, 28, "isochronous", "Isochronous", "left"
+            self, 210, 228, 100, 28, "isochronous", "Isochronous", "left"
         )
         GUI._add_label(
-            self, 210, 262, 90, 28, "asynchronous", "Asynchronous", "left"
+            self, 210, 262, 100, 28, "asynchronous", "Asynchronous", "left"
         )
 
         # add Eye-tracker controls

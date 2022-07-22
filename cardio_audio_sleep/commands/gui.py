@@ -118,6 +118,9 @@ class GUI(QMainWindow):
             block = generate_blocks_sequence(self.all_blocks)
             self.all_blocks.append(block)
             self.blocks[k + 2].btype = block
+        self.counter = dict(
+            baseline=0, synchronous=0, isochronous=0, asynchronous=0
+        )
 
         # define Qt Timer
         self.timer = QTimer(self)
@@ -562,6 +565,20 @@ class GUI(QMainWindow):
 
         # determine arguments
         btype = self.blocks[2].btype
+
+        # logs
+        logger.info(
+            "\n\tBaseline:       %s\n"
+            "\tSynchronous:    %s\n"
+            "\tIsochronous:    %s\n"
+            "\tAsynchronous:   %s\n",
+            str(self.counter["baseline"]).zfill(3),
+            str(self.counter["synchronous"]).zfill(3),
+            str(self.counter["isochronous"]).zfill(3),
+            str(self.counter["asynchronous"]).zfill(3),
+        )
+        self.counter[btype] += 1
+
         if btype == "baseline":
             args = self.args_mapping[btype]
         else:

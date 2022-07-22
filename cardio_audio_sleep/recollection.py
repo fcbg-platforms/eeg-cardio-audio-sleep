@@ -112,8 +112,6 @@ def recollection(
 
             result = _fixation_cross(
                 win,
-                k + 1,
-                len(recollection_tests),
                 task_mapping[condition],
                 tuple(args),
                 condition,
@@ -278,8 +276,6 @@ def _instructions(win: Window, keyboard: Keyboard):
 
 def _fixation_cross(
     win: Window,
-    idx: int,
-    n_recollection: int,
     task: Callable,
     args: tuple,
     condition_name: str,
@@ -294,19 +290,11 @@ def _fixation_cross(
         fillColor="white",
     )
     cross.setAutoDraw(True)
-    text = TextStim(
-        win=win,
-        text=f"{idx} / {n_recollection}",
-        height=0.05,
-        pos=(0, -0.1),
-    )
-    text.setAutoDraw(True)
     win.flip()
     if condition_name != "synchronous":
         wait(4, hogCPUperiod=0)  # buffer duration of a synchronous block
     result = task(*args)
     cross.setAutoDraw(False)
-    text.setAutoDraw(False)
     return result
 
 

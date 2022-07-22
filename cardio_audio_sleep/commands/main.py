@@ -26,6 +26,9 @@ def cas():
         "--eye_tracker", help="enable eye-tracking", action="store_true"
     )
     parser.add_argument(
+        "--instrument", help="enable instrument sounds", action="store_true"
+    )
+    parser.add_argument(
         "--dev", help="load short sequence for testing", action="store_true"
     )
     parser.add_argument(
@@ -51,7 +54,7 @@ def cas():
     ecg_ch_name = input_ecg_ch_name() if args.ecg is None else args.ecg
 
     app = QApplication([])
-    window = GUI(ecg_ch_name, eye_link, args.dev)
+    window = GUI(ecg_ch_name, eye_link, args.instrument, args.dev)
     window.show()
     app.exec()
 

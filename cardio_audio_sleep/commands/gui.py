@@ -67,7 +67,7 @@ class GUI(QMainWindow):
         If True, a configuration with shorter sequence is loaded.
     """
 
-    def __init__(self, ecg_ch_name: str, eye_link: EYELink, dev: bool = False):
+    def __init__(self, ecg_ch_name: str, eye_link: EYELink, instrument: bool = True, dev: bool = False):
         super().__init__()
 
         # define multiprocessing queue to retrieve timings
@@ -77,8 +77,9 @@ class GUI(QMainWindow):
         defaults = dict(height=97.0, prominence=500.0, width=None, volume=0)
 
         # load configuration
+        self._instrument = instrument
         self._dev = dev
-        self.load_config(ecg_ch_name, defaults, eye_link, self._dev)
+        self.load_config(ecg_ch_name, defaults, eye_link, self._instrument, self._dev)
         instrument_categories = load_instrument_categories()
         self.instrument_file_example = {
             "synchronous": None,
@@ -119,10 +120,12 @@ class GUI(QMainWindow):
         ecg_ch_name: str,
         defaults: dict,
         eye_link: EYELink,
+        instrument: bool,
         dev: bool,
     ):
         """Set the variables and tasks arguments."""
-        self.config, trigger_type = load_config("config-sleep.ini", dev)
+        fname = "config-sleep-instrument.ini" if instrument else "config-sleep.ini"
+        self.config, trigger_type = load_config(fname, dev)
         self.tdef = load_triggers()
 
         # combine trigger with eye-link
@@ -879,7 +882,7 @@ class GUI(QMainWindow):
         # enable recollection
         if sys.platform == "linux":
             self.pushButton_volume.setEnabled(True)
-        if not sys.platform == "darwin":
+        if not sys.platform == "darwin" and self._instrument:
             self.pushButton_recollection.setEnabled(True)
         else:
             # in this case disable everything since nothing else can be done

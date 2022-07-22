@@ -291,8 +291,6 @@ def _fixation_cross(
     )
     cross.setAutoDraw(True)
     win.flip()
-    if condition_name != "synchronous":
-        wait(4, hogCPUperiod=0)  # buffer duration of a synchronous block
     result = task(*args)
     cross.setAutoDraw(False)
     return result

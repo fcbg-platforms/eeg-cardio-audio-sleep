@@ -192,6 +192,7 @@ def isochronous(
         )
     assert sound.duration < delay  # sanity-check
 
+    wait(4, hogCPUperiod=0)  # fake buffer prefill
     # task loop
     trigger.signal(tdef.iso_start)
     wait(0.2, hogCPUperiod=0)
@@ -281,6 +282,7 @@ def asynchronous(
     delays = np.diff(sequence_timings)  # a[i+1] - a[i]
     assert all(sound.duration < delay for delay in delays)  # sanity-check
 
+    wait(4, hogCPUperiod=0)  # fake buffer prefill
     # Task loop
     trigger.signal(tdef.async_start)
     wait(0.2, hogCPUperiod=0)

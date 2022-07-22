@@ -259,7 +259,7 @@ class GUI(QMainWindow):
         self.pushButton_recollection = GUI._add_pushButton(
             self, 804, 150, 176, 32, "pushButton_recollection", "Recollection"
         )
-        if not sys.platform == "linux":
+        if not sys.platform == "linux" and self._instrument:
             self.pushButton_example.setEnabled(False)
         self.pushButton_pause.setEnabled(False)
         self.pushButton_pause.setCheckable(True)

@@ -259,8 +259,8 @@ class GUI(QMainWindow):
         self.pushButton_recollection = GUI._add_pushButton(
             self, 804, 150, 176, 32, "pushButton_recollection", "Recollection"
         )
-        if not sys.platform == "linux" and self._instrument:
-            self.pushButton_example.setEnabled(False)
+        if not sys.platform == "linux":
+            self.pushButton_example.setEnabled(self._instrument)
         self.pushButton_pause.setEnabled(False)
         self.pushButton_pause.setCheckable(True)
         self.pushButton_stop.setEnabled(False)
@@ -362,6 +362,7 @@ class GUI(QMainWindow):
             self.comboBox_asynchronous,
         ):
             comboBox.addItems(instrument_categories)
+            comboBox.setEnabled(self._instrument)
 
         GUI._add_label(
             self, 210, 194, 100, 28, "synchronous", "Synchronous", "left"
@@ -603,8 +604,8 @@ class GUI(QMainWindow):
                 )
 
             # instrument sounds
+            idx = 9 if btype == "synchronous" else 5
             if self.instrument_file_sleep[btype] is not None:
-                idx = 9 if btype == "synchronous" else 5
                 args[idx] = random.choice(self.instrument_file_sleep[btype])
                 logger.debug(
                     "Instrument sound for next %s block set to %s",
@@ -612,6 +613,8 @@ class GUI(QMainWindow):
                     args[idx].name,
                 )
                 self.trigger_instrument.signal(args[idx].name)
+            else:
+                args[idx] = None
 
         # start new process
         self.process = mp.Process(
@@ -909,8 +912,8 @@ class GUI(QMainWindow):
         # enable recollection
         if sys.platform == "linux":
             self.pushButton_volume.setEnabled(True)
-        if not sys.platform == "darwin" and self._instrument:
-            self.pushButton_recollection.setEnabled(True)
+        if not sys.platform == "darwin":
+            self.pushButton_recollection.setEnabled(self._instrument)
         else:
             # in this case disable everything since nothing else can be done
             self.dial_volume.setEnabled(False)

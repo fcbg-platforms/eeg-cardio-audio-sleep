@@ -112,8 +112,20 @@ def add_annotations_from_events(raw: BaseRaw) -> BaseRaw:
         raw.set_annotations(raw.annotations + annotations)
 
     # Sounds/Omissions
-    duration = 0.1  # TODO: to be changed when sounds are better defined.
+    duration = 0.1
     for name, event in (("Sound", tdef.sound), ("Omission", tdef.omission)):
+        stim = np.where(events[:, 2] == event)[0]
+        onsets = [events[start, 0] / raw.info["sfreq"] for start in stim]
+        annotations = mne.Annotations(onsets, duration, name)
+        raw.set_annotations(raw.annotations + annotations)
+
+    # Instrument sounds
+    duration = 0.4
+    for name, event in (
+        ("Percussion", tdef.percussion),
+        ("String", tdef.string),
+        ("Wind", tdef.wind),
+    ):
         stim = np.where(events[:, 2] == event)[0]
         onsets = [events[start, 0] / raw.info["sfreq"] for start in stim]
         annotations = mne.Annotations(onsets, duration, name)

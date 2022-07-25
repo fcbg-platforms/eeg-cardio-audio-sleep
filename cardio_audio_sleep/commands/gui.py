@@ -30,6 +30,7 @@ from .. import logger
 from .._typing import EYELink
 from ..config import load_config, load_triggers
 from ..config.constants import SCREEN_SIZE
+from ..example import example
 from ..eye_link import EyelinkMock
 from ..recollection import recollection
 from ..tasks import (
@@ -738,6 +739,23 @@ class GUI(QMainWindow):
             "[Example] The selected sound for the asynchronous category is %s",
             self.instrument_file_example["asynchronous"][0].name,
         )
+
+        # create window
+        win = Window(
+            size=SCREEN_SIZE,
+            winType="pyglet",
+            monitor=None,
+            screen=1,
+            fullscr=True,
+            allowGUI=False,
+            units="norm",
+        )
+        logger.debug("Example requested.")
+        process = mp.Process(
+            target=example, args=(win, self.instrument_file_example)
+        )
+        process.start()
+        process.join()
 
     @pyqtSlot()
     def pushButton_start_clicked(self):

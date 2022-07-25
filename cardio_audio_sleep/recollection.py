@@ -9,7 +9,6 @@ from bsl.triggers import (
     TriggerDef,
 )
 from numpy.typing import NDArray
-from psychopy.clock import wait
 from psychopy.hardware.keyboard import Keyboard
 from psychopy.visual import (
     ButtonStim,

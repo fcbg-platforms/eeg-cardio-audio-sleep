@@ -8,7 +8,7 @@ from psychopy.visual import ImageStim, TextStim, Window
 from .utils import load_instrument_images
 
 
-def example(win: Window, instrument_sounds: Dict[str, Path]):
+def example(win: Window, instrument_sounds: Dict[str, Path]):  # noqa: D401
     """Example task."""
     from stimuli.audio import Sound
 

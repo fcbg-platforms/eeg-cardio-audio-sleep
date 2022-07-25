@@ -69,6 +69,8 @@ def recollection(
     try:
         _instructions(win, keyboard)
         for k, (condition, instrument) in enumerate(recollection_tests):
+            if k != 0 and k % 24 == 0:
+                _pause(win, keyboard)
             logger.info(
                 "[Recollection] %i / %i : %s condition with %s sound.",
                 k + 1,
@@ -271,6 +273,24 @@ def _instructions(win: Window, keyboard: Keyboard):
     string_text.setAutoDraw(False)
     wind_text.setAutoDraw(False)
     continue_text.setAutoDraw(False)
+
+
+def _pause(win: Window, keyboard: Keyboard):
+    """Pause routine."""
+    text = TextStim(
+        win=win,
+        text="Pause.\nPress SPACE to continue.",
+        height=0.05,
+        pos=(0, 0),
+    )
+    text.setAutoDraw(True)
+    win.flip()
+    while True:  # wait for 'space'
+        keys = keyboard.getKeys(keyList=["space"], waitRelease=False)
+        if len(keys) != 0:
+            break
+        win.flip()
+    text.setAutoDraw(False)
 
 
 def _fixation_cross(

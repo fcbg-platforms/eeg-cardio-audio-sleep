@@ -14,9 +14,10 @@ def example(
     """Example task."""
     from stimuli.audio import Sound
 
-    sounds = {key: Sound(path[0]) for key, path in instrument_sounds.items()}
-
     try:
+        sounds = {
+            key: Sound(path[0]) for key, path in instrument_sounds.items()
+        }
         # prepare keyboard for interaction
         keyboard = Keyboard()
         win.callOnFlip(keyboard.clearEvents, eventType="keyboard")

@@ -1094,7 +1094,7 @@ class GUI(QMainWindow):
         df = pd.DataFrame.from_dict(responses)
         fname = datetime.now().strftime("%Y_%m_%d-%Ih%Mm%Ss_responses.csv")
         directory = Path().home() / "cardio-audio-sleep-responses"
-        os.makedirs(directory)
+        os.makedirs(directory, exist_ok=True)
         df.to_csv(directory / fname)
 
     @pyqtSlot()

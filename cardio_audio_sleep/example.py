@@ -41,7 +41,7 @@ def example(
         # display
         win.flip()
         # start playing sounds
-        for sound in sounds:
+        for sound in sounds.values():
             sound.volume = volume  # set volume
             sound.play()
             wait(1, hogCPUperiod=0)

@@ -14,7 +14,7 @@ def example(
     """Example task."""
     from stimuli.audio import Sound
 
-    sounds = {key: Sound(path) for key, path in instrument_sounds.items()}
+    sounds = {key: Sound(path[0]) for key, path in instrument_sounds.items()}
 
     try:
         # prepare keyboard for interaction

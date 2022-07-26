@@ -185,6 +185,7 @@ class GUI(QMainWindow):
                 None,  # instrument sound
                 self.config["synchronous"]["n_instrument"],
                 self.queue,
+                False,
             ],
             "isochronous": [
                 self.trigger,
@@ -194,6 +195,7 @@ class GUI(QMainWindow):
                 defaults["volume"],
                 None,  # instrument sound
                 self.config["isochronous"]["n_instrument"],
+                False,
             ],
             "asynchronous": [
                 self.trigger,
@@ -203,6 +205,7 @@ class GUI(QMainWindow):
                 defaults["volume"],
                 None,  # instrument sound
                 self.config["asynchronous"]["n_instrument"],
+                False,
             ],
         }
 
@@ -1053,6 +1056,7 @@ class GUI(QMainWindow):
                 None,  # instrument sound
                 None,  # number of instrument sounds
                 None,  # mp.Queue to retrieve the timings
+                True,  # disable end trigger
             ],
             "isochronous": [
                 self.trigger.trigger,
@@ -1062,6 +1066,7 @@ class GUI(QMainWindow):
                 self.doubleSpinBox_volume.value(),
                 None,  # instrument sound
                 None,  # number of instrument sounds
+                True,  # disable end trigger
             ],
             "asynchronous": [
                 self.trigger.trigger,
@@ -1071,6 +1076,7 @@ class GUI(QMainWindow):
                 self.doubleSpinBox_volume.value(),
                 None,  # instrument sound
                 None,  # number of instrument sounds
+                True,  # disable end trigger
             ],
         }
 

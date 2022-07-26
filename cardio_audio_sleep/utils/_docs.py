@@ -44,6 +44,11 @@ docdict[
 sequence : array
     Sequence of stimulus/omissions.
     1 corresponds to a stound stimulus. 2 corresponds to an omission."""
+docdict[
+    "disable_end_trigger"
+] = """
+disable_end_trigger : bool
+    If True, disable the end of block trigger."""
 
 # --------------------------------- eye-tracker ------------------------------
 docdict[

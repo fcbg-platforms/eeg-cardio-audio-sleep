@@ -36,6 +36,7 @@ def synchronous(
     instrument: Optional[Path],
     n_instrument: int,
     queue: Optional[Queue],
+    disable_end_trigger: bool = False,
 ) -> list:  # noqa: D401
     """Synchronous block where sounds are sync to the heartbeat.
 
@@ -66,6 +67,7 @@ def synchronous(
     queue : Queue
         Queue where the sequence_timings are stored. If None, this argument is
         ignored.
+    %(disable_end_trigger)s
 
     Returns
     -------
@@ -107,7 +109,8 @@ def synchronous(
         sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
         _synchronous_loop(sound_instru, sequence_instru, detector, trigger)
 
-    trigger.signal(tdef.sync_stop)
+    if not disable_end_trigger:
+        trigger.signal(tdef.sync_stop)
 
     if queue is not None:
         queue.put(sequence_timings)
@@ -155,6 +158,7 @@ def isochronous(
     volume: float,
     instrument: Optional[Path],
     n_instrument: int,
+    disable_end_trigger: bool = False,
 ):
     """Isochronous block where sounds are delivered at a fix interval.
 
@@ -173,6 +177,7 @@ def isochronous(
     %(volume)s
     %(instrument)s
     %(n_instrument)s
+    %(disable_end_trigger)s
     """
     from stimuli.audio import Sound, Tone
 
@@ -205,7 +210,8 @@ def isochronous(
         sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
         _isochronous_loop(sound_instru, sequence_instru, delay, trigger)
 
-    trigger.signal(tdef.iso_stop)
+    if not disable_end_trigger:
+        trigger.signal(tdef.iso_stop)
 
 
 def _isochronous_loop(sound, sequence, delay, trigger):  # noqa: D401
@@ -242,6 +248,7 @@ def asynchronous(
     volume: float,
     instrument: Optional[Path],
     n_instrument: int,
+    disable_end_trigger: bool = False,
 ):
     """Asynchronous block where a synchronous sequence is repeated.
 
@@ -263,6 +270,7 @@ def asynchronous(
     %(volume)s
     %(instrument)s
     %(n_instrument)s
+    %(disable_end_trigger)s
     """
     from stimuli.audio import Sound, Tone
 
@@ -297,8 +305,8 @@ def asynchronous(
         _asynchronous_loop(
             sound_instru, sequence_instru, delays_instru, trigger
         )
-
-    trigger.signal(tdef.async_stop)
+    if not disable_end_trigger:
+        trigger.signal(tdef.async_stop)
 
 
 def _asynchronous_loop(sound, sequence, delays, trigger):  # noqa: D401

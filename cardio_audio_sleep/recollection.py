@@ -69,7 +69,7 @@ def recollection(
     try:
         _instructions(win, keyboard)
         for k, (condition, instrument) in enumerate(recollection_tests):
-            if k != 0 and k % 24 == 0:
+            if k != 0 and k % 6 if dev else 24 == 0:
                 _pause(win, keyboard)
             logger.info(
                 "[Recollection] %i / %i : %s condition with %s sound.",

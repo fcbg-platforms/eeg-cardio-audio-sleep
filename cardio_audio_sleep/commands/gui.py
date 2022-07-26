@@ -751,7 +751,12 @@ class GUI(QMainWindow):
         )
         logger.debug("Example requested.")
         process = mp.Process(
-            target=example, args=(win, self.instrument_file_example)
+            target=example,
+            args=(
+                win,
+                self.instrument_file_example,
+                self.doubleSpinBox_volume.value(),
+            ),
         )
         process.start()
         process.join()

@@ -8,7 +8,9 @@ from psychopy.visual import ImageStim, TextStim, Window
 from .utils import load_instrument_images
 
 
-def example(win: Window, instrument_sounds: Dict[str, Path]):  # noqa: D401
+def example(
+    win: Window, instrument_sounds: Dict[str, Path], volume: float
+):  # noqa: D401
     """Example task."""
     from stimuli.audio import Sound
 
@@ -39,6 +41,7 @@ def example(win: Window, instrument_sounds: Dict[str, Path]):  # noqa: D401
         win.flip()
         # start playing sounds
         for sound in sounds:
+            sound.volume = volume  # set volume
             sound.play()
             wait(1, hogCPUperiod=0)
             sound.play()

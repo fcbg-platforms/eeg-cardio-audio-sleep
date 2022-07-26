@@ -15,6 +15,8 @@ def example(
     from stimuli.audio import Sound
 
     try:
+        # load sounds
+        assert all(len(elt) == 1 for elt in instrument_sounds.values())
         sounds = {
             key: Sound(path[0]) for key, path in instrument_sounds.items()
         }
@@ -51,7 +53,6 @@ def example(
             keys = keyboard.getKeys(keyList=["space"], waitRelease=False)
             if len(keys) != 0:
                 break
-            win.flip()
         # remove components
         continue_text.setAutoDraw(False)
         percussion_image.setAutoDraw(False)

@@ -43,6 +43,8 @@ def recollection(
     # prepare keyboard for interaction
     keyboard = Keyboard()
     win.callOnFlip(keyboard.clearEvents, eventType="keyboard")
+    keyboard.stop()
+    keyboard.clearEvents()
     # prepare text component for category routine
     images_category, texts_category = _prepare_category(win)
 
@@ -261,11 +263,14 @@ def _instructions(win: Window, keyboard: Keyboard):
     wind_text.setAutoDraw(True)
     continue_text.setAutoDraw(True)
     win.flip()
+    keyboard.start()
     while True:  # wait for 'space'
         keys = keyboard.getKeys(keyList=["space"], waitRelease=False)
         if len(keys) != 0:
             break
         win.flip()
+    keyboard.stop()
+    keyboard.clearEvents()
     text.setAutoDraw(False)
     percussion_image.setAutoDraw(False)
     string_image.setAutoDraw(False)
@@ -286,11 +291,14 @@ def _pause(win: Window, keyboard: Keyboard):
     )
     text.setAutoDraw(True)
     win.flip()
+    keyboard.start()
     while True:  # wait for 'space'
         keys = keyboard.getKeys(keyList=["space"], waitRelease=False)
         if len(keys) != 0:
             break
         win.flip()
+    keyboard.stop()
+    keyboard.clearEvents()
     text.setAutoDraw(False)
 
 
@@ -361,12 +369,15 @@ def _category(
     for img in images_category:
         img.setAutoDraw(True)
     win.flip()
+    keyboard.start()
     while True:  # wait for '1', '2', '3'
         keys = keyboard.getKeys(keyList=["1", "2", "3"], waitRelease=False)
         if len(keys) != 0:
             logger.debug("Key pressed: %s", [key.name for key in keys])
             trigger.signal(tdef.by_name[keys[-1].name])
             break
+    keyboard.stop()
+    keyboard.clearEvents()
     for text in texts_category:
         text.setAutoDraw(False)
     for img in images_category:

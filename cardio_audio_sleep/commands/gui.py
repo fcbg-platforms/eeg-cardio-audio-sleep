@@ -260,8 +260,7 @@ class GUI(QMainWindow):
         self.pushButton_recollection = GUI._add_pushButton(
             self, 804, 150, 176, 32, "pushButton_recollection", "Recollection"
         )
-        if not sys.platform == "linux":
-            self.pushButton_example.setEnabled(self._instrument)
+        self.pushButton_example.setEnabled(self._instrument)
         self.pushButton_pause.setEnabled(False)
         self.pushButton_pause.setCheckable(True)
         self.pushButton_stop.setEnabled(False)
@@ -343,7 +342,7 @@ class GUI(QMainWindow):
         self.pushButton_volume = GUI._add_pushButton(
             self, 90, 200, 80, 32, "pushButton_volume", "Test"
         )
-        if not sys.platform == "linux":
+        if sys.platform != "linux":
             self.pushButton_volume.setEnabled(False)
         GUI._add_label(self, 20, 200, 60, 32, "volume", "Volume", "center")
 
@@ -930,7 +929,7 @@ class GUI(QMainWindow):
         # enable recollection
         if sys.platform == "linux":
             self.pushButton_volume.setEnabled(True)
-        if not sys.platform == "darwin":
+        if sys.platform != "darwin":
             self.pushButton_recollection.setEnabled(self._instrument)
         else:
             # in this case disable everything since nothing else can be done

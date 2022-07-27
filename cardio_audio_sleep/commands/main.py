@@ -136,7 +136,7 @@ def test():
 
     # check the trigger
     try:
-        trigger = ParallelPortTrigger("/dev/parport0")
+        trigger = ParallelPortTrigger("/dev/parport0", delay=5)
     except Exception:
         error = True
         logger.error(

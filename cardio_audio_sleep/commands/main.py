@@ -1,6 +1,9 @@
 import argparse
+import os
 import sys
 import time
+from datetime import datetime
+from pathlib import Path
 
 from bsl.triggers import ParallelPortTrigger
 from bsl.utils.lsl import list_lsl_streams
@@ -44,7 +47,10 @@ def cas():
             import_optional_dependency("wx", raise_error=True)
         from ..eye_link import Eyelink
 
-        eye_link = Eyelink("./", "TEST")
+        directory = str(Path().home() / "cardio-audio-sleep-eye-tracker")
+        os.makedirs(directory, exist_ok=True)
+        fname = datetime.now().strftime("%m%dh%I")
+        eye_link = Eyelink(directory, fname)
     else:
         from ..eye_link import EyelinkMock
 

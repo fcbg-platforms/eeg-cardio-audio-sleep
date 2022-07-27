@@ -204,7 +204,7 @@ class Eyelink(EYELink):
         self.el_tracker.closeDataFile()
         # Download the EDF data file from the Host PC to a local data folder
         # parameters: source_file_on_the_host, destination_file_on_local_drive
-        local_edf = self.edf_pname / (self.edf_fname + ".EDF")
+        local_edf = str(self.edf_pname / (self.edf_fname + ".EDF"))
         try:
             self.el_tracker.receiveDataFile(self.edf_fname + ".EDF", local_edf)
         except RuntimeError:

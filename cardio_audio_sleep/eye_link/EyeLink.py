@@ -227,7 +227,3 @@ class Eyelink(EYELink):
             self.win.close()
         except Exception:
             pass
-        try:
-            core.quit()
-        except Exception:
-            pass

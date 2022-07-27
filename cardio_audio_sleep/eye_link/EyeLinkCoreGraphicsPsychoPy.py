@@ -651,6 +651,6 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
             self._pal.append((rf << 16) | (gf << 8) | (bf))
             i = i + 1
 
-    def play_beep():
+    def play_beep(*args, **kwargs):
         """Dummy play_beep method."""
         pass

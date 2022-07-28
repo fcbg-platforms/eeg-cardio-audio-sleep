@@ -2,7 +2,7 @@ from itertools import chain
 from typing import Callable, Tuple, Union
 
 import numpy as np
-from bsl.triggers import LSLTrigger, TriggerDef
+from bsl.triggers import LSLTrigger
 from numpy.typing import NDArray
 from psychopy.clock import wait
 from psychopy.hardware.keyboard import Keyboard
@@ -16,7 +16,7 @@ from psychopy.visual import (
 )
 
 from . import logger
-from .config import load_config, load_triggers
+from .config import load_config
 from .tasks import asynchronous, isochronous, synchronous
 from .utils import (
     generate_async_timings,
@@ -56,7 +56,7 @@ def recollection(
         "asynchronous": asynchronous,
     }
     # load config
-    args_mapping, config, tdef = _load_config(args_mapping, dev)
+    args_mapping, config = _load_config(args_mapping, dev)
     # variable to store the timings from the synchronous condition
     sequence_timings = None
     # variable to store the responses
@@ -168,7 +168,7 @@ def _list_recollection_tests(
 
 def _load_config(
     args_mapping: dict, dev: bool
-) -> Tuple[dict, dict, TriggerDef]:
+) -> Tuple[dict, dict]:
     """Load config and prepare arguments."""
     # load config
     config, _ = load_config("config-recollection.ini", dev)
@@ -178,31 +178,7 @@ def _load_config(
     args_mapping["synchronous"][10] = config["synchronous"]["n_instrument"]
     args_mapping["isochronous"][6] = config["isochronous"]["n_instrument"]
     args_mapping["asynchronous"][6] = config["asynchronous"]["n_instrument"]
-
-    # load trigger
-    tdef_ = load_triggers()
-    key2remove = list()
-    for key in tdef_.by_name:
-        if "response" in key:
-            continue
-        key2remove.append(key)
-    for key in key2remove:
-        tdef_.remove(key)
-    # list out instrument categories
-    instrument_categories = load_instrument_categories()
-    mapping = {
-        f"{instrument}_response": str(k + 1)
-        for k, instrument in enumerate(instrument_categories)
-    }
-    assert mapping == {  # hard-coded sanity-check
-        "percussion_response": "1",
-        "string_response": "2",
-        "wind_response": "3",
-    }
-    tdef = TriggerDef()
-    for key, value in tdef_.by_name.items():
-        tdef.add(mapping[key], value)
-    return args_mapping, config, tdef
+    return args_mapping, config
 
 
 def _instructions(win: Window, keyboard: Keyboard):
@@ -316,10 +292,14 @@ def _fixation_cross(
 def _prepare_category(win: Window) -> Tuple[ImageStim, ...]:
     """Prepare components for category routine."""
     images = load_instrument_images()
-    percussion_image = ImageStim(win, images["percussion"], pos=(-0.5, 0))
-    string_image = ImageStim(win, images["string"], pos=(0, 0))
-    wind_image = ImageStim(win, images["wind"], pos=(+0.5, 0))
-    return percussion_image, string_image, wind_image
+    instruments = load_instrument_categories()
+    assert sorted(images.keys()) == instruments  # sanity-check
+    # determine positions
+    positions = np.linspace(-0.5, 0.5, len(instruments))
+    images = list()
+    for instrument, position in zip(instruments, positions):
+        images.append(ImageStim(win, images[instrument], pos=position))
+    return tuple(images)
 
 
 def _category(

@@ -29,7 +29,7 @@ from PyQt5.QtWidgets import (
 from .. import logger
 from .._typing import EYELink
 from ..config import load_config, load_triggers
-from ..config.constants import SCREEN_SIZE
+from ..config.constants import SCREEN_KWARGS
 from ..example import example
 from ..eye_link import EyelinkMock
 from ..recollection import recollection
@@ -1027,15 +1027,7 @@ class GUI(QMainWindow):
             self.win.close()
 
         # create window
-        win = Window(
-            size=SCREEN_SIZE,
-            winType="pyglet",
-            monitor=None,
-            screen=1,
-            fullscr=True,
-            allowGUI=False,
-            units="norm",
-        )
+        win = Window(units="norm", **SCREEN_KWARGS)
 
         # prepare tasks arguments
         args_mapping = {
@@ -1210,14 +1202,7 @@ class GUI(QMainWindow):
             if not isinstance(self.eye_link, EyelinkMock):
                 self.win = self.eye_link.win
             else:
-                self.win = Window(
-                    size=SCREEN_SIZE,
-                    winType="pyglet",
-                    monitor=None,
-                    screen=1,
-                    fullscr=True,
-                    allowGUI=False,
-                )
+                self.win = Window(**SCREEN_KWARGS)
             cross = ShapeStim(
                 win=self.win,
                 vertices="cross",

@@ -743,15 +743,7 @@ class GUI(QMainWindow):
         )
 
         # create window
-        win = Window(
-            size=SCREEN_SIZE,
-            winType="pyglet",
-            monitor=None,
-            screen=1,
-            fullscr=True,
-            allowGUI=False,
-            units="norm",
-        )
+        win = Window(units="norm", **SCREEN_KWARGS)
         logger.debug("Example requested.")
         process = mp.Process(
             target=example,

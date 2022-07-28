@@ -15,7 +15,7 @@ def load_triggers() -> TriggerDef:
     tdef : TriggerDef
         Trigger definitiopn containing: sound, omission, sync_start, sync_stop,
         iso_start, iso_stop, async_start, async_stop, baseline_start and
-        baseline_stop, recollection, pause, resume and the instruments.
+        baseline_stop, pause, resume and the instruments.
     """
     directory = Path(__file__).parent
     tdef = TriggerDef(directory / "triggers.ini")
@@ -31,7 +31,6 @@ def load_triggers() -> TriggerDef:
         "async_stop",
         "baseline_start",
         "baseline_stop",
-        "recollection",
         "pause",
         "resume",
     )

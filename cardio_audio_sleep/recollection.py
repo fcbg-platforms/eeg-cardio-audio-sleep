@@ -183,7 +183,24 @@ def _load_config(
 
 def _instructions(win: Window, keyboard: Keyboard):
     """Instruction routine."""
-    text = TextStim(
+    images = load_instrument_images()
+    instruments = load_instrument_categories()
+    assert sorted(images.keys()) == instruments  # sanity-check
+    # determine positions
+    positions = np.linspace(-0.5, 0.5, len(instruments))
+    # create images/texts
+    images = list()
+    texts = list()
+    for k, (instrument, position) in enumerate(zip(instruments, positions)):
+        images.append(ImageStim(win, images[instrument], pos=(position, -0.2)))
+        texts.append(TextStim(
+            win=win,
+            text=f"Press {k+1} for {instrument}",
+            height=0.05,
+            pos=(position, 0.15),
+        ))
+    # create instructions/continue text
+    instruction_text = TextStim(
         win=win,
         text="You will hear 15 pure tones followed by an instrument sound.\n"
         "After the instrument sound, enter the instrument category on the "
@@ -191,43 +208,20 @@ def _instructions(win: Window, keyboard: Keyboard):
         height=0.05,
         pos=(0, 0.5),
     )
-    images = load_instrument_images()
-    percussion_image = ImageStim(win, images["percussion"], pos=(-0.5, -0.2))
-    string_image = ImageStim(win, images["string"], pos=(0, -0.2))
-    wind_image = ImageStim(win, images["wind"], pos=(+0.5, -0.2))
-    percussion_text = TextStim(
-        win=win,
-        text="Press 1 for percussion",
-        height=0.05,
-        pos=(-0.5, 0.15),
-    )
-    string_text = TextStim(
-        win=win,
-        text="Press 2 for string",
-        height=0.05,
-        pos=(0, 0.15),
-    )
-    wind_text = TextStim(
-        win=win,
-        text="Press 3 for wind",
-        height=0.05,
-        pos=(0.5, 0.15),
-    )
     continue_text = TextStim(
         win=win,
         text="Press SPACE to continue.",
         height=0.05,
         pos=(0, -0.65),
     )
-    text.setAutoDraw(True)
-    percussion_image.setAutoDraw(True)
-    string_image.setAutoDraw(True)
-    wind_image.setAutoDraw(True)
-    percussion_text.setAutoDraw(True)
-    string_text.setAutoDraw(True)
-    wind_text.setAutoDraw(True)
+    # display
+    for img, txt in zip(images, texts):
+        img.setAutoDraw(True)
+        txt.setAutoDraw(True)
+    instruction_text.setAutoDraw(True)
     continue_text.setAutoDraw(True)
     win.flip()
+
     keyboard.start()
     while True:  # wait for 'space'
         keys = keyboard.getKeys(keyList=["space"], waitRelease=False)
@@ -236,13 +230,12 @@ def _instructions(win: Window, keyboard: Keyboard):
         win.flip()
     keyboard.stop()
     keyboard.clearEvents()
-    text.setAutoDraw(False)
-    percussion_image.setAutoDraw(False)
-    string_image.setAutoDraw(False)
-    wind_image.setAutoDraw(False)
-    percussion_text.setAutoDraw(False)
-    string_text.setAutoDraw(False)
-    wind_text.setAutoDraw(False)
+
+    # remove
+    for img, txt in zip(images, texts):
+        img.setAutoDraw(False)
+        txt.setAutoDraw(False)
+    instruction_text.setAutoDraw(False)
     continue_text.setAutoDraw(False)
 
 
@@ -296,9 +289,10 @@ def _prepare_category(win: Window) -> Tuple[ImageStim, ...]:
     assert sorted(images.keys()) == instruments  # sanity-check
     # determine positions
     positions = np.linspace(-0.5, 0.5, len(instruments))
+    # create images
     images = list()
     for instrument, position in zip(instruments, positions):
-        images.append(ImageStim(win, images[instrument], pos=position))
+        images.append(ImageStim(win, images[instrument], pos=(position, 0)))
     return tuple(images)
 
 

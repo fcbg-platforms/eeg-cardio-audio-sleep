@@ -12,6 +12,7 @@ from numpy.typing import ArrayLike
 from psychopy.clock import wait
 
 from . import logger
+from .config.constants import TONE_FQ
 from .triggers import Trigger
 from .utils._checks import (
     _check_sequence,
@@ -79,7 +80,7 @@ def synchronous(
     from .detector import Detector
 
     # create sound stimuli
-    sound = Tone(volume, frequency=1000, duration=0.1)
+    sound = Tone(volume, frequency=TONE_FQ, duration=0.1)
     if instrument is not None:
         sound_instru = Sound(instrument)
         sound_instru.volume = volume
@@ -182,7 +183,7 @@ def isochronous(
     from stimuli.audio import Sound, Tone
 
     # create sound stimuli
-    sound = Tone(volume, frequency=1000, duration=0.1)
+    sound = Tone(volume, frequency=TONE_FQ, duration=0.1)
     if instrument is not None:
         sound_instru = Sound(instrument)
         sound_instru.volume = volume
@@ -275,7 +276,7 @@ def asynchronous(
     from stimuli.audio import Sound, Tone
 
     # Create sound stimuli
-    sound = Tone(volume, frequency=1000, duration=0.1)
+    sound = Tone(volume, frequency=TONE_FQ, duration=0.1)
     if instrument is not None:
         sound_instru = Sound(instrument)
         sound_instru.volume = volume

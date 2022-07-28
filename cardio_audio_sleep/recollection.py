@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import Callable, Tuple, Union
+from typing import Callable, Optional, Tuple
 
 import numpy as np
 from bsl.triggers import LSLTrigger
@@ -272,7 +272,7 @@ def _fixation_cross(
     task: Callable,
     args: tuple,
     condition_name: str,
-) -> Union[None, NDArray[float]]:
+) -> Optional[NDArray[float]]:
     """Fixation cross routine."""
     cross = ShapeStim(
         win=win,

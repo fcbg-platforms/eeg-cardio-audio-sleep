@@ -166,9 +166,7 @@ def _list_recollection_tests(
     return recollection_tests
 
 
-def _load_config(
-    args_mapping: dict, dev: bool
-) -> Tuple[dict, dict]:
+def _load_config(args_mapping: dict, dev: bool) -> Tuple[dict, dict]:
     """Load config and prepare arguments."""
     # load config
     config, _ = load_config("config-recollection.ini", dev)
@@ -193,12 +191,14 @@ def _instructions(win: Window, keyboard: Keyboard):
     texts = list()
     for k, (instrument, position) in enumerate(zip(instruments, positions)):
         images.append(ImageStim(win, images[instrument], pos=(position, -0.2)))
-        texts.append(TextStim(
-            win=win,
-            text=f"Press {k+1} for {instrument}",
-            height=0.05,
-            pos=(position, 0.15),
-        ))
+        texts.append(
+            TextStim(
+                win=win,
+                text=f"Press {k+1} for {instrument}",
+                height=0.05,
+                pos=(position, 0.15),
+            )
+        )
     # create instructions/continue text
     instruction_text = TextStim(
         win=win,

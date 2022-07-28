@@ -4,7 +4,7 @@ from typing import Callable, Optional, Tuple
 import numpy as np
 from bsl.triggers import LSLTrigger
 from numpy.typing import NDArray
-from psychopy.clock import wait
+from psychopy.clock import Clock
 from psychopy.hardware.keyboard import Keyboard
 from psychopy.visual import (
     ButtonStim,
@@ -41,7 +41,7 @@ def recollection(
     keyboard.stop()
     keyboard.clearEvents()
     # prepare text component for category routine
-    images_category = _prepare_category(win)
+    images_category, button_category = _prepare_category(win)
 
     # list out and randomize the tests
     recollection_tests = _list_recollection_tests(
@@ -118,6 +118,7 @@ def recollection(
             _category(
                 win,
                 images_category,
+                button_category,
             )
             responses["confidence"].append(_confidence(win))
             if result is not None:
@@ -284,7 +285,7 @@ def _fixation_cross(
     return result
 
 
-def _prepare_category(win: Window) -> Tuple[ImageStim, ...]:
+def _prepare_category(win: Window) -> Tuple[Tuple[ImageStim, ...], ButtonStim]:
     """Prepare components for category routine."""
     instrument_images = load_instrument_images()
     instruments = load_instrument_categories()
@@ -295,22 +296,38 @@ def _prepare_category(win: Window) -> Tuple[ImageStim, ...]:
     images = list()
     for instrument, position in zip(instruments, positions):
         images.append(
-            ImageStim(win, instrument_images[instrument], pos=(position, 0))
+            ImageStim(win, instrument_images[instrument], pos=(position, 0.2))
         )
-    return tuple(images)
+    # create button
+    button = ButtonStim(
+        win,
+        text="Continue",
+        letterHeight=0.05,
+        pos=(0.5, -0.3),
+        size=(0.18, 0.1),
+    )
+    return tuple(images), button
 
 
 def _category(
     win: Window,
     images_category: Tuple[ImageStim, ...],
+    button_category: ButtonStim,
 ) -> None:
     """Category routine."""
     for img in images_category:
         img.setAutoDraw(True)
+    button_category.setAutoDraw(True)
     win.flip()
-    wait(3, hogCPUperiod=0)
+    timer = Clock()
+    while True:
+        if 3 < timer.getTime():
+            break
+        if button_category.isClicked:
+            break
     for img in images_category:
         img.setAutoDraw(False)
+    button_category.setAutoDraw(False)
 
 
 def _confidence(win: Window) -> float:

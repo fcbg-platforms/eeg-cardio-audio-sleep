@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 
 import pylink
-
 from psychopy import core, event, logging, visual
 
 from .. import logger

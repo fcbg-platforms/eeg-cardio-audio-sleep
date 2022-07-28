@@ -2,13 +2,9 @@ from itertools import chain
 from typing import Callable, Tuple, Union
 
 import numpy as np
-from bsl.triggers import (
-    LSLTrigger,
-    MockTrigger,
-    ParallelPortTrigger,
-    TriggerDef,
-)
+from bsl.triggers import LSLTrigger, TriggerDef
 from numpy.typing import NDArray
+from psychopy.clock import wait
 from psychopy.hardware.keyboard import Keyboard
 from psychopy.visual import (
     ButtonStim,
@@ -33,7 +29,6 @@ from .utils import (
 def recollection(
     win: Window,
     args_mapping: dict,
-    trigger: Union[MockTrigger, ParallelPortTrigger],
     trigger_instrument: LSLTrigger,
     instrument_files_sleep: dict,
     instrument_files_recollection: dict,
@@ -46,7 +41,7 @@ def recollection(
     keyboard.stop()
     keyboard.clearEvents()
     # prepare text component for category routine
-    images_category, texts_category = _prepare_category(win)
+    images_category = _prepare_category(win)
 
     # list out and randomize the tests
     recollection_tests = _list_recollection_tests(
@@ -65,7 +60,7 @@ def recollection(
     # variable to store the timings from the synchronous condition
     sequence_timings = None
     # variable to store the responses
-    responses = dict(condition=[], instrument=[], category=[], confidence=[])
+    responses = dict(condition=[], instrument=[], confidence=[])
 
     # run routines
     n_pause = 6 if dev else 24
@@ -120,15 +115,9 @@ def recollection(
                 tuple(args),
                 condition,
             )
-            responses["category"].append(
-                _category(
-                    win,
-                    trigger,
-                    tdef,
-                    keyboard,
-                    images_category,
-                    texts_category,
-                )
+            _category(
+                win,
+                images_category,
             )
             responses["confidence"].append(_confidence(win))
             if result is not None:
@@ -324,65 +313,26 @@ def _fixation_cross(
     return result
 
 
-def _prepare_category(
-    win: Window,
-) -> Tuple[Tuple[ImageStim, ...], Tuple[TextStim, ...]]:
+def _prepare_category(win: Window) -> Tuple[ImageStim, ...]:
     """Prepare components for category routine."""
     images = load_instrument_images()
-    percussion_image = ImageStim(win, images["percussion"], pos=(-0.5, -0.2))
-    string_image = ImageStim(win, images["string"], pos=(0, -0.2))
-    wind_image = ImageStim(win, images["wind"], pos=(+0.5, -0.2))
-    images = (percussion_image, string_image, wind_image)
-    percussion_text = TextStim(
-        win=win,
-        text="Press 1 for percussion",
-        height=0.05,
-        pos=(-0.5, 0.15),
-    )
-    string_text = TextStim(
-        win=win,
-        text="Press 2 for string",
-        height=0.05,
-        pos=(0, 0.15),
-    )
-    wind_text = TextStim(
-        win=win,
-        text="Press 3 for wind",
-        height=0.05,
-        pos=(0.5, 0.15),
-    )
-    texts = (percussion_text, string_text, wind_text)
-    return images, texts
+    percussion_image = ImageStim(win, images["percussion"], pos=(-0.5, 0))
+    string_image = ImageStim(win, images["string"], pos=(0, 0))
+    wind_image = ImageStim(win, images["wind"], pos=(+0.5, 0))
+    return percussion_image, string_image, wind_image
 
 
 def _category(
     win: Window,
-    trigger: Union[MockTrigger, ParallelPortTrigger],
-    tdef: TriggerDef,
-    keyboard: Keyboard,
     images_category: Tuple[ImageStim, ...],
-    texts_category: Tuple[ImageStim, ...],
-) -> int:
+) -> None:
     """Category routine."""
-    for text in texts_category:
-        text.setAutoDraw(True)
     for img in images_category:
         img.setAutoDraw(True)
     win.flip()
-    keyboard.start()
-    while True:  # wait for '1', '2', '3'
-        keys = keyboard.getKeys(keyList=["1", "2", "3"], waitRelease=False)
-        if len(keys) != 0:
-            logger.debug("Key pressed: %s", [key.name for key in keys])
-            trigger.signal(tdef.by_name[keys[-1].name])
-            break
-    keyboard.stop()
-    keyboard.clearEvents()
-    for text in texts_category:
-        text.setAutoDraw(False)
+    wait(3, hogCPUperiod=0)
     for img in images_category:
         img.setAutoDraw(False)
-    return int(keys[-1].name)
 
 
 def _confidence(win: Window) -> float:

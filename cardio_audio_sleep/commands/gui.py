@@ -1091,7 +1091,6 @@ class GUI(QMainWindow):
         responses = recollection(
             win,
             args_mapping,
-            self.trigger.trigger,
             self.trigger_instrument,
             self.instrument_file_sleep,
             self.instrument_file_recollection,

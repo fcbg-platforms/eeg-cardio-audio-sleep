@@ -1,3 +1,4 @@
+import multiprocessing as mp
 from pathlib import Path
 from typing import Dict
 
@@ -11,26 +12,13 @@ from .utils import load_instrument_categories, load_instrument_images
 
 def example(
     win: Window, instrument_sounds: Dict[str, Path], volume: float
-):  # noqa: D401
+) -> None:  # noqa: D401
     """Example task."""
-    from stimuli.audio import Sound
-
     try:
-        # load sounds
-        instruments = load_instrument_categories()
-        assert all(len(elt) == 1 for elt in instrument_sounds.values())
-        sounds = sorted(
-            [
-                (path[0].parent.name, Sound(path[0]))
-                for key, path in instrument_sounds.items()
-            ],
-            key=lambda x: x[0],
-        )
-        assert [elt[0] for elt in sounds] == instruments  # sanity-check
-        sounds = [elt[1] for elt in sounds]
         # prepare keyboard for interaction
         keyboard = Keyboard()
         win.callOnFlip(keyboard.clearEvents, eventType="keyboard")
+        keyboard.stop()
         # prepare components
         continue_text = TextStim(
             win=win,
@@ -38,6 +26,7 @@ def example(
             height=0.05,
             pos=(0, -0.65),
         )
+        instruments = load_instrument_categories()
         instrument_images = load_instrument_images()
         assert sorted(instrument_images.keys()) == instruments  # sanity-check
         # determine positions
@@ -51,20 +40,19 @@ def example(
             )
         for img in images:
             img.setAutoDraw(True)
+        continue_text.setAutoDraw(True)
         # display
         win.flip()
         # start playing sounds
-        for sound in sounds:
-            sound.volume = volume  # set volume
-            sound.play()
-            wait(1, hogCPUperiod=0)
-            sound.play()
-            wait(1, hogCPUperiod=0)
-        continue_text.setAutoDraw(True)
-        win.flip()
+        process = mp.Process(
+            target=play_sounds, args=(instrument_sounds, volume)
+        )
+        process.start()
+        keyboard.start()
         while True:  # wait for 'space'
             keys = keyboard.getKeys(keyList=["space"], waitRelease=False)
             if len(keys) != 0:
+                process.kill()
                 break
         # remove components
         continue_text.setAutoDraw(False)
@@ -75,3 +63,29 @@ def example(
     finally:
         win.flip()  # flush win.callOnFlip() and win.timeOnFlip()
         win.close()
+
+
+def play_sounds(instrument_sounds: Dict[str, Path], volume: float) -> None:
+    """Play example sounds."""
+    from stimuli.audio import Sound
+
+    # load sounds
+    instruments = load_instrument_categories()
+    assert all(len(elt) == 1 for elt in instrument_sounds.values())
+    sounds = sorted(
+        [
+            (path[0].parent.name, Sound(path[0]))
+            for key, path in instrument_sounds.items()
+        ],
+        key=lambda x: x[0],
+    )
+    assert [elt[0] for elt in sounds] == instruments  # sanity-check
+    sounds = [elt[1] for elt in sounds]
+
+    # play sounds
+    for sound in sounds:
+        sound.volume = volume  # set volume
+        sound.play()
+        wait(1, hogCPUperiod=0)
+        sound.play()
+        wait(1, hogCPUperiod=0)

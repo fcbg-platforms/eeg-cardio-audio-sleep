@@ -745,16 +745,11 @@ class GUI(QMainWindow):
         # create window
         win = Window(units="norm", **SCREEN_KWARGS)
         logger.debug("Example requested.")
-        process = mp.Process(
-            target=example,
-            args=(
-                win,
-                self.instrument_file_example,
-                self.doubleSpinBox_volume.value(),
-            ),
+        example(
+            win,
+            self.instrument_file_example,
+            self.doubleSpinBox_volume.value(),
         )
-        process.start()
-        process.join()
 
     @pyqtSlot()
     def pushButton_start_clicked(self):

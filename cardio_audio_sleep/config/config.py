@@ -31,6 +31,7 @@ def load_triggers() -> TriggerDef:
         "async_stop",
         "baseline_start",
         "baseline_stop",
+        "recollection",
         "pause",
         "resume",
     )

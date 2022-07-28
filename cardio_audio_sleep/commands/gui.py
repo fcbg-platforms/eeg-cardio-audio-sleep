@@ -945,6 +945,7 @@ class GUI(QMainWindow):
     @pyqtSlot()
     def pushButton_recollection_clicked(self):
         logger.debug("[Recollection] Recollection requested.")
+        self.trigger.signal(self.tdef.recollection)
         # disable volume buttons as we can't change it once it started
         self.dial_volume.setEnabled(False)
         self.doubleSpinBox_volume.setEnabled(False)

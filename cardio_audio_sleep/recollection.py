@@ -181,16 +181,18 @@ def _load_config(args_mapping: dict, dev: bool) -> Tuple[dict, dict]:
 
 def _instructions(win: Window, keyboard: Keyboard):
     """Instruction routine."""
-    images = load_instrument_images()
+    instrument_images = load_instrument_images()
     instruments = load_instrument_categories()
-    assert sorted(images.keys()) == instruments  # sanity-check
+    assert sorted(instrument_images.keys()) == instruments  # sanity-check
     # determine positions
     positions = np.linspace(-0.5, 0.5, len(instruments))
     # create images/texts
     images = list()
     texts = list()
     for k, (instrument, position) in enumerate(zip(instruments, positions)):
-        images.append(ImageStim(win, images[instrument], pos=(position, -0.2)))
+        images.append(
+            ImageStim(win, instrument_images[instrument], pos=(position, -0.2))
+        )
         texts.append(
             TextStim(
                 win=win,
@@ -284,15 +286,17 @@ def _fixation_cross(
 
 def _prepare_category(win: Window) -> Tuple[ImageStim, ...]:
     """Prepare components for category routine."""
-    images = load_instrument_images()
+    instrument_images = load_instrument_images()
     instruments = load_instrument_categories()
-    assert sorted(images.keys()) == instruments  # sanity-check
+    assert sorted(instrument_images.keys()) == instruments  # sanity-check
     # determine positions
     positions = np.linspace(-0.5, 0.5, len(instruments))
     # create images
     images = list()
     for instrument, position in zip(instruments, positions):
-        images.append(ImageStim(win, images[instrument], pos=(position, 0)))
+        images.append(
+            ImageStim(win, instrument_images[instrument], pos=(position, 0))
+        )
     return tuple(images)
 
 

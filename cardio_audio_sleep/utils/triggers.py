@@ -7,5 +7,5 @@ def convert(k: int) -> int:
     If the 4 first pins are skipped, it corresponds to "110000".
     Which corresponds to 48 in decimal.
     """
-    binary = bin(k)[2:]+ "0000"
+    binary = bin(k)[2:] + "0000"
     return int(binary, 2)

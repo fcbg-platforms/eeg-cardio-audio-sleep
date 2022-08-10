@@ -2,7 +2,7 @@ import mne
 import numpy as np
 from mne.io import BaseRaw
 
-from ..config import load_triggers
+from ..config import load_triggerbox_triggers, load_triggers
 
 
 def map_aux(
@@ -78,6 +78,7 @@ def add_annotations_from_events(raw: BaseRaw) -> BaseRaw:
     """
     events = mne.find_events(raw, stim_channel="TRIGGER")
     tdef = load_triggers()
+    tdef_hardware = load_triggerbox_triggers()
 
     # Block start/stop
     blocks = {
@@ -125,6 +126,18 @@ def add_annotations_from_events(raw: BaseRaw) -> BaseRaw:
         ("Percussion", tdef.percussion),
         ("String", tdef.string),
         ("Wind", tdef.wind),
+    ):
+        stim = np.where(events[:, 2] == event)[0]
+        onsets = [events[start, 0] / raw.info["sfreq"] for start in stim]
+        annotations = mne.Annotations(onsets, duration, name)
+        raw.set_annotations(raw.annotations + annotations)
+
+    # Instrument responses
+    duration = 0.1
+    for name, event in (
+        ("R_Percussion", tdef_hardware.percussion),
+        ("R_String", tdef_hardware.string),
+        ("R_Wind", tdef_hardware.wind),
     ):
         stim = np.where(events[:, 2] == event)[0]
         onsets = [events[start, 0] / raw.info["sfreq"] for start in stim]

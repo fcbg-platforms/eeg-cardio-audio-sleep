@@ -54,6 +54,31 @@ def load_triggers() -> TriggerDef:
     return tdef
 
 
+def load_triggerbox_triggers() -> TriggerDef:
+    """Load triggers from trigger-box.ini into a TriggerDef instance.
+
+    Returns
+    -------
+    tdef : TriggerDef
+        Trigger definition containing the 4 buttons of the trigger box.
+    """
+    directory = Path(__file__).parent
+    tdef = TriggerDef(directory / "triggerbox-triggers.ini")
+
+    directory = Path(__file__).parent.parent / "audio"
+    assert directory.exists() and directory.is_dir()  # sanity-check
+    instrument_categories = tuple(
+        [elt.name for elt in directory.iterdir() if elt.is_dir()]
+    )
+    for instrument in instrument_categories:
+        if not hasattr(tdef, instrument):
+            raise ValueError(
+                f"Key '{instrument}' is missing from trigger definition."
+            )
+
+    return tdef
+
+
 def load_config(fname: str, dev: bool = False) -> Tuple[dict, str]:
     """Load config from config.ini.
 

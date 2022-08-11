@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
@@ -7,6 +9,7 @@ from ._checks import _check_type
 def generate_async_timings(
     sequence_timings: ArrayLike,
     perc: float = 10.0,
+    n: Optional[int] = None,
 ) -> NDArray[float]:
     """Generate timings for an asynchronous block from a synchronous block.
 
@@ -22,6 +25,9 @@ def generate_async_timings(
         List of timings at which an R-peak occurred.
     perc : float
         Bottom and top percentage of timings removed.
+    n : int | None
+        Number of stimulus (timings) in the asynchronous condition. If None,
+        uses the number of timings in 'sequence_timings'.
 
     Returns
     -------
@@ -33,15 +39,18 @@ def generate_async_timings(
         sequence_timings, (list, tuple, np.ndarray), "sequence_timings"
     )
     _check_type(perc, ("numeric",), "perc")
+    _check_type(n, (None, "int"), "n")
     if perc < 0 or 50 <= perc:
         raise ValueError(
             "Argument 'perc' should represent a percentage "
             f"between 0 and 50. Provided '{perc}'% is not "
             "valid."
         )
+    if n is not None and n <= 0:
+        raise ValueError("Argument 'n' should be a strictly positive integer.")
 
     # remove bottom and top perc%
-    n = len(sequence_timings)
+    n = len(sequence_timings) if n is None else n
     diff = np.diff(sequence_timings)
     mask = np.where(
         (np.percentile(diff, perc) <= diff)

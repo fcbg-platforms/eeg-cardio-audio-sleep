@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Tuple, Union
 
 import numpy as np
 from bsl.triggers import LSLTrigger
@@ -40,8 +40,8 @@ def recollection(
     win.callOnFlip(keyboard.clearEvents, eventType="keyboard")
     keyboard.stop()
     keyboard.clearEvents()
-    # prepare text component for category routine
-    images_category = _prepare_category(win)
+    # prepare components displayed most of the time
+    images = _prepare_components(win)
 
     # list out and randomize the tests
     recollection_tests = _list_recollection_tests(
@@ -110,16 +110,14 @@ def recollection(
             )
             trigger_instrument.signal(args[idx].name)
 
-            result = _fixation_cross(
+            result = _task_routine(
                 win,
                 task_mapping[condition],
                 tuple(args),
                 condition,
+                images,
             )
-            _category(
-                win,
-                images_category,
-            )
+            _category(images)
             responses["confidence"].append(_confidence(win))
             if result is not None:
                 assert condition == "synchronous"  # sanity-check
@@ -178,6 +176,34 @@ def _load_config(args_mapping: dict, dev: bool) -> Tuple[dict, dict]:
     args_mapping["isochronous"][6] = config["isochronous"]["n_instrument"]
     args_mapping["asynchronous"][6] = config["asynchronous"]["n_instrument"]
     return args_mapping, config
+
+
+def _prepare_components(
+    win: Window,
+) -> Tuple[Union[ImageStim, ShapeStim], ...]:
+    """Prepare most used components."""
+    instrument_images = load_instrument_images()
+    instruments = load_instrument_categories()
+    assert sorted(instrument_images.keys()) == instruments  # sanity-check
+    # determine positions
+    positions = np.linspace(-0.5, 0.5, len(instruments))
+    # create images
+    images = list()
+    for instrument, position in zip(instruments, positions):
+        images.append(
+            ImageStim(win, instrument_images[instrument], pos=(position, -0.5))
+        )
+    # add fixation cross
+    cross = ShapeStim(
+        win=win,
+        vertices="cross",
+        units="height",
+        size=(0.05, 0.05),
+        lineColor="white",
+        fillColor="white",
+    )
+    images.append(cross)
+    return tuple(images)
 
 
 def _instructions(win: Window, keyboard: Keyboard):
@@ -263,57 +289,28 @@ def _pause(win: Window, keyboard: Keyboard):
     text.setAutoDraw(False)
 
 
-def _fixation_cross(
+def _task_routine(
     win: Window,
     task: Callable,
     args: tuple,
     condition_name: str,
+    images: Tuple[Union[ImageStim, ShapeStim], ...],
 ) -> Optional[NDArray[float]]:
     """Fixation cross routine."""
-    cross = ShapeStim(
-        win=win,
-        vertices="cross",
-        units="height",
-        size=(0.05, 0.05),
-        lineColor="white",
-        fillColor="white",
-    )
-    cross.setAutoDraw(True)
+    for img in images:
+        img.setAutoDraw(True)
     win.flip()
     result = task(*args)
-    cross.setAutoDraw(False)
     return result
 
 
-def _prepare_category(win: Window) -> Tuple[ImageStim, ...]:
-    """Prepare components for category routine."""
-    instrument_images = load_instrument_images()
-    instruments = load_instrument_categories()
-    assert sorted(instrument_images.keys()) == instruments  # sanity-check
-    # determine positions
-    positions = np.linspace(-0.5, 0.5, len(instruments))
-    # create images
-    images = list()
-    for instrument, position in zip(instruments, positions):
-        images.append(
-            ImageStim(win, instrument_images[instrument], pos=(position, 0.2))
-        )
-    return tuple(images)
-
-
-def _category(
-    win: Window,
-    images_category: Tuple[ImageStim, ...],
-) -> None:
+def _category(images: Tuple[Union[ImageStim, ShapeStim], ...]) -> None:
     """Category routine."""
-    for img in images_category:
-        img.setAutoDraw(True)
-    win.flip()
     timer = Clock()
     while True:
         if 3 < timer.getTime():
             break
-    for img in images_category:
+    for img in images:
         img.setAutoDraw(False)
 
 

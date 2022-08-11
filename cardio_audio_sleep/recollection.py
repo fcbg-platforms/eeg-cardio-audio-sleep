@@ -295,9 +295,11 @@ def _instructions(win: Window, keyboard: Keyboard):
     # create instructions/continue text
     instruction_text = TextStim(
         win=win,
-        text="You will hear 15 pure tones followed by an instrument sound.\n"
-        "After the instrument sound, enter the instrument category on the "
-        "keyboard.",
+        text="You will hear pure tones followed by an instrument sound.\n"
+        "After the instrument sound, enter the instrument category on "
+        "the triggerbox in front of you.\n\n"
+        "You should respond as fast as possible, even if the instrument sound "
+        "is still playing.",
         height=0.05,
         pos=(0, 0.5),
     )

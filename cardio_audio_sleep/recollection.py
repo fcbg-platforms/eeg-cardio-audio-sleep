@@ -41,7 +41,7 @@ def recollection(
     keyboard.stop()
     keyboard.clearEvents()
     # prepare text component for category routine
-    images_category, button_category = _prepare_category(win)
+    images_category = _prepare_category(win)
 
     # list out and randomize the tests
     recollection_tests = _list_recollection_tests(
@@ -119,7 +119,6 @@ def recollection(
             _category(
                 win,
                 images_category,
-                button_category,
             )
             responses["confidence"].append(_confidence(win))
             if result is not None:
@@ -286,7 +285,7 @@ def _fixation_cross(
     return result
 
 
-def _prepare_category(win: Window) -> Tuple[Tuple[ImageStim, ...], ButtonStim]:
+def _prepare_category(win: Window) -> Tuple[ImageStim, ...]:
     """Prepare components for category routine."""
     instrument_images = load_instrument_images()
     instruments = load_instrument_categories()
@@ -299,36 +298,23 @@ def _prepare_category(win: Window) -> Tuple[Tuple[ImageStim, ...], ButtonStim]:
         images.append(
             ImageStim(win, instrument_images[instrument], pos=(position, 0.2))
         )
-    # create button
-    button = ButtonStim(
-        win,
-        text="Continue",
-        letterHeight=0.05,
-        pos=(0.5, -0.3),
-        size=(0.18, 0.1),
-    )
-    return tuple(images), button
+    return tuple(images)
 
 
 def _category(
     win: Window,
     images_category: Tuple[ImageStim, ...],
-    button_category: ButtonStim,
 ) -> None:
     """Category routine."""
     for img in images_category:
         img.setAutoDraw(True)
-    button_category.setAutoDraw(True)
     win.flip()
     timer = Clock()
     while True:
         if 3 < timer.getTime():
             break
-        if button_category.isClicked:
-            break
     for img in images_category:
         img.setAutoDraw(False)
-    button_category.setAutoDraw(False)
 
 
 def _confidence(win: Window) -> float:

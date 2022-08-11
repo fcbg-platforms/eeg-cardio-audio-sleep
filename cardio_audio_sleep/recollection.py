@@ -66,6 +66,7 @@ def recollection(
     n_pause = 6 if dev else 24
     try:
         _instructions(win, keyboard)
+        trigger_instrument.signal("recollection")
         for k, (condition, instrument) in enumerate(recollection_tests):
             if k != 0 and k % n_pause == 0:
                 _pause(win, keyboard)

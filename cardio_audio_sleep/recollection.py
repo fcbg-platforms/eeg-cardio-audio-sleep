@@ -1,8 +1,10 @@
 from itertools import chain
-from typing import Callable, Optional, Tuple, Union
+from pathlib import Path
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from bsl.triggers import LSLTrigger
+from numpy.random import default_rng
 from numpy.typing import NDArray
 from psychopy.clock import Clock
 from psychopy.hardware.keyboard import Keyboard
@@ -61,6 +63,16 @@ def recollection(
     sequence_timings = None
     # variable to store the responses
     responses = dict(condition=[], instrument=[], confidence=[])
+    # prepare the random distribution of number of stimuli
+    stimuli_distribution = _prepare_distribution_stimuli(
+        recollection_tests,
+        config,
+    )
+    condition_counters = {
+        "synchronous": 0,
+        "isochronous": 0,
+        "asynchronous": 0,
+    }
 
     # run routines
     n_pause = 6 if dev else 24
@@ -82,18 +94,29 @@ def recollection(
             responses["instrument"].append(instrument.name)
             # prepare arguments
             args = args_mapping[condition]
+            n_stimuli = stimuli_distribution[condition][
+                condition_counters[condition]
+            ]
             args[2] = generate_sequence(
-                config[condition]["n_stimuli"],
+                n_stimuli,
                 config[condition]["n_omissions"],
                 config[condition]["edge_perc"],
                 args[1],  # tdef
             )
+            logger.debug(
+                "Number of stimuli set to %i for %s block.",
+                n_stimuli,
+                condition,
+            )
+            condition_counters[condition] += 1
             if condition == "isochronous":
                 assert sequence_timings is not None
                 args[3] = np.median(np.diff(sequence_timings))
                 logger.info("Delay for isochronous: %.2f (s).", args[3])
             if condition == "asynchronous":
-                timings = generate_async_timings(sequence_timings, perc=0)
+                timings = generate_async_timings(
+                    sequence_timings, perc=0, n=n_stimuli
+                )
                 args[3] = timings
                 logger.info(
                     "Average delay for asynchronous: %.2f (s).",
@@ -134,7 +157,7 @@ def _list_recollection_tests(
     instrument_files_sleep: dict,
     instrument_files_recollection: dict,
     dev: bool,
-):
+) -> List[Tuple[str, Path]]:
     """List the condition/sound tests to run."""
     conditions = ("synchronous", "isochronous", "asynchronous")
     assert all(elt in instrument_files_sleep for elt in conditions)
@@ -163,6 +186,47 @@ def _list_recollection_tests(
         recollection_tests[0],
     )
     return recollection_tests
+
+
+def _prepare_distribution_stimuli(
+    recollection_tests: List[Tuple[str, Path]],
+    config: dict,
+    delta: float = 2,
+) -> Dict[str, List[int]]:
+    """Prepare the randomize distribution of stimuli for each condition."""
+    # count the number of tests in each condition
+    number_tests = dict()
+    number_tests["synchronous"] = len(
+        [elt for elt in recollection_tests if elt[0] == "synchronous"]
+    )
+    number_tests["isochronous"] = len(
+        [elt for elt in recollection_tests if elt[0] == "isochronous"]
+    )
+    number_tests["asynchronous"] = len(
+        [elt for elt in recollection_tests if elt[0] == "asynchronous"]
+    )
+    # draw samples from a normal distribution
+    rng = default_rng()
+    distribution = dict()
+    for condition in ("synchronous", "isochronous", "asynchronous"):
+        n_stimuli = config[condition]["n_stimuli"]
+        distribution[condition] = rng.integers(
+            n_stimuli - delta,
+            n_stimuli + delta,
+            number_tests[condition],
+            endpoint=True,
+        )
+    logger.debug(
+        "[Recollection] The distribution of stimuli has been set to:\n"
+        "\t Synchronous: %s\n"
+        "\t Isochronous: %s\n"
+        "\t Asynchronous: %s\n",
+        tuple(distribution["synchronous"]),
+        tuple(distribution["isochronous"]),
+        tuple(distribution["asynchronous"]),
+    )
+
+    return distribution
 
 
 def _load_config(args_mapping: dict, dev: bool) -> Tuple[dict, dict]:

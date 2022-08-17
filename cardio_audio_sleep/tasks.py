@@ -10,6 +10,7 @@ import psychtoolbox as ptb
 from bsl.triggers import TriggerDef
 from numpy.typing import ArrayLike
 from psychopy.clock import wait
+from scipy.signal.windows import tukey
 
 from . import logger
 from .config.constants import TONE_FQ
@@ -81,6 +82,8 @@ def synchronous(
 
     # create sound stimuli
     sound = Tone(volume, frequency=TONE_FQ, duration=0.1)
+    window = tukey(sound.signal.shape[0], alpha=0.25, sym=True)
+    sound._signal = np.multiply(sound.signal.T, window).T
     if instrument is not None:
         sound_instru = Sound(instrument)
         sound_instru.volume = volume
@@ -184,6 +187,8 @@ def isochronous(
 
     # create sound stimuli
     sound = Tone(volume, frequency=TONE_FQ, duration=0.1)
+    window = tukey(sound.signal.shape[0], alpha=0.25, sym=True)
+    sound._signal = np.multiply(sound.signal.T, window).T
     if instrument is not None:
         sound_instru = Sound(instrument)
         sound_instru.volume = volume
@@ -277,6 +282,8 @@ def asynchronous(
 
     # Create sound stimuli
     sound = Tone(volume, frequency=TONE_FQ, duration=0.1)
+    window = tukey(sound.signal.shape[0], alpha=0.25, sym=True)
+    sound._signal = np.multiply(sound.signal.T, window).T
     if instrument is not None:
         sound_instru = Sound(instrument)
         sound_instru.volume = volume

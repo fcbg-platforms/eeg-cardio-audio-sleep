@@ -1,3 +1,4 @@
+from copy import deepcopy
 from itertools import chain
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple, Union
@@ -32,6 +33,7 @@ def recollection(
     win: Window,
     args_mapping: dict,
     trigger_instrument: LSLTrigger,
+    instrument_files_example: dict,
     instrument_files_sleep: dict,
     instrument_files_recollection: dict,
     dev: bool,
@@ -78,6 +80,15 @@ def recollection(
     n_pause = 6 if dev else 24
     try:
         _instructions(win, keyboard)
+        trigger_instrument.signal("recollection-examples")
+        _examples(
+            win,
+            images,
+            keyboard,
+            instrument_files_example,
+            deepcopy(args_mapping["isochronous"]),
+            trigger_instrument,
+        )
         trigger_instrument.signal("recollection")
         for k, (condition, instrument) in enumerate(recollection_tests):
             if k != 0 and k % n_pause == 0:
@@ -93,7 +104,7 @@ def recollection(
             responses["condition"].append(condition)
             responses["instrument"].append(instrument.name)
             # prepare arguments
-            args = args_mapping[condition]
+            args = deepcopy(args_mapping[condition])
             n_stimuli = stimuli_distribution[condition][
                 condition_counters[condition]
             ]
@@ -137,7 +148,6 @@ def recollection(
                 win,
                 task_mapping[condition],
                 tuple(args),
-                condition,
                 images,
             )
             _category(images)
@@ -305,7 +315,7 @@ def _instructions(win: Window, keyboard: Keyboard):
     )
     continue_text = TextStim(
         win=win,
-        text="Press SPACE to continue.",
+        text="Press SPACE for 2 examples.",
         height=0.05,
         pos=(0, -0.65),
     )
@@ -334,6 +344,68 @@ def _instructions(win: Window, keyboard: Keyboard):
     continue_text.setAutoDraw(False)
 
 
+def _examples(
+    win,
+    images,
+    keyboard,
+    instrument_files_example,
+    args_iso,
+    trigger_instrument,
+):
+    """Example routine following the instructions."""
+    for k in range(2):  # number of examples
+        instrument = np.random.choice(list(chain(*instrument_files_example.values())))
+        logger.info(
+            "[Recollection- Example] %i / 2 : %s sound.",
+            k + 1,
+            instrument.name,
+        )
+
+        # generate stimuli sequence
+        n_stimuli = np.random.randint(13, 17)
+        args_iso[2] = generate_sequence(
+            np.random.randint(13, 17),
+            0,
+            0,
+            args_iso[1],  # tdef
+        )
+        logger.debug("Number of stimuli set to %i.", n_stimuli)
+        # set iso inter-stimuli delay
+        args_iso[3] = 0.75
+        # set instrument
+        args_iso[5] = instrument
+        trigger_instrument.signal(instrument.name)
+
+        # run task
+        _task_routine(
+            win,
+            isochronous,
+            tuple(args_iso),
+            images,
+        )
+        _category(images)
+        _confidence(win)
+
+    continue_text = TextStim(
+        win=win,
+        text="Press SPACE to start.",
+        height=0.05,
+        pos=(0, 0),
+    )
+    continue_text.setAutoDraw(True)
+    win.flip()
+
+    keyboard.start()
+    while True:  # wait for 'space'
+        keys = keyboard.getKeys(keyList=["space"], waitRelease=False)
+        if len(keys) != 0:
+            break
+        win.flip()
+    keyboard.stop()
+    keyboard.clearEvents()
+    continue_text.setAutoDraw(False)
+
+
 def _pause(win: Window, keyboard: Keyboard):
     """Pause routine."""
     text = TextStim(
@@ -359,7 +431,6 @@ def _task_routine(
     win: Window,
     task: Callable,
     args: tuple,
-    condition_name: str,
     images: Tuple[Union[ImageStim, ShapeStim], ...],
 ) -> Optional[NDArray[float]]:
     """Fixation cross routine."""

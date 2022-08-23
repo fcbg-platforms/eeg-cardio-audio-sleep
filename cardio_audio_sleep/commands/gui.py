@@ -948,10 +948,39 @@ class GUI(QMainWindow):
         # disable recollection button
         self.pushButton_recollection.setEnabled(False)
 
-        # pick instruments
+        # prepare for instruments
         instru_sync = self.comboBox_synchronous.currentText()
         instru_iso = self.comboBox_isochronous.currentText()
         instru_async = self.comboBox_asynchronous.currentText()
+
+        # check that instruments have been picked for example
+        if all(elt is None for elt in self.instrument_file_example.values()):
+            self.instrument_file_example = pick_instrument_sound(
+                instru_sync,
+                instru_iso,
+                instru_async,
+                [],
+                1,
+            )
+        # sanity-check
+        assert all(
+            len(elt) == 1 for elt in self.instrument_file_example.values()
+        )
+
+        logger.debug(
+            "[Example] The selected sound for the synchronous category is %s",
+            self.instrument_file_example["synchronous"][0].name,
+        )
+        logger.debug(
+            "[Example] The selected sound for the isochronous category is %s",
+            self.instrument_file_example["isochronous"][0].name,
+        )
+        logger.debug(
+            "[Example] The selected sound for the asynchronous category is %s",
+            self.instrument_file_example["asynchronous"][0].name,
+        )
+
+        # pick instruments
         assert len(set((instru_sync, instru_iso, instru_async))) == 3
         exclude_example = [
             elt
@@ -1071,6 +1100,7 @@ class GUI(QMainWindow):
             win,
             args_mapping,
             self.trigger_instrument,
+            self.instrument_file_example,
             self.instrument_file_sleep,
             self.instrument_file_recollection,
             self._dev,

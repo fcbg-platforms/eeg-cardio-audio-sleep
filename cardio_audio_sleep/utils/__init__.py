@@ -1,6 +1,9 @@
 """Utilities module."""
 
-from .async_timings import generate_async_timings  # noqa: F401
+from .async_timings import (  # noqa: F401
+    generate_async_timings,
+    generate_async_timings_based_on_mean,
+)
 from .blocks import generate_blocks_sequence  # noqa: F401
 from .instrument import (  # noqa: F401
     load_instrument_categories,

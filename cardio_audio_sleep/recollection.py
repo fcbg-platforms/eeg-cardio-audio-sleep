@@ -22,7 +22,7 @@ from . import logger
 from .config import load_config
 from .tasks import asynchronous, isochronous, synchronous
 from .utils import (
-    generate_async_timings,
+    generate_async_timings_based_on_mean,
     generate_sequence,
     load_instrument_categories,
     load_instrument_images,
@@ -125,7 +125,7 @@ def recollection(
                 args[3] = np.median(np.diff(sequence_timings))
                 logger.info("Delay for isochronous: %.2f (s).", args[3])
             if condition == "asynchronous":
-                timings = generate_async_timings(
+                timings = generate_async_timings_based_on_mean(
                     sequence_timings, perc=0, n=n_stimuli
                 )
                 args[3] = timings
@@ -354,7 +354,9 @@ def _examples(
 ):
     """Example routine following the instructions."""
     for k in range(2):  # number of examples
-        instrument = np.random.choice(list(chain(*instrument_files_example.values())))
+        instrument = np.random.choice(
+            list(chain(*instrument_files_example.values()))
+        )
         logger.info(
             "[Recollection- Example] %i / 2 : %s sound.",
             k + 1,

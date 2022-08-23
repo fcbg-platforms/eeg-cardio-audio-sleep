@@ -42,7 +42,7 @@ from ..tasks import (
 )
 from ..triggers import Trigger, TriggerInstrument
 from ..utils import (
-    generate_async_timings,
+    generate_async_timings_based_on_mean,
     generate_blocks_sequence,
     generate_sequence,
     load_instrument_categories,
@@ -599,7 +599,9 @@ class GUI(QMainWindow):
                 args[3] = np.median(np.diff(self.sequence_timings))
                 logger.info("Delay for isochronous: %.2f (s).", args[3])
             if btype == "asynchronous":
-                timings = generate_async_timings(self.sequence_timings)
+                timings = generate_async_timings_based_on_mean(
+                    self.sequence_timings
+                )
                 args[3] = timings
                 logger.info(
                     "Average delay for asynchronous: %.2f (s).",

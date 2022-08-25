@@ -121,7 +121,7 @@ def test():
         error = True
         logger.error(
             "ANT LSL stream could not be found. Is the amplifier "
-            "correctly connected and the LSL app started?"
+            "correctly connected and the eego2lsl app started?"
         )
 
     # check the sampling rate

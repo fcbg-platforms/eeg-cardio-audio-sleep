@@ -166,7 +166,7 @@ def test():
     for value in tdef.by_value:
         logger.info("Testing trigger %i..", value)
         trigger.signal(value)
-        time.sleep(0.5)
+        time.sleep(1)
 
     # clean-up
     del trigger

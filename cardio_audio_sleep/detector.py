@@ -62,10 +62,9 @@ class Detector:
         self._sr = StreamReceiver(
             bufsize=0.2, winsize=0.2, stream_name=stream_name
         )
-        if len(self._sr.streams) == 0:
-            raise ValueError(
-                "The StreamReceiver did not connect to any streams."
-            )
+        while not self._sr.connected:
+            self._sr.connect(stream_name=stream_name)
+
         self._stream_name = stream_name
         _check_value(
             ecg_ch_name,

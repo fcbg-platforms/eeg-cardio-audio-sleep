@@ -219,7 +219,7 @@ class GUI(QMainWindow):
         """Load the graphical user interface."""
         # main window
         self.setWindowTitle("Cardio-Audio-Sleep experiment")
-        self.setFixedSize(QSize(1000, 300))
+        self.setFixedSize(QSize(1000, 330))
         self.setSizePolicy(GUI._sizePolicy(self))
         self.setContextMenuPolicy(Qt.NoContextMenu)
 
@@ -231,7 +231,7 @@ class GUI(QMainWindow):
         self.blocks = list()
         for k in range(5):
             block = Block(self.central_widget, "")
-            block.setGeometry(QRect(50 + 185 * k, 20, 160, 80))
+            block.setGeometry(QRect(50 + 185 * k, 50, 160, 80))
             block.setAlignment(Qt.AlignCenter)
             block.setObjectName(f"block{k}")
             if k in (0, 1):  # disable block 0 and 1 (past)
@@ -240,28 +240,28 @@ class GUI(QMainWindow):
 
         # add labels
         GUI._add_label(
-            self, 50, 115, 345, 20, "past", "Previous blocks", "center"
+            self, 50, 145, 345, 20, "past", "Previous blocks", "center"
         )
-        GUI._add_label(self, 420, 115, 160, 20, "current", "Current", "center")
+        GUI._add_label(self, 420, 145, 160, 20, "current", "Current", "center")
         GUI._add_label(
-            self, 605, 115, 345, 20, "future", "Next blocks", "center"
+            self, 605, 145, 345, 20, "future", "Next blocks", "center"
         )
 
         # add example / start / pause / stop / recollection push buttons
         self.pushButton_example = GUI._add_pushButton(
-            self, 20, 150, 176, 32, "pushButton_example", "Example"
+            self, 20, 180, 176, 32, "pushButton_example", "Example"
         )
         self.pushButton_start = GUI._add_pushButton(
-            self, 216, 150, 176, 32, "pushButton_start", "Start"
+            self, 216, 180, 176, 32, "pushButton_start", "Start"
         )
         self.pushButton_pause = GUI._add_pushButton(
-            self, 412, 150, 176, 32, "pushButton_pause", "Pause"
+            self, 412, 180, 176, 32, "pushButton_pause", "Pause"
         )
         self.pushButton_stop = GUI._add_pushButton(
-            self, 608, 150, 176, 32, "pushButton_stop", "Stop"
+            self, 608, 180, 176, 32, "pushButton_stop", "Stop"
         )
         self.pushButton_recollection = GUI._add_pushButton(
-            self, 804, 150, 176, 32, "pushButton_recollection", "Recollection"
+            self, 804, 180, 176, 32, "pushButton_recollection", "Recollection"
         )
         self.pushButton_example.setEnabled(self._instrument)
         self.pushButton_pause.setEnabled(False)
@@ -273,7 +273,7 @@ class GUI(QMainWindow):
         self.doubleSpinBox_height = GUI._add_doubleSpinBox(
             self,
             620,
-            194,
+            224,
             90,
             28,
             "doubleSpinBox_height",
@@ -285,7 +285,7 @@ class GUI(QMainWindow):
         self.doubleSpinBox_prominence = GUI._add_doubleSpinBox(
             self,
             620,
-            228,
+            258,
             90,
             28,
             "doubleSpinBox_prominence",
@@ -297,7 +297,7 @@ class GUI(QMainWindow):
         self.doubleSpinBox_width = GUI._add_doubleSpinBox(
             self,
             620,
-            262,
+            292,
             90,
             28,
             "doubleSpinBox_width",
@@ -307,24 +307,24 @@ class GUI(QMainWindow):
             value=defaults["width"],
         )
         self.pushButton_prominence = GUI._add_pushButton(
-            self, 720, 228, 113, 28, "pushButton_prominence", "Disable"
+            self, 720, 258, 113, 28, "pushButton_prominence", "Disable"
         )
         self.pushButton_prominence.setCheckable(True)
         self.pushButton_prominence.setChecked(False)
         self.pushButton_width = GUI._add_pushButton(
-            self, 720, 262, 113, 28, "pushButton_width", "Disable"
+            self, 720, 292, 113, 28, "pushButton_width", "Disable"
         )
         self.pushButton_width.setCheckable(True)
         self.pushButton_width.setChecked(False)
-        GUI._add_label(self, 530, 194, 90, 28, "height", "Height", "left")
+        GUI._add_label(self, 530, 224, 90, 28, "height", "Height", "left")
         GUI._add_label(
-            self, 530, 228, 90, 28, "prominence", "Prominence", "left"
+            self, 530, 258, 90, 28, "prominence", "Prominence", "left"
         )
-        GUI._add_label(self, 530, 262, 90, 28, "width", "Width", "left")
+        GUI._add_label(self, 530, 292, 90, 28, "width", "Width", "left")
 
         # add volume controls
         self.dial_volume = QDial(self.central_widget)
-        self.dial_volume.setGeometry(QRect(20, 230, 61, 61))
+        self.dial_volume.setGeometry(QRect(20, 260, 61, 61))
         self.dial_volume.setSizePolicy(GUI._sizePolicy(self.dial_volume))
         self.dial_volume.setMinimum(0)
         self.dial_volume.setMaximum(100)
@@ -333,7 +333,7 @@ class GUI(QMainWindow):
         self.doubleSpinBox_volume = GUI._add_doubleSpinBox(
             self,
             95,
-            247,
+            277,
             80,
             24,
             "doubleSpinBox_volume",
@@ -343,21 +343,21 @@ class GUI(QMainWindow):
             value=defaults["volume"],
         )
         self.pushButton_volume = GUI._add_pushButton(
-            self, 90, 200, 80, 32, "pushButton_volume", "Test"
+            self, 90, 230, 80, 32, "pushButton_volume", "Test"
         )
         if sys.platform != "linux":
             self.pushButton_volume.setEnabled(False)
-        GUI._add_label(self, 20, 200, 60, 32, "volume", "Volume", "center")
+        GUI._add_label(self, 20, 230, 60, 32, "volume", "Volume", "center")
 
         # add instrument sound controls
         self.comboBox_synchronous = GUI._add_comboBox(
-            self, 340, 194, 160, 28, "comboBox_synchronous"
+            self, 340, 224, 160, 28, "comboBox_synchronous"
         )
         self.comboBox_isochronous = GUI._add_comboBox(
-            self, 340, 228, 160, 28, "comboBox_isochronous"
+            self, 340, 258, 160, 28, "comboBox_isochronous"
         )
         self.comboBox_asynchronous = GUI._add_comboBox(
-            self, 340, 262, 160, 28, "comboBox_asynchronous"
+            self, 340, 292, 160, 28, "comboBox_asynchronous"
         )
         for comboBox in (
             self.comboBox_synchronous,
@@ -368,23 +368,23 @@ class GUI(QMainWindow):
             comboBox.setEnabled(self._instrument)
 
         GUI._add_label(
-            self, 210, 194, 100, 28, "synchronous", "Synchronous", "left"
+            self, 210, 224, 100, 28, "synchronous", "Synchronous", "left"
         )
         GUI._add_label(
-            self, 210, 228, 100, 28, "isochronous", "Isochronous", "left"
+            self, 210, 258, 100, 28, "isochronous", "Isochronous", "left"
         )
         GUI._add_label(
-            self, 210, 262, 100, 28, "asynchronous", "Asynchronous", "left"
+            self, 210, 292, 100, 28, "asynchronous", "Asynchronous", "left"
         )
 
         # add Eye-tracker controls
         self.pushButton_calibrate = GUI._add_pushButton(
-            self, 850, 228, 140, 28, "pushButton_calibrate", "Calibrate"
+            self, 850, 258, 140, 28, "pushButton_calibrate", "Calibrate"
         )
         if isinstance(eye_link, EyelinkMock):
             self.pushButton_calibrate.setEnabled(False)
         self.pushButton_cross = GUI._add_pushButton(
-            self, 850, 262, 140, 28, "pushButton_cross", "Fixation Cross"
+            self, 850, 292, 140, 28, "pushButton_cross", "Fixation Cross"
         )
         self.pushButton_cross.setCheckable(True)
         self.pushButton_cross.setChecked(False)
@@ -393,14 +393,29 @@ class GUI(QMainWindow):
             if wx is None:
                 self.pushButton_cross.setEnabled(False)
         GUI._add_label(
-            self, 850, 195, 140, 32, "eye_tracker", "Eye Tracker", "center"
+            self, 850, 225, 140, 32, "eye_tracker", "Eye Tracker", "center"
         )
 
         # add separation lines
-        GUI._add_line(self, 0, 178, 1000, 20, "line1", "h")
-        GUI._add_line(self, 180, 188, 20, 112, "line2", "v")
-        GUI._add_line(self, 830, 188, 20, 112, "line3", "v")
-        GUI._add_line(self, 510, 188, 20, 112, "line4", "v")
+        GUI._add_line(self, 0, 208, 1000, 20, "line1", "h")
+        GUI._add_line(self, 180, 218, 20, 112, "line2", "v")
+        GUI._add_line(self, 830, 218, 20, 112, "line3", "v")
+        GUI._add_line(self, 510, 218, 20, 112, "line4", "v")
+
+        # add label with amplifier name
+        GUI._add_label(
+            self,
+            20,
+            10,
+            250,
+            32,
+            "amplifier",
+            f"Detected amplifier: '{self._stream_name}'",
+            "left",
+        )
+        self.pushButton_amplifier = GUI._add_pushButton(
+            self, 280, 10, 113, 32, "pushButton_amplifier", "Update"
+        )
 
         # set central widget
         self.setCentralWidget(self.central_widget)

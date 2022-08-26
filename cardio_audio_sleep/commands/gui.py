@@ -1,6 +1,5 @@
 import multiprocessing as mp
 import os
-import random
 import sys
 from datetime import datetime
 from itertools import chain
@@ -417,6 +416,22 @@ class GUI(QMainWindow):
             self, 280, 10, 113, 32, "pushButton_amplifier", "Update"
         )
 
+        # add random seed
+        GUI._add_label(self, 800, 10, 100, 32, "random_seed", "Seed:", "left")
+        self.doubleSpinBox_seed = GUI._add_doubleSpinBox(
+            self,
+            850,
+            10,
+            100,
+            32,
+            "doubleSpinBox_seed",
+            min_=0.0,
+            max_=10000.0,
+            step=100.0,
+            value=np.random.randint(0, 10000),  # random seed to start with
+        )
+        self.doubleSpinBox_seed.setDecimals(0)
+
         # set central widget
         self.setCentralWidget(self.central_widget)
 
@@ -628,7 +643,7 @@ class GUI(QMainWindow):
             # instrument sounds
             idx = 9 if btype == "synchronous" else 5
             if self.instrument_file_sleep[btype] is not None:
-                args[idx] = random.choice(self.instrument_file_sleep[btype])
+                args[idx] = np.random.choice(self.instrument_file_sleep[btype])
                 logger.debug(
                     "Instrument sound for next %s block set to %s",
                     btype,
@@ -732,6 +747,7 @@ class GUI(QMainWindow):
     @pyqtSlot()
     def pushButton_example_clicked(self):
         logger.debug("[Example] Example requested.")
+        self.doubleSpinBox_seed.setEnabled(False)
 
         # retrieve the set categories
         instru_sync = self.comboBox_synchronous.currentText()
@@ -747,6 +763,7 @@ class GUI(QMainWindow):
                 instru_async,
                 [],
                 1,
+                int(self.doubleSpinBox_seed.value()),
             )
         # sanity-check
         assert all(
@@ -781,6 +798,7 @@ class GUI(QMainWindow):
         self.pushButton_example.setEnabled(False)
         self.pushButton_start.setEnabled(False)
         self.pushButton_amplifier.setEnabled(False)
+        self.doubleSpinBox_seed.setEnabled(False)
         self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)
 
@@ -813,6 +831,17 @@ class GUI(QMainWindow):
             if elt is not None
         ]
         assert len(set(categories)) == len(categories)  # uniqueness
+
+        # check that instruments have been picked for example
+        if all(elt is None for elt in self.instrument_file_example.values()):
+            self.instrument_file_example = pick_instrument_sound(
+                instru_sync,
+                instru_iso,
+                instru_async,
+                [],
+                1,
+                int(self.doubleSpinBox_seed.value()),
+            )
         exclude = [
             elt
             for elt in self.instrument_file_example.values()
@@ -829,6 +858,7 @@ class GUI(QMainWindow):
             instru_async,
             exclude,
             2,
+            int(self.doubleSpinBox_seed.value()),
         )
         self.comboBox_synchronous.setEnabled(False)
         self.comboBox_isochronous.setEnabled(False)
@@ -999,6 +1029,7 @@ class GUI(QMainWindow):
                 instru_async,
                 [],
                 1,
+                int(self.doubleSpinBox_seed.value()),
             )
         # sanity-check
         assert all(
@@ -1043,6 +1074,7 @@ class GUI(QMainWindow):
             instru_async,
             exclude,
             2,
+            int(self.doubleSpinBox_seed.value()),
         )
         # sanity-check
         assert all(

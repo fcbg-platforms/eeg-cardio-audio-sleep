@@ -44,6 +44,7 @@ def pick_instrument_sound(
     instrument_async: Optional[str],
     exclude: Union[List[Path], Tuple[Path, ...]],
     n: int,
+    seed: Optional[int] = None,
 ) -> Dict[str, Path]:
     """Pick N instrument sound from the instrument category.
 
@@ -59,6 +60,8 @@ def pick_instrument_sound(
         List of instrument files to exclude.
     n : int
         Number of sounds to pick for each condition.
+    seed : int | None
+        The random seed to use. If None, the random seed is not set
 
     Returns
     -------
@@ -73,6 +76,9 @@ def pick_instrument_sound(
         _check_type(elt, (Path,))
     _check_type(n, ("int",), "n")
     assert 0 < n
+    _check_type(seed, ("int", None), "seed")
+    if seed is not None:
+        np.random.seed(seed)
 
     directory = Path(__file__).parent.parent / "audio"
     assert directory.exists() and directory.is_dir()  # sanity-check

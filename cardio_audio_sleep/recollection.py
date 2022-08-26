@@ -126,7 +126,7 @@ def recollection(
                 logger.info("Delay for isochronous: %.2f (s).", args[3])
             if condition == "asynchronous":
                 timings = generate_async_timings_based_on_mean(
-                    sequence_timings, perc=0, n=n_stimuli
+                    sequence_timings, n=n_stimuli
                 )
                 args[3] = timings
                 logger.info(

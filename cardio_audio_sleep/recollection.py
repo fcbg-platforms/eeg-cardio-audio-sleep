@@ -366,7 +366,7 @@ def _examples(
         # generate stimuli sequence
         n_stimuli = np.random.randint(13, 17)
         args_iso[2] = generate_sequence(
-            np.random.randint(13, 17),
+            n_stimuli,
             0,
             0,
             args_iso[1],  # tdef

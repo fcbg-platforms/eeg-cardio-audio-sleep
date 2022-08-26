@@ -842,6 +842,10 @@ class GUI(QMainWindow):
                 1,
                 int(self.doubleSpinBox_seed.value()),
             )
+        # sanity-check
+        assert all(
+            len(elt) == 1 for elt in self.instrument_file_example.values()
+        )
         exclude = [
             elt
             for elt in self.instrument_file_example.values()

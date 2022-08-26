@@ -175,7 +175,7 @@ class GUI(QMainWindow):
                 self.trigger,
                 self.tdef,
                 None,  # sequence
-                self._stream_name,
+                None,  # stream_name
                 self._ecg_ch_name,
                 defaults["height"],
                 defaults["prominence"],
@@ -1125,7 +1125,7 @@ class GUI(QMainWindow):
                 self.trigger.trigger,
                 self.tdef,
                 None,  # sequence
-                None,  # stream_name
+                self._stream_name,
                 self._ecg_ch_name,
                 self.doubleSpinBox_height.value(),
                 self.doubleSpinBox_prominence.value()

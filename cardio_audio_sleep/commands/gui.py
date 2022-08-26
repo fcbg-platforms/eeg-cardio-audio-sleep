@@ -403,7 +403,7 @@ class GUI(QMainWindow):
         GUI._add_line(self, 510, 218, 20, 112, "line4", "v")
 
         # add label with amplifier name
-        GUI._add_label(
+        self.label_amplifier = GUI._add_label(
             self,
             20,
             10,
@@ -608,7 +608,9 @@ class GUI(QMainWindow):
                 self.config[btype]["edge_perc"],
                 self.tdef,
             )
-
+            # stream_name
+            if btype == "synchronous":
+                args[3] = self._stream_name
             # delay/sequence timings
             if btype == "isochronous":
                 args[3] = np.median(np.diff(self.sequence_timings))
@@ -722,6 +724,11 @@ class GUI(QMainWindow):
         )
         self.pushButton_cross.clicked.connect(self.pushButton_cross_clicked)
 
+        # amplifier
+        self.pushButton_amplifier.clicked.connect(
+            self.pushButton_amplifier_clicked
+        )
+
     @pyqtSlot()
     def pushButton_example_clicked(self):
         logger.debug("[Example] Example requested.")
@@ -773,6 +780,7 @@ class GUI(QMainWindow):
         logger.debug("[Start] Start requested.")
         self.pushButton_example.setEnabled(False)
         self.pushButton_start.setEnabled(False)
+        self.pushButton_amplifier.setEnabled(False)
         self.pushButton_pause.setEnabled(True)
         self.pushButton_stop.setEnabled(True)
 
@@ -892,6 +900,11 @@ class GUI(QMainWindow):
                 logger.warning("[Pause] No process found to suspend.")
             self.trigger.signal(self.tdef.pause)
 
+            # enable updating the amplifier if pause in something else than a
+            # synchronous block
+            if self.process_block_name != "synchronous":
+                self.pushButton_amplifier.setEnabled(True)
+
             # enable test sound and eye-link calibration buttons
             if sys.platform == "linux":
                 self.pushButton_volume.setEnabled(True)
@@ -906,6 +919,11 @@ class GUI(QMainWindow):
             except psutil.NoSuchProcess:
                 logger.warning("[Resume] No process found to resume.")
             self.trigger.signal(self.tdef.resume)
+
+            # disable updating the amplifier if pause in something else than a
+            # synchronous block
+            if self.process_block_name != "synchronous":
+                self.pushButton_amplifier.setEnabled(False)
 
             # disable test sound and eye-link calibration buttons
             self.pushButton_volume.setEnabled(False)
@@ -937,6 +955,9 @@ class GUI(QMainWindow):
             self.win.flip()  # flush win.callOnFlip() and win.timeOnFlip()
             self.win.close()
             self.win = None
+
+        # enable updating the amplifier for the recollection
+        self.pushButton_amplifier.setEnabled(True)
 
         # enable recollection
         if sys.platform == "linux":
@@ -1068,7 +1089,7 @@ class GUI(QMainWindow):
                 self.trigger.trigger,
                 self.tdef,
                 None,  # sequence
-                self._stream_name,
+                None,  # stream_name
                 self._ecg_ch_name,
                 self.doubleSpinBox_height.value(),
                 self.doubleSpinBox_prominence.value()
@@ -1247,6 +1268,20 @@ class GUI(QMainWindow):
             )
             cross.setAutoDraw(True)
             self.win.flip()
+
+    @pyqtSlot()
+    def pushButton_amplifier_clicked(self):
+        try:
+            stream_name = search_ANT_amplifier()
+            logger.info("eego amplifier found: %s", stream_name)
+        except RuntimeError:
+            logger.error(
+                "/!\ eego amplifier could not be found on the netowkr. "
+                "Make sure it's plug-in, turn on, and that the eego2lsl "
+                "app is linked."
+            )
+        self.label_amplifier.setText(f"Detected amplifier: '{stream_name}'")
+        self._stream_name = stream_name
 
 
 class Block(QLabel):

@@ -80,14 +80,6 @@ def recollection(
     try:
         _instructions(win, keyboard)
         trigger_instrument.signal("recollection-examples")
-        _examples(
-            win,
-            images,
-            keyboard,
-            instrument_files_example,
-            args_mapping["isochronous"],
-            trigger_instrument,
-        )
         _training(
             win,
             images,
@@ -348,73 +340,6 @@ def _instructions(win: Window, keyboard: Keyboard):
         img.setAutoDraw(False)
         txt.setAutoDraw(False)
     instruction_text.setAutoDraw(False)
-    continue_text.setAutoDraw(False)
-
-
-def _examples(
-    win,
-    images,
-    keyboard,
-    instrument_files_example,
-    args_iso,
-    trigger_instrument,
-):
-    """Example routine following the instructions."""
-    for k in range(2):  # number of examples
-        instrument = np.random.choice(
-            list(chain(*instrument_files_example.values()))
-        )
-        logger.info(
-            "[Recollection- Example] %i / 2 : %s sound.",
-            k + 1,
-            instrument.name,
-        )
-
-        # generate stimuli sequence
-        n_stimuli = np.random.randint(13, 17)
-        args_iso[2] = generate_sequence(
-            n_stimuli,
-            0,
-            0,
-            args_iso[1],  # tdef
-        )
-        logger.debug("Number of stimuli set to %i.", n_stimuli)
-        # set iso inter-stimuli delay
-        args_iso[3] = 0.75
-        # set instrument
-        args_iso[5] = instrument
-        trigger_instrument.signal(instrument.name)
-
-        # run task
-        _task_routine(
-            win,
-            isochronous,
-            tuple(args_iso),
-            images,
-        )
-        _category(images)
-        _confidence(win)
-
-    continue_text = TextStim(
-        win=win,
-        text="You will now train to respond as fast as possible\n"
-        "on the response-box. The following examples will be shorter and\n"
-        "will not include the confidence scaling.\n\n"
-        "Press SPACE to start.",
-        height=0.05,
-        pos=(0, 0),
-    )
-    continue_text.setAutoDraw(True)
-    win.flip()
-
-    keyboard.start()
-    while True:  # wait for 'space'
-        keys = keyboard.getKeys(keyList=["space"], waitRelease=False)
-        if len(keys) != 0:
-            break
-        win.flip()
-    keyboard.stop()
-    keyboard.clearEvents()
     continue_text.setAutoDraw(False)
 
 

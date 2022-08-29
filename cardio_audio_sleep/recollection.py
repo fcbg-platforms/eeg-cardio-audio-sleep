@@ -1,4 +1,3 @@
-from copy import deepcopy
 from itertools import chain
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple, Union
@@ -86,7 +85,7 @@ def recollection(
             images,
             keyboard,
             instrument_files_example,
-            deepcopy(args_mapping["isochronous"]),
+            args_mapping["isochronous"],
             trigger_instrument,
         )
         _training(
@@ -94,7 +93,7 @@ def recollection(
             images,
             keyboard,
             instrument_files_example,
-            deepcopy(args_mapping["isochronous"]),
+            args_mapping["isochronous"],
             trigger_instrument,
         )
         trigger_instrument.signal("recollection")
@@ -112,7 +111,7 @@ def recollection(
             responses["condition"].append(condition)
             responses["instrument"].append(instrument.name)
             # prepare arguments
-            args = deepcopy(args_mapping[condition])
+            args = args_mapping[condition]
             n_stimuli = stimuli_distribution[condition][
                 condition_counters[condition]
             ]

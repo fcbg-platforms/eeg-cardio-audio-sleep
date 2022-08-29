@@ -406,14 +406,14 @@ class GUI(QMainWindow):
             self,
             20,
             10,
-            250,
+            320,
             32,
             "amplifier",
             f"Detected amplifier: '{self._stream_name}'",
             "left",
         )
         self.pushButton_amplifier = GUI._add_pushButton(
-            self, 280, 10, 113, 32, "pushButton_amplifier", "Update"
+            self, 350, 10, 113, 32, "pushButton_amplifier", "Update"
         )
 
         # add random seed

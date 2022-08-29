@@ -101,7 +101,7 @@ def generate_async_timings_based_on_mean(
     n = len(sequence_timings) if n is None else n
     diff = np.diff(sequence_timings)
     mean = np.mean(diff)
-    mask = np.where((diff < 1.5 * mean) & (0.5 * mean < diff))
+    mask = np.where((diff < 1.8 * mean) & (0.2 * mean < diff))
     assert diff[mask].size != 0
 
     # generate sequence of 'n-1' valid inter-stimulus delays

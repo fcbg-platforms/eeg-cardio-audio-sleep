@@ -1310,14 +1310,14 @@ class GUI(QMainWindow):
         try:
             stream_name = search_ANT_amplifier()
             logger.info("eego amplifier found: %s", stream_name)
+            self.label_amplifier.setText(f"Detected amplifier: '{stream_name}'")
+            self._stream_name = stream_name
         except RuntimeError:
             logger.error(
                 "/!\ eego amplifier could not be found on the netowkr. "
                 "Make sure it's plug-in, turn on, and that the eego2lsl "
                 "app is linked."
             )
-        self.label_amplifier.setText(f"Detected amplifier: '{stream_name}'")
-        self._stream_name = stream_name
 
 
 class Block(QLabel):

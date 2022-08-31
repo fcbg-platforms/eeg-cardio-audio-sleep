@@ -352,13 +352,16 @@ def _training(
     trigger_instrument,
 ):
     """Example routine following the instructions."""
-    for k in range(15):  # number of examples
-        instrument = np.random.choice(
-            list(chain(*instrument_files_example.values()))
-        )
+    n_examples = 6
+    instruments = list(chain(*instrument_files_example.values())) * 2
+    for k in range(n_examples):  # number of examples
+        idx = np.random.randint(0, len(instruments))
+        instrument = instruments[idx]
+        del instruments[idx]
         logger.info(
-            "[Recollection- Training] %i / 15 : %s sound.",
+            "[Recollection- Training] %i / %i : %s sound.",
             k + 1,
+            n_examples,
             instrument.name,
         )
 

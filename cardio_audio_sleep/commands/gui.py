@@ -812,58 +812,61 @@ class GUI(QMainWindow):
         # disable cross button
         self.pushButton_cross.setEnabled(False)
 
-        # pick instruments and disable instrument selection
-        if self.config["synchronous"]["instrument"]:
-            instru_sync = self.comboBox_synchronous.currentText()
-        else:
-            instru_sync = None
-        if self.config["isochronous"]["instrument"]:
-            instru_iso = self.comboBox_isochronous.currentText()
-        else:
-            instru_iso = None
-        if self.config["asynchronous"]["instrument"]:
-            instru_async = self.comboBox_asynchronous.currentText()
-        else:
-            instru_async = None
-        categories = [
-            elt
-            for elt in (instru_sync, instru_iso, instru_async)
-            if elt is not None
-        ]
-        assert len(set(categories)) == len(categories)  # uniqueness
+        if self._instrument:
+            # pick instruments and disable instrument selection
+            if self.config["synchronous"]["instrument"]:
+                instru_sync = self.comboBox_synchronous.currentText()
+            else:
+                instru_sync = None
+            if self.config["isochronous"]["instrument"]:
+                instru_iso = self.comboBox_isochronous.currentText()
+            else:
+                instru_iso = None
+            if self.config["asynchronous"]["instrument"]:
+                instru_async = self.comboBox_asynchronous.currentText()
+            else:
+                instru_async = None
+            categories = [
+                elt
+                for elt in (instru_sync, instru_iso, instru_async)
+                if elt is not None
+            ]
+            assert len(set(categories)) == len(categories)  # uniqueness
 
-        # check that instruments have been picked for example
-        if all(elt is None for elt in self.instrument_file_example.values()):
-            self.instrument_file_example = pick_instrument_sound(
+            # check that instruments have been picked for example
+            if all(
+                elt is None for elt in self.instrument_file_example.values()
+            ):
+                self.instrument_file_example = pick_instrument_sound(
+                    instru_sync,
+                    instru_iso,
+                    instru_async,
+                    [],
+                    1,
+                    int(self.doubleSpinBox_seed.value()),
+                )
+            # sanity-check
+            assert all(
+                len(elt) == 1 for elt in self.instrument_file_example.values()
+            )
+            exclude = [
+                elt
+                for elt in self.instrument_file_example.values()
+                if elt is not None
+            ]
+            exclude = list(chain(*exclude))
+            logger.debug(
+                "[Start] Instrument pick with %s excluded.",
+                [elt.name for elt in exclude],
+            )
+            self.instrument_file_sleep = pick_instrument_sound(
                 instru_sync,
                 instru_iso,
                 instru_async,
-                [],
-                1,
+                exclude,
+                2,
                 int(self.doubleSpinBox_seed.value()),
             )
-        # sanity-check
-        assert all(
-            len(elt) == 1 for elt in self.instrument_file_example.values()
-        )
-        exclude = [
-            elt
-            for elt in self.instrument_file_example.values()
-            if elt is not None
-        ]
-        exclude = list(chain(*exclude))
-        logger.debug(
-            "[Start] Instrument pick with %s excluded.",
-            [elt.name for elt in exclude],
-        )
-        self.instrument_file_sleep = pick_instrument_sound(
-            instru_sync,
-            instru_iso,
-            instru_async,
-            exclude,
-            2,
-            int(self.doubleSpinBox_seed.value()),
-        )
         self.comboBox_synchronous.setEnabled(False)
         self.comboBox_isochronous.setEnabled(False)
         self.comboBox_asynchronous.setEnabled(False)
@@ -1310,7 +1313,9 @@ class GUI(QMainWindow):
         try:
             stream_name = search_ANT_amplifier()
             logger.info("eego amplifier found: %s", stream_name)
-            self.label_amplifier.setText(f"Detected amplifier: '{stream_name}'")
+            self.label_amplifier.setText(
+                f"Detected amplifier: '{stream_name}'"
+            )
             self._stream_name = stream_name
         except RuntimeError:
             logger.error(

@@ -314,7 +314,7 @@ def _instructions(win: Window, keyboard: Keyboard):
     )
     continue_text = TextStim(
         win=win,
-        text="Press SPACE for 2 examples.",
+        text="Press SPACE for examples.",
         height=0.05,
         pos=(0, -0.65),
     )

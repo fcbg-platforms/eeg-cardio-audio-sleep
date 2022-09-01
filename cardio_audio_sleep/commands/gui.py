@@ -989,8 +989,11 @@ class GUI(QMainWindow):
         self.eye_link.stop()
         # remove fixation cross window
         if self.win is not None:
-            self.win.flip()  # flush win.callOnFlip() and win.timeOnFlip()
-            self.win.close()
+            try:
+                self.win.flip()  # flush win.callOnFlip() and win.timeOnFlip()
+                self.win.close()
+            except Exception:
+                pass
             self.win = None
 
         # enable updating the amplifier for the recollection

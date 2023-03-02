@@ -351,7 +351,7 @@ def _training(
     args_iso,
     trigger_instrument,
 ):
-    """Example routine following the instructions."""
+    """Start an example routine following the instructions."""
     n_examples = 6
     instruments = list(chain(*instrument_files_example.values())) * 2
     for k in range(n_examples):  # number of examples

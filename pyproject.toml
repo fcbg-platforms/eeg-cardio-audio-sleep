@@ -35,7 +35,7 @@ classifiers = [
     'Topic :: Scientific/Engineering',
 ]
 dependencies = [
-    'numpy',
+    'numpy>=1.21',
     'scipy',
     'pandas',
     'mne>=1.0.0',
@@ -88,6 +88,7 @@ extend-exclude = '''
       __pycache__
     | \.github
     | setup.py
+    | \script
 )
 '''
 

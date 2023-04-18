@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 from matplotlib.widgets import Button, Slider
 from scipy.signal import find_peaks
 
-from .utils import search_ANT_amplifier
+from .utils import search_amplifier
 from .utils._checks import _check_type, _check_value
 from .utils._logs import logger
 
@@ -261,7 +261,7 @@ def _acquire_data(ecg_ch_name, stream_name, duration_buffer):
     _check_type(stream_name, (str, None), item_name="stream_name")
     _check_type(duration_buffer, ("numeric",), item_name="duration_buffer")
     if stream_name is None:
-        stream_name = search_ANT_amplifier()
+        stream_name = search_amplifier("micromed")
     if duration_buffer <= 0.2:
         raise ValueError(
             "Argument 'duration_buffer' must be strictly larger than 0.2. "

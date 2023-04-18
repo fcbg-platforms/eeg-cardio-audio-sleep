@@ -46,7 +46,7 @@ from ..utils import (
     generate_sequence,
     load_instrument_categories,
     pick_instrument_sound,
-    search_ANT_amplifier,
+    search_amplifier,
     test_volume,
 )
 from ..utils._checks import _check_value
@@ -153,7 +153,7 @@ class GUI(QMainWindow):
         self.trigger_instrument = TriggerInstrument()
 
         # search for LSL stream
-        self._stream_name = search_ANT_amplifier()
+        self._stream_name = search_amplifier("micromed")
         self._ecg_ch_name = ecg_ch_name
 
         # Create task mapping
@@ -1314,7 +1314,7 @@ class GUI(QMainWindow):
     @pyqtSlot()
     def pushButton_amplifier_clicked(self):
         try:
-            stream_name = search_ANT_amplifier()
+            stream_name = search_amplifier("micromed")
             logger.info("eego amplifier found: %s", stream_name)
             self.label_amplifier.setText(
                 f"Detected amplifier: '{stream_name}'"

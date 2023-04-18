@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import QApplication
 from .. import logger, peak_detection_parameters_tuning, set_log_level
 from ..config import load_triggers
 from ..triggers import SerialPortTrigger
-from ..utils import search_ANT_amplifier
+from ..utils import search_amplifier
 from ..utils._imports import import_optional_dependency
 from .cli import input_ecg_ch_name
 from .gui import GUI
@@ -115,7 +115,7 @@ def test():
     # look for the LSL stream
     logger.info("Looking for ANT LSL stream..")
     try:
-        stream_name = search_ANT_amplifier()
+        stream_name = search_amplifier("micromed")
         logger.info("ANT LSL stream found!")
     except RuntimeError:
         error = True

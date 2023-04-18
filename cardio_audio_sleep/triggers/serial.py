@@ -50,8 +50,7 @@ class SerialPortTrigger(BaseTrigger):
     address : int (hex) | str
         The address of the serial port on the system.
     delay : int
-        Delay in milliseconds until which a new trigger cannot be sent. During
-        this time, the pins of the LPT port remain in the same state.
+        Delay in milliseconds until which a new trigger cannot be sent.
 
     Notes
     -----

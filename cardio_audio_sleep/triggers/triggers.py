@@ -8,7 +8,7 @@ from ..utils._docs import fill_doc
 
 @fill_doc
 class Trigger:
-    """Trigger class combining a BSL trigger (LPT) and an eye-link system.
+    """Trigger class combining a BSL trigger and an eye-link system.
 
     Parameters
     ----------

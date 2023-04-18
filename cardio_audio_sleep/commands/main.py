@@ -5,12 +5,12 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from bsl.triggers import ParallelPortTrigger
 from bsl.utils.lsl import list_lsl_streams
 from PyQt5.QtWidgets import QApplication
 
 from .. import logger, peak_detection_parameters_tuning, set_log_level
 from ..config import load_triggers
+from ..triggers import SerialPortTrigger
 from ..utils import search_ANT_amplifier
 from ..utils._imports import import_optional_dependency
 from .cli import input_ecg_ch_name
@@ -142,12 +142,12 @@ def test():
 
     # check the trigger
     try:
-        trigger = ParallelPortTrigger("/dev/parport0", delay=5)
+        trigger = SerialPortTrigger("/dev/ttyUSB0", delay=5)
     except Exception:
         error = True
         logger.error(
-            "Could not initialize the parallel port trigger. Is the LPT cable "
-            "correctly connected and does '/dev/parport0' exist?"
+            "Could not initialize the serial port trigger. Is the DB-9 cable "
+            "correctly connected and does '/dev/ttyUSB0' exist?"
         )
 
     if error:

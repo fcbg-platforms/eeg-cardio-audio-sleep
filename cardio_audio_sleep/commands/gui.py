@@ -9,7 +9,7 @@ from typing import Optional, Tuple
 import numpy as np
 import pandas as pd
 import psutil
-from bsl.triggers import MockTrigger, ParallelPortTrigger
+from bsl.triggers import MockTrigger
 from psychopy.visual import ShapeStim, Window
 from PyQt5.QtCore import QRect, QSize, Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import QColor, QFont, QPalette
@@ -39,7 +39,7 @@ from ..tasks import (
     isochronous,
     synchronous,
 )
-from ..triggers import Trigger, TriggerInstrument
+from ..triggers import SerialPortTrigger, Trigger, TriggerInstrument
 from ..utils import (
     generate_async_timings_based_on_mean,
     generate_blocks_sequence,
@@ -143,7 +143,7 @@ class GUI(QMainWindow):
 
         # combine trigger with eye-link
         if trigger_type == "lpt":
-            trigger = ParallelPortTrigger("/dev/parport0", delay=5)
+            trigger = SerialPortTrigger("/dev/ttyUSB0", delay=5)
         elif trigger_type == "mock":
             trigger = MockTrigger()
         self.eye_link = eye_link

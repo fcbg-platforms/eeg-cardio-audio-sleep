@@ -92,6 +92,8 @@ def load_config(fname: str, dev: bool = False) -> Tuple[dict, str]:
     Returns
     -------
     config : dict
+    trigger : str
+        Type of trigger.
     """
     _check_type(fname, (str,), "fname")
     _check_type(dev, (bool,), "dev")

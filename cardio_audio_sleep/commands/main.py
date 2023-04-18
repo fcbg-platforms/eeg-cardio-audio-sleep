@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+from bsl.triggers import ParallelPortTrigger
 from bsl.utils.lsl import list_lsl_streams
 from PyQt5.QtWidgets import QApplication
 
@@ -12,6 +13,7 @@ from .. import logger, peak_detection_parameters_tuning, set_log_level
 from ..config import load_triggers
 from ..triggers import SerialPortTrigger
 from ..utils import search_amplifier
+from ..utils._checks import _check_value
 from ..utils._imports import import_optional_dependency
 from .cli import input_ecg_ch_name
 from .gui import GUI
@@ -111,16 +113,36 @@ def pds():
 
 def test():
     """Run test on the LSL stream and triggers."""
+    parser = argparse.ArgumentParser(
+        prog="CAS - Test", description="Test CAS system."
+    )
+    parser.add_argument(
+        "--amplifier",
+        type=str,
+        metavar="str",
+        help="Either 'ant' or 'micromed'.",
+        default="micromed",
+    )
+    parser.add_argument(
+        "--trigger",
+        type=str,
+        metavar="str",
+        help="Either 'serial' or 'parallel'.",
+        default="serial",
+    )
+    args = parser.parse_args()
+    _check_value(args.trigger, ("serial", "parallel"), "trigger")
+
     error = False
     # look for the LSL stream
-    logger.info("Looking for ANT LSL stream..")
+    logger.info("Looking for LSL stream..")
     try:
-        stream_name = search_amplifier("micromed")
-        logger.info("ANT LSL stream found!")
+        stream_name = search_amplifier(args.amplifier)
+        logger.info("LSL stream found!")
     except RuntimeError:
         error = True
         logger.error(
-            "ANT LSL stream could not be found. Is the amplifier "
+            "LSL stream could not be found. Is the amplifier "
             "correctly connected and the LSL app started?"
         )
 
@@ -142,13 +164,22 @@ def test():
 
     # check the trigger
     try:
-        trigger = SerialPortTrigger("/dev/ttyUSB0", delay=5)
+        if args.trigger == "serial":
+            trigger = SerialPortTrigger("/dev/ttyUSB0", delay=5)
+        elif args.trigger == "parallel":
+            trigger = ParallelPortTrigger("/dev/parport0", delay=5)
     except Exception:
         error = True
-        logger.error(
-            "Could not initialize the serial port trigger. Is the DB-9 cable "
-            "correctly connected and does '/dev/ttyUSB0' exist?"
-        )
+        if args.trigger == "serial":
+            logger.error(
+                "Could not initialize the serial port trigger. Is the DB-9 "
+                "cable correctly connected and does '/dev/ttyUSB0' exist?"
+            )
+        elif args.trigger == "parallel":
+            logger.error(
+                "Could not initialize the parallel port trigger. Is the LPT "
+                "cable correctly connected and does '/dev/parport0' exist?"
+            )
 
     if error:
         logger.info(

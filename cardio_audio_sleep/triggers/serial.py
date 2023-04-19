@@ -126,7 +126,7 @@ class SerialPortTrigger(BaseTrigger):
 
     def _set_data(self, value: int) -> None:
         """Set data on the pin."""
-        self._port.write(bytes([value]))
+        self._port.write(value)
 
     def close(self) -> None:
         """Disconnects the serial port.

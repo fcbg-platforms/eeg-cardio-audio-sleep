@@ -9,7 +9,7 @@ from typing import Optional, Tuple
 import numpy as np
 import pandas as pd
 import psutil
-from bsl.triggers import LSLTrigger, MockTrigger, ParallelPortTrigger
+from bsl.triggers import MockTrigger, ParallelPortTrigger
 from psychopy.visual import ShapeStim, Window
 from PyQt5.QtCore import QRect, QSize, Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import QColor, QFont, QPalette
@@ -148,8 +148,6 @@ class GUI(QMainWindow):
             trigger = ParallelPortTrigger("/dev/parport0", delay=5)
         elif trigger_type == "mock":
             trigger = MockTrigger()
-        elif trigger_type == "lsl":
-            trigger = LSLTrigger("Triggers")
         self.eye_link = eye_link
         self.trigger = Trigger(trigger, self.eye_link)
 

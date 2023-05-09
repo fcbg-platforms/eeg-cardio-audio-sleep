@@ -65,7 +65,6 @@ class Detector:
             sinfos = resolve_streams(timeout=10, name=stream_name)
         assert len(sinfos) == 1
 
-
         self._inlet = StreamInlet(
             sinfos[0],
             max_buffered=10,
@@ -79,7 +78,9 @@ class Detector:
         for elt in root.iter("channel"):
             ch_list.append(elt.find("label").text)
         _check_value(
-            ecg_ch_name, ch_list, item_name="ecg_ch_name",
+            ecg_ch_name,
+            ch_list,
+            item_name="ecg_ch_name",
         )
 
         # Infos from stream

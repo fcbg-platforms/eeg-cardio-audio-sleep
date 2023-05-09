@@ -1,10 +1,11 @@
 """Heartbeat detector, detecting R-peak entering an LSL buffer."""
 
 import math
+import xml.etree.ElementTree as ET
 from typing import Optional, Union
 
 import numpy as np
-from bsl import StreamReceiver
+from bsl.lsl import StreamInlet, resolve_streams
 from bsl.utils import Timer
 from mne.filter import filter_data
 from scipy.signal import find_peaks
@@ -58,26 +59,33 @@ class Detector:
                 "Argument 'duration_buffer' must be strictly larger than 0.2. "
                 f"Provided: '{duration_buffer}' seconds."
             )
-        self._sr = StreamReceiver(
-            bufsize=0.2, winsize=0.2, stream_name=stream_name
-        )
-        while not self._sr.connected:
-            self._sr.connect(stream_name=stream_name)
 
+        sinfos = list()
+        while len(sinfos) == 0:
+            sinfos = resolve_streams(timeout=10, name=stream_name)
+        assert len(sinfos) == 1
+
+
+        self._inlet = StreamInlet(
+            sinfos[0],
+            max_buffered=10,
+            processing_flags=["clocksync", "dejitter", "monotize"],
+        )
+        self._inlet.open_stream()
         self._stream_name = stream_name
+
+        root = ET.fromstring(self._inlet.get_sinfo().as_xml)
+        ch_list = []
+        for elt in root.iter("channel"):
+            ch_list.append(elt.find("label").text)
         _check_value(
-            ecg_ch_name,
-            self._sr.streams[stream_name].ch_list,
-            item_name="ecg_ch_name",
+            ecg_ch_name, ch_list, item_name="ecg_ch_name",
         )
 
         # Infos from stream
-        self._sample_rate = int(
-            self._sr.streams[self._stream_name].sample_rate
-        )
-        self._ecg_channel_idx = self._sr.streams[
-            self._stream_name
-        ].ch_list.index(ecg_ch_name)
+        self._sample_rate = int(self._inlet.sfreq)
+        self._ecg_channel_idx = ch_list.index(ecg_ch_name)
+        self._ecg_channel_name = ch_list[self._ecg_channel_idx]
 
         # Variables
         self._duration_buffer = float(duration_buffer)
@@ -122,12 +130,10 @@ class Detector:
         Main update loop acquiring data from the LSL stream and filling the
         detector's buffer on each call.
         """
-        self._sr.acquire()
-        data_acquired, timestamps_acquired = self._sr.get_buffer()
-        self._sr.reset_buffer()
-        n = data_acquired.shape[0]  # number of acquires samples
-        if n == 0:
+        data_acquired, timestamps_acquired = self._inlet.pull_chunk()
+        if timestamps_acquired.size == 0:
             return  # no new samples
+        n = timestamps_acquired.size
 
         # shape (samples, )
         self._ecg_buffer = np.roll(self._ecg_buffer, -n)
@@ -235,13 +241,16 @@ class Detector:
 
     def __del__(self):
         """Destructor method."""
-        del self._sr  # disconnects stream receiver
+        try:
+            del self._inlet  # disconnects from the outlet
+        except AttributeError:
+            pass  # error raised before the inlet was created
 
     # --------------------------------------------------------------------
     @property
     def sr(self):
-        """The connected StreamReceiver."""
-        return self._sr
+        """The connected StreamInlet."""
+        return self._inlet
 
     @property
     def stream_name(self):
@@ -256,7 +265,7 @@ class Detector:
     @property
     def ecg_ch_name(self):
         """The ECG channel name."""
-        return self.sr.streams[self.stream_name].ch_list[self.ecg_channel_idx]
+        return self._ecg_ch_name
 
     @property
     def ecg_channel_idx(self):

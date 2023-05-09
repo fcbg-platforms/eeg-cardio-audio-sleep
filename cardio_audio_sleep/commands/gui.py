@@ -39,7 +39,7 @@ from ..tasks import (
     isochronous,
     synchronous,
 )
-from ..triggers import SerialPortTrigger, Trigger, TriggerInstrument
+from ..triggers import Trigger, TriggerInstrument
 from ..utils import (
     generate_async_timings_based_on_mean,
     generate_blocks_sequence,
@@ -142,9 +142,7 @@ class GUI(QMainWindow):
         self.tdef = load_triggers()
 
         # combine trigger with eye-link
-        if trigger_type == "serial":
-            trigger = SerialPortTrigger("/dev/ttyUSB0", delay=5)
-        elif trigger_type == "lpt":
+        if trigger_type == "lpt":
             trigger = ParallelPortTrigger("/dev/parport0", delay=5)
         elif trigger_type == "mock":
             trigger = MockTrigger()

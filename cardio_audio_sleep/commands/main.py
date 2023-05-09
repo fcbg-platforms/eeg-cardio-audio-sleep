@@ -12,7 +12,6 @@ from PyQt5.QtWidgets import QApplication
 from .. import logger, peak_detection_parameters_tuning, set_log_level
 from ..config import load_triggers
 from ..utils import search_amplifier
-from ..utils._checks import _check_value
 from ..utils._imports import import_optional_dependency
 from .cli import input_ecg_ch_name
 from .gui import GUI

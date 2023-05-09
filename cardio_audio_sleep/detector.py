@@ -4,7 +4,6 @@ import math
 from typing import Optional, Union
 
 import numpy as np
-import psychtoolbox as ptb
 from bsl import StreamReceiver
 from bsl.utils import Timer
 from mne.filter import filter_data
@@ -87,8 +86,12 @@ class Detector:
         )
 
         # Buffers
-        self._timestamps_buffer = np.zeros(self._duration_buffer_samples)
-        self._ecg_buffer = np.zeros(self._duration_buffer_samples)
+        self._timestamps_buffer = np.zeros(
+            self._duration_buffer_samples, dtype=np.float32
+        )
+        self._ecg_buffer = np.zeros(
+            self._duration_buffer_samples, dtype=np.float32
+        )
 
         # R-Peak detectors
         self._last_peak = None
@@ -120,26 +123,18 @@ class Detector:
         detector's buffer on each call.
         """
         self._sr.acquire()
-        data_acquired, _ = self._sr.get_buffer()
+        data_acquired, timestamps_acquired = self._sr.get_buffer()
         self._sr.reset_buffer()
         n = data_acquired.shape[0]  # number of acquires samples
         if n == 0:
             return  # no new samples
-
-        # generate timestamps from local clock
-        now = ptb.GetSecs()
-        times = np.arange(
-            now - (n - 1) / self._sample_rate,
-            now + 1 / self._sample_rate,
-            1 / self._sample_rate,
-        )
 
         # shape (samples, )
         self._ecg_buffer = np.roll(self._ecg_buffer, -n)
         self._ecg_buffer[-n:] = data_acquired[:, self._ecg_channel_idx]
 
         self._timestamps_buffer = np.roll(self._timestamps_buffer, -n)
-        self._timestamps_buffer[-n:] = times
+        self._timestamps_buffer[-n:] = timestamps_acquired
 
     def new_peaks(self):
         """Look if new R-peaks have entered the buffer."""

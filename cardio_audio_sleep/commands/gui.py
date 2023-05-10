@@ -143,7 +143,7 @@ class GUI(QMainWindow):
 
         # combine trigger with eye-link
         if trigger_type == "lpt":
-            trigger = ParallelPortTrigger("/dev/parport0", delay=5)
+            trigger = ParallelPortTrigger("arduino", delay=5)
         elif trigger_type == "mock":
             trigger = MockTrigger()
         self.eye_link = eye_link

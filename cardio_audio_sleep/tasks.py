@@ -129,7 +129,7 @@ def _synchronous_loop(sound, sequence, detector, trigger):  # noqa: D401
     # create counter/timers
     counter = 0
     # create containers for sequence timings
-    sequence_timings = list()
+    sequence_timings = np.zeros(len(sequence))
     # loop
     while counter <= len(sequence) - 1:
         detector.update_loop()
@@ -142,7 +142,7 @@ def _synchronous_loop(sound, sequence, detector, trigger):  # noqa: D401
                 sound.play()
             logger.info("Stimuli %i/%i delivered.", counter + 1, len(sequence))
             # next
-            sequence_timings.append(detector.timestamps_buffer[pos])
+            sequence_timings[counter] = detector.timestamps_buffer[pos]
             counter += 1
             # wait for sound to be delivered before updating again
             # and give CPU time to other processes

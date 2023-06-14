@@ -10,4 +10,4 @@ SCREEN_KWARGS = dict(
 )
 
 # Pure tone stimuli
-TONE_FQ = 200  # Hz
+TONE_FQ = 1000  # Hz

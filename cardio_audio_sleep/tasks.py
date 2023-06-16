@@ -7,7 +7,6 @@ from typing import Optional
 
 import numpy as np
 import psychtoolbox as ptb
-from bsl.lsl import local_clock
 from bsl.triggers import TriggerDef
 from numpy.typing import ArrayLike
 from psychopy.clock import wait
@@ -136,9 +135,11 @@ def _synchronous_loop(sound, sequence, detector, trigger):  # noqa: D401
         detector.update_loop()
         pos = detector.new_peaks()
         if pos is not None:
-            delay = local_clock() - detector.timestamps_buffer[pos]
+            # compute the delay based on the number of samples because LSL local_clock
+            # is not reliable
+            delay = (detector.duration_buffer_samples - pos - 1) / detector.sample_rate
             logger.debug(
-                "Delay between LSL local-clock and r-peak: %.2f ms.", delay * 1000
+                "Delay between last sample and r-peak: %.2f ms.", delay * 1000
             )
             wait(0.035 - delay, hogCPUperiod=1)
             # trigger

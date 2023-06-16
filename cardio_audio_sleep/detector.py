@@ -68,9 +68,11 @@ class Detector:
         self._inlet = StreamInlet(
             sinfos[0],
             max_buffered=10,
-            # processing_flags=["clocksync", "dejitter", "monotize"],
+            processing_flags=["clocksync", "dejitter", "monotize"],
         )
         self._inlet.open_stream()
+        tc = self._inlet.time_correction()  # initialize time-correction
+        logger.debug("Time correction: %.2f", tc)
         self._stream_name = stream_name
 
         root = ET.fromstring(self._inlet.get_sinfo().as_xml)

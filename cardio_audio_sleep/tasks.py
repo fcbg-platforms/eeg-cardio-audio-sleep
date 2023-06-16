@@ -137,7 +137,10 @@ def _synchronous_loop(sound, sequence, detector, trigger):  # noqa: D401
         pos = detector.new_peaks()
         if pos is not None:
             delay = local_clock() - detector.timestamps_buffer[pos]
-            logger.debug("Delay between LSL local-clock and r-peak: %.2f", delay)
+            logger.debug(
+                "Delay between LSL local-clock and r-peak: %.2f ms.", delay * 1000
+            )
+            wait(0.035 - delay, hogCPUperiod=1)
             # trigger
             trigger.signal(sequence[counter])
             # sound

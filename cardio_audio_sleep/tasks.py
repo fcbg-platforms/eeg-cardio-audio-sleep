@@ -11,6 +11,7 @@ from bsl.lsl import local_clock
 from bsl.triggers import TriggerDef
 from numpy.typing import ArrayLike
 from psychopy.clock import wait
+from psychopy.sound.backend_ptb import SoundPTB
 from scipy.signal.windows import tukey
 
 from . import logger
@@ -77,17 +78,12 @@ def synchronous(
     sequence_timings : list
         List of timings at which an R-peak occurred.
     """
-    from stimuli.audio import Sound, Tone
-
     from .detector import Detector
 
     # create sound stimuli
-    sound = Tone(volume, frequency=TONE_FQ, duration=0.1)
-    window = tukey(sound.signal.shape[0], alpha=0.25, sym=True)
-    sound._signal = np.multiply(sound.signal.T, window).T
+    sound = SoundPTB(value=TONE_FQ, secs=0.1, volume=volume / 100)
     if instrument is not None:
-        sound_instru = Sound(instrument)
-        sound_instru.volume = volume
+        sound_instru = SoundPTB(value=instrument, secs=0.1, volume=volume / 100)
 
     _check_tdef(tdef)
     sequence = _check_sequence(sequence, tdef)
@@ -140,12 +136,12 @@ def _synchronous_loop(sound, sequence, detector, trigger):  # noqa: D401
             logger.debug(
                 "Delay between LSL local-clock and r-peak: %.2f ms.", delay * 1000
             )
+            # sound
+            if sequence[counter] != 2:
+                sound.play(when=ptb.GetSecs() + 0.035 - delay)
             wait(0.035 - delay, hogCPUperiod=1)
             # trigger
             trigger.signal(sequence[counter])
-            # sound
-            if sequence[counter] != 2:
-                sound.play()
             logger.info("Stimuli %i/%i delivered.", counter + 1, len(sequence))
             # next
             sequence_timings[counter] = detector.timestamps_buffer[pos]

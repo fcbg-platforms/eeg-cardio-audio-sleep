@@ -140,7 +140,7 @@ def _synchronous_loop(sound, sequence, detector, trigger):  # noqa: D401
             logger.debug(
                 "Delay between LSL local-clock and r-peak: %.2f ms.", delay * 1000
             )
-            wait(0.035 - delay, hogCPUperiod=1)
+            wait(0.04 - delay, hogCPUperiod=1)
             # trigger
             trigger.signal(sequence[counter])
             # sound

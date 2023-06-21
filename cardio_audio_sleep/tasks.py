@@ -145,14 +145,8 @@ def _synchronous_loop(sound, sequence, detector, trigger, tdef):  # noqa: D401
             # trigger
             trigger.signal(sequence[counter])
             # sound
-            if sequence[counter] == tdef.sound:
+            if sequence[counter] != tdef.omission:
                 sound.play()
-            elif sequence[counter] == tdef.omission:
-                pass
-            else:
-                raise RuntimeError(
-                    "Invalid sequence value. It's neither sound or omission."
-                )
             logger.info("Stimuli %i/%i delivered.", counter + 1, len(sequence))
             # next
             sequence_timings[counter] = detector.timestamps_buffer[pos]
@@ -240,14 +234,8 @@ def _isochronous_loop(sound, sequence, delay, trigger, tdef):  # noqa: D401
         now = ptb.GetSecs()
         trigger.signal(sequence[counter])
         # stimuli
-        if sequence[counter] == tdef.sound:
+        if sequence[counter] != tdef.omission:
             sound.play()
-        elif sequence[counter] == tdef.omission:
-            pass
-        else:
-            raise RuntimeError(
-                "Invalid sequence value. It's neither sound or omission."
-            )
         logger.info("Stimuli %i/%i delivered.", counter + 1, len(sequence))
         stim_delay = ptb.GetSecs() - now
 
@@ -343,14 +331,8 @@ def _asynchronous_loop(sound, sequence, delays, trigger, tdef):  # noqa: D401
         now = ptb.GetSecs()
         trigger.signal(sequence[counter])
         # stimuli
-        if sequence[counter] == tdef.sound:
+        if sequence[counter] != tdef.omission:
             sound.play()
-        elif sequence[counter] == tdef.omission:
-            pass
-        else:
-            raise RuntimeError(
-                "Invalid sequence value. It's neither sound or omission."
-            )
         logger.info("Stimuli %i/%i delivered.", counter + 1, len(sequence))
         stim_delay = ptb.GetSecs() - now
 

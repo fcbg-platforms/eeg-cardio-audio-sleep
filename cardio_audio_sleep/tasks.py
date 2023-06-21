@@ -107,11 +107,11 @@ def synchronous(
     wait(0.2, hogCPUperiod=0)
 
     logger.info("Starting to deliver pure tone sounds.")
-    sequence_timings = _synchronous_loop(sound, sequence, detector, trigger)
+    sequence_timings = _synchronous_loop(sound, sequence, detector, trigger, tdef)
     if instrument is not None:
         logger.info("Starting to deliver instrument sounds.")
         sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
-        _synchronous_loop(sound_instru, sequence_instru, detector, trigger)
+        _synchronous_loop(sound_instru, sequence_instru, detector, trigger, tdef)
 
     if not disable_end_trigger:
         trigger.signal(tdef.sync_stop)
@@ -124,7 +124,7 @@ def synchronous(
     return sequence_timings
 
 
-def _synchronous_loop(sound, sequence, detector, trigger):  # noqa: D401
+def _synchronous_loop(sound, sequence, detector, trigger, tdef):  # noqa: D401
     """Main loop of the synchronous task."""
     # create counter/timers
     counter = 0
@@ -140,8 +140,14 @@ def _synchronous_loop(sound, sequence, detector, trigger):  # noqa: D401
             # trigger
             trigger.signal(sequence[counter])
             # sound
-            if sequence[counter] != 2:
+            if sequence[counter] == tdef.sound:
                 sound.play()
+            elif sequence[counter] == tdef.omission:
+                pass
+            else:
+                raise RuntimeError(
+                    "Invalid sequence value. It's neither sound or omission."
+                )
             logger.info("Stimuli %i/%i delivered.", counter + 1, len(sequence))
             # next
             sequence_timings.append(detector.timestamps_buffer[pos])
@@ -209,18 +215,18 @@ def isochronous(
     wait(0.2, hogCPUperiod=0)
 
     logger.info("Starting to deliver pure tone sounds.")
-    _isochronous_loop(sound, sequence, delay, trigger)
+    _isochronous_loop(sound, sequence, delay, trigger, tdef)
     if instrument is not None:
         wait(delay - sound.duration - 0.005, hogCPUperiod=0)
         logger.info("Starting to deliver instrument sounds.")
         sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
-        _isochronous_loop(sound_instru, sequence_instru, delay, trigger)
+        _isochronous_loop(sound_instru, sequence_instru, delay, trigger, tdef)
 
     if not disable_end_trigger:
         trigger.signal(tdef.iso_stop)
 
 
-def _isochronous_loop(sound, sequence, delay, trigger):  # noqa: D401
+def _isochronous_loop(sound, sequence, delay, trigger, tdef):  # noqa: D401
     """Main loop of the isochronous task."""
     # create counter/timers
     counter = 0
@@ -229,8 +235,14 @@ def _isochronous_loop(sound, sequence, delay, trigger):  # noqa: D401
         now = ptb.GetSecs()
         trigger.signal(sequence[counter])
         # stimuli
-        if sequence[counter] != 2:
+        if sequence[counter] == tdef.sound:
             sound.play()
+        elif sequence[counter] == tdef.omission:
+            pass
+        else:
+            raise RuntimeError(
+                "Invalid sequence value. It's neither sound or omission."
+            )
         logger.info("Stimuli %i/%i delivered.", counter + 1, len(sequence))
         stim_delay = ptb.GetSecs() - now
 
@@ -304,20 +316,20 @@ def asynchronous(
     wait(0.2, hogCPUperiod=0)
 
     logger.info("Starting to deliver pure tone sounds.")
-    _asynchronous_loop(sound, sequence, delays, trigger)
+    _asynchronous_loop(sound, sequence, delays, trigger, tdef)
     if instrument is not None:
         wait(delays[-1] - sound.duration - 0.005, hogCPUperiod=0)
         logger.info("Starting to deliver instrument sounds.")
         sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
         delays_instru = np.random.choice(delays, size=3)
         _asynchronous_loop(
-            sound_instru, sequence_instru, delays_instru, trigger
+            sound_instru, sequence_instru, delays_instru, trigger, tdef
         )
     if not disable_end_trigger:
         trigger.signal(tdef.async_stop)
 
 
-def _asynchronous_loop(sound, sequence, delays, trigger):  # noqa: D401
+def _asynchronous_loop(sound, sequence, delays, trigger, tdef):  # noqa: D401
     """Main loop of the asynchronous task."""
     # create counter/timers
     counter = 0
@@ -326,8 +338,14 @@ def _asynchronous_loop(sound, sequence, delays, trigger):  # noqa: D401
         now = ptb.GetSecs()
         trigger.signal(sequence[counter])
         # stimuli
-        if sequence[counter] != 2:
+        if sequence[counter] == tdef.sound:
             sound.play()
+        elif sequence[counter] == tdef.omission:
+            pass
+        else:
+            raise RuntimeError(
+                "Invalid sequence value. It's neither sound or omission."
+            )
         logger.info("Stimuli %i/%i delivered.", counter + 1, len(sequence))
         stim_delay = ptb.GetSecs() - now
 

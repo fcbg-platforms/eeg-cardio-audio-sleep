@@ -107,11 +107,15 @@ def synchronous(
     wait(0.2, hogCPUperiod=0)
 
     logger.info("Starting to deliver pure tone sounds.")
-    sequence_timings = _synchronous_loop(sound, sequence, detector, trigger, tdef)
+    sequence_timings = _synchronous_loop(
+        sound, sequence, detector, trigger, tdef
+    )
     if instrument is not None:
         logger.info("Starting to deliver instrument sounds.")
         sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
-        _synchronous_loop(sound_instru, sequence_instru, detector, trigger, tdef)
+        _synchronous_loop(
+            sound_instru, sequence_instru, detector, trigger, tdef
+        )
 
     if not disable_end_trigger:
         trigger.signal(tdef.sync_stop)
@@ -140,7 +144,12 @@ def _synchronous_loop(sound, sequence, detector, trigger, tdef):  # noqa: D401
             # trigger
             trigger.signal(sequence[counter])
             # sound
-            if sequence[counter] == tdef.sound:
+            if sequence[counter] in (
+                tdef.sound,
+                tdef.percussion,
+                tdef.string,
+                tdef.wind,
+            ):
                 sound.play()
             elif sequence[counter] == tdef.omission:
                 pass
@@ -235,7 +244,12 @@ def _isochronous_loop(sound, sequence, delay, trigger, tdef):  # noqa: D401
         now = ptb.GetSecs()
         trigger.signal(sequence[counter])
         # stimuli
-        if sequence[counter] == tdef.sound:
+        if sequence[counter] in (
+            tdef.sound,
+            tdef.percussion,
+            tdef.string,
+            tdef.wind,
+        ):
             sound.play()
         elif sequence[counter] == tdef.omission:
             pass
@@ -338,7 +352,12 @@ def _asynchronous_loop(sound, sequence, delays, trigger, tdef):  # noqa: D401
         now = ptb.GetSecs()
         trigger.signal(sequence[counter])
         # stimuli
-        if sequence[counter] == tdef.sound:
+        if sequence[counter] in (
+            tdef.sound,
+            tdef.percussion,
+            tdef.string,
+            tdef.wind,
+        ):
             sound.play()
         elif sequence[counter] == tdef.omission:
             pass

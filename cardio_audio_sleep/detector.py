@@ -1,11 +1,11 @@
 """Heartbeat detector, detecting R-peak entering an LSL buffer."""
 
 import math
+import xml.etree.ElementTree as ET
 from typing import Optional, Union
 
 import numpy as np
-import psychtoolbox as ptb
-from bsl import StreamReceiver
+from bsl.lsl import StreamInlet, resolve_streams
 from bsl.utils import Timer
 from mne.filter import filter_data
 from scipy.signal import find_peaks
@@ -44,13 +44,9 @@ class Detector:
         peak_width: Optional[float] = None,
     ):
         # Check arguments and create StreamReceiver
-        self._peak_height_perc = Detector._check_peak_height_perc(
-            peak_height_perc
-        )
+        self._peak_height_perc = Detector._check_peak_height_perc(peak_height_perc)
         self._peak_width = Detector._check_peak_width(peak_width)
-        self._peak_prominence = Detector._check_peak_prominence(
-            peak_prominence
-        )
+        self._peak_prominence = Detector._check_peak_prominence(peak_prominence)
         _check_type(stream_name, (str,), item_name="stream_name")
         _check_type(ecg_ch_name, (str,), item_name="ecg_ch_name")
         _check_type(duration_buffer, ("numeric",), item_name="duration_buffer")
@@ -59,26 +55,33 @@ class Detector:
                 "Argument 'duration_buffer' must be strictly larger than 0.2. "
                 f"Provided: '{duration_buffer}' seconds."
             )
-        self._sr = StreamReceiver(
-            bufsize=0.2, winsize=0.2, stream_name=stream_name
-        )
-        while not self._sr.connected:
-            self._sr.connect(stream_name=stream_name)
 
+        sinfos = list()
+        while len(sinfos) == 0:
+            sinfos = resolve_streams(timeout=10, name=stream_name)
+        assert len(sinfos) == 1
+
+        self._inlet = StreamInlet(
+            sinfos[0],
+            max_buffered=10,
+        )
+        self._inlet.open_stream()
         self._stream_name = stream_name
+
+        root = ET.fromstring(self._inlet.get_sinfo().as_xml)
+        ch_list = []
+        for elt in root.iter("channel"):
+            ch_list.append(elt.find("label").text)
         _check_value(
             ecg_ch_name,
-            self._sr.streams[stream_name].ch_list,
+            ch_list,
             item_name="ecg_ch_name",
         )
 
         # Infos from stream
-        self._sample_rate = int(
-            self._sr.streams[self._stream_name].sample_rate
-        )
-        self._ecg_channel_idx = self._sr.streams[
-            self._stream_name
-        ].ch_list.index(ecg_ch_name)
+        self._sample_rate = int(self._inlet.sfreq)
+        self._ecg_channel_idx = ch_list.index(ecg_ch_name)
+        self._ecg_channel_name = ch_list[self._ecg_channel_idx]
 
         # Variables
         self._duration_buffer = float(duration_buffer)
@@ -87,8 +90,10 @@ class Detector:
         )
 
         # Buffers
-        self._timestamps_buffer = np.zeros(self._duration_buffer_samples)
-        self._ecg_buffer = np.zeros(self._duration_buffer_samples)
+        self._timestamps_buffer = np.zeros(
+            self._duration_buffer_samples, dtype=np.float32
+        )
+        self._ecg_buffer = np.zeros(self._duration_buffer_samples, dtype=np.float32)
 
         # R-Peak detectors
         self._last_peak = None
@@ -105,9 +110,7 @@ class Detector:
 
         Avoids any discontinuities in the ECG buffer.
         """
-        logger.info(
-            "Filling an entire buffer of %s seconds..", self._duration_buffer
-        )
+        logger.info("Filling an entire buffer of %s seconds..", self._duration_buffer)
         timer = Timer()
         while timer.sec() <= self._duration_buffer:
             self.update_loop()
@@ -119,27 +122,17 @@ class Detector:
         Main update loop acquiring data from the LSL stream and filling the
         detector's buffer on each call.
         """
-        self._sr.acquire()
-        data_acquired, _ = self._sr.get_buffer()
-        self._sr.reset_buffer()
-        n = data_acquired.shape[0]  # number of acquires samples
-        if n == 0:
+        data_acquired, timestamps_acquired = self._inlet.pull_chunk()
+        if timestamps_acquired.size == 0:
             return  # no new samples
-
-        # generate timestamps from local clock
-        now = ptb.GetSecs()
-        times = np.arange(
-            now - (n - 1) / self._sample_rate,
-            now + 1 / self._sample_rate,
-            1 / self._sample_rate,
-        )
+        n = timestamps_acquired.size
 
         # shape (samples, )
         self._ecg_buffer = np.roll(self._ecg_buffer, -n)
         self._ecg_buffer[-n:] = data_acquired[:, self._ecg_channel_idx]
 
         self._timestamps_buffer = np.roll(self._timestamps_buffer, -n)
-        self._timestamps_buffer[-n:] = times
+        self._timestamps_buffer[-n:] = timestamps_acquired
 
     def new_peaks(self):
         """Look if new R-peaks have entered the buffer."""
@@ -217,9 +210,7 @@ class Detector:
             - Data: 2048 Hz - 8192 samples
               18.3 ms ± 102 µs per loop
         """
-        return filter_data(
-            self._ecg_buffer, self._sample_rate, 1.0, 15.0, phase="zero"
-        )
+        return filter_data(self._ecg_buffer, self._sample_rate, 1.0, 15.0, phase="zero")
 
     def detrend_data(self):
         """
@@ -240,13 +231,16 @@ class Detector:
 
     def __del__(self):
         """Destructor method."""
-        del self._sr  # disconnects stream receiver
+        try:
+            del self._inlet  # disconnects from the outlet
+        except AttributeError:
+            pass  # error raised before the inlet was created
 
     # --------------------------------------------------------------------
     @property
     def sr(self):
-        """The connected StreamReceiver."""
-        return self._sr
+        """The connected StreamInlet."""
+        return self._inlet
 
     @property
     def stream_name(self):
@@ -261,7 +255,7 @@ class Detector:
     @property
     def ecg_ch_name(self):
         """The ECG channel name."""
-        return self.sr.streams[self.stream_name].ch_list[self.ecg_channel_idx]
+        return self._ecg_ch_name
 
     @property
     def ecg_channel_idx(self):
@@ -307,9 +301,7 @@ class Detector:
     @staticmethod
     def _check_peak_height_perc(peak_height_perc: Union[int, float]):
         """Check argument 'peak_height_perc'."""
-        _check_type(
-            peak_height_perc, ("numeric",), item_name="peak_height_perc"
-        )
+        _check_type(peak_height_perc, ("numeric",), item_name="peak_height_perc")
         if peak_height_perc <= 0:
             raise ValueError(
                 "Argument 'peak_height_perc' must be a strictly positive "
@@ -346,9 +338,7 @@ class Detector:
     @staticmethod
     def _check_peak_prominence(peak_prominence: Optional[Union[int, float]]):
         """Check argument 'peak_prominence'."""
-        _check_type(
-            peak_prominence, ("numeric", None), item_name="peak_prominence"
-        )
+        _check_type(peak_prominence, ("numeric", None), item_name="peak_prominence")
         if peak_prominence is None:
             return None
         if peak_prominence <= 0:

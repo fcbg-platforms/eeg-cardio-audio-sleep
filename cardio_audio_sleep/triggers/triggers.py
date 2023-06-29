@@ -1,4 +1,4 @@
-from bsl.externals import pylsl
+from bsl.lsl import StreamInfo, StreamOutlet
 from bsl.triggers import LSLTrigger
 
 from .._typing import EYELink
@@ -8,7 +8,7 @@ from ..utils._docs import fill_doc
 
 @fill_doc
 class Trigger:
-    """Trigger class combining a BSL trigger (LPT) and an eye-link system.
+    """Trigger class combining a BSL trigger and an eye-link system.
 
     Parameters
     ----------
@@ -51,15 +51,15 @@ class TriggerInstrument:
     """Trigger class for sending instrument filenames on an LSL outlet."""
 
     def __init__(self):
-        self._sinfo = pylsl.StreamInfo(
+        self._sinfo = StreamInfo(
             name="instruments",
-            type="Markers",
-            channel_count=1,
-            nominal_srate=pylsl.IRREGULAR_RATE,
-            channel_format=pylsl.cf_string,
+            stype="Markers",
+            n_channels=1,
+            sfreq=0,
+            dtype="string",
             source_id="instruments",
         )
-        self._outlet = pylsl.StreamOutlet(self._sinfo)
+        self._outlet = StreamOutlet(self._sinfo)
 
     def signal(self, value: str) -> None:
         """Send an instrument filename on the LSL outlet.
@@ -83,11 +83,11 @@ class TriggerInstrument:
         self.close()
 
     @property
-    def sinfo(self) -> pylsl.StreamInfo:
+    def sinfo(self) -> StreamInfo:
         """LSL stream info."""
         return self._sinfo
 
     @property
-    def outlet(self) -> pylsl.StreamOutlet:
+    def outlet(self) -> StreamOutlet:
         """LSL stream outlet."""
         return self._outlet

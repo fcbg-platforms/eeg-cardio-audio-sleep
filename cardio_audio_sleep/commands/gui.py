@@ -32,13 +32,7 @@ from ..config.constants import SCREEN_KWARGS
 from ..example import example
 from ..eye_link import EyelinkMock
 from ..recollection import recollection
-from ..tasks import (
-    asynchronous,
-    baseline,
-    inter_block,
-    isochronous,
-    synchronous,
-)
+from ..tasks import asynchronous, baseline, inter_block, isochronous, synchronous
 from ..triggers import Trigger, TriggerInstrument
 from ..utils import (
     generate_async_timings_based_on_mean,
@@ -46,7 +40,7 @@ from ..utils import (
     generate_sequence,
     load_instrument_categories,
     pick_instrument_sound,
-    search_ANT_amplifier,
+    search_amplifier,
     test_volume,
 )
 from ..utils._checks import _check_value
@@ -85,9 +79,7 @@ class GUI(QMainWindow):
         # load configuration
         self._instrument = instrument
         self._dev = dev
-        self.load_config(
-            ecg_ch_name, defaults, eye_link, self._instrument, self._dev
-        )
+        self.load_config(ecg_ch_name, defaults, eye_link, self._instrument, self._dev)
         instrument_categories = load_instrument_categories()
         self.instrument_file_example = {
             "synchronous": None,
@@ -118,9 +110,7 @@ class GUI(QMainWindow):
             block = generate_blocks_sequence(self.all_blocks)
             self.all_blocks.append(block)
             self.blocks[k + 2].btype = block
-        self.counter = dict(
-            baseline=0, synchronous=0, isochronous=0, asynchronous=0
-        )
+        self.counter = dict(baseline=0, synchronous=0, isochronous=0, asynchronous=0)
 
         # define Qt Timer
         self.timer = QTimer(self)
@@ -135,15 +125,15 @@ class GUI(QMainWindow):
         dev: bool,
     ):
         """Set the variables and tasks arguments."""
-        fname = (
-            "config-sleep-instrument.ini" if instrument else "config-sleep.ini"
-        )
+        fname = "config-sleep-instrument.ini" if instrument else "config-sleep.ini"
         self.config, trigger_type = load_config(fname, dev)
         self.tdef = load_triggers()
 
         # combine trigger with eye-link
         if trigger_type == "lpt":
             trigger = ParallelPortTrigger("/dev/parport0", delay=5)
+        elif trigger == "arduino":
+            trigger = ParallelPortTrigger("arduino", delay=5)
         elif trigger_type == "mock":
             trigger = MockTrigger()
         self.eye_link = eye_link
@@ -153,7 +143,7 @@ class GUI(QMainWindow):
         self.trigger_instrument = TriggerInstrument()
 
         # search for LSL stream
-        self._stream_name = search_ANT_amplifier()
+        self._stream_name = search_amplifier("micromed")
         self._ecg_ch_name = ecg_ch_name
 
         # Create task mapping
@@ -238,13 +228,9 @@ class GUI(QMainWindow):
             self.blocks.append(block)
 
         # add labels
-        GUI._add_label(
-            self, 50, 145, 345, 20, "past", "Previous blocks", "center"
-        )
+        GUI._add_label(self, 50, 145, 345, 20, "past", "Previous blocks", "center")
         GUI._add_label(self, 420, 145, 160, 20, "current", "Current", "center")
-        GUI._add_label(
-            self, 605, 145, 345, 20, "future", "Next blocks", "center"
-        )
+        GUI._add_label(self, 605, 145, 345, 20, "future", "Next blocks", "center")
 
         # add example / start / pause / stop / recollection push buttons
         self.pushButton_example = GUI._add_pushButton(
@@ -316,9 +302,7 @@ class GUI(QMainWindow):
         self.pushButton_width.setCheckable(True)
         self.pushButton_width.setChecked(False)
         GUI._add_label(self, 530, 224, 90, 28, "height", "Height", "left")
-        GUI._add_label(
-            self, 530, 258, 90, 28, "prominence", "Prominence", "left"
-        )
+        GUI._add_label(self, 530, 258, 90, 28, "prominence", "Prominence", "left")
         GUI._add_label(self, 530, 292, 90, 28, "width", "Width", "left")
 
         # add volume controls
@@ -366,15 +350,9 @@ class GUI(QMainWindow):
             comboBox.addItems(instrument_categories)
             comboBox.setEnabled(self._instrument)
 
-        GUI._add_label(
-            self, 210, 224, 100, 28, "synchronous", "Synchronous", "left"
-        )
-        GUI._add_label(
-            self, 210, 258, 100, 28, "isochronous", "Isochronous", "left"
-        )
-        GUI._add_label(
-            self, 210, 292, 100, 28, "asynchronous", "Asynchronous", "left"
-        )
+        GUI._add_label(self, 210, 224, 100, 28, "synchronous", "Synchronous", "left")
+        GUI._add_label(self, 210, 258, 100, 28, "isochronous", "Isochronous", "left")
+        GUI._add_label(self, 210, 292, 100, 28, "asynchronous", "Asynchronous", "left")
 
         # add Eye-tracker controls
         self.pushButton_calibrate = GUI._add_pushButton(
@@ -391,9 +369,7 @@ class GUI(QMainWindow):
             wx = import_optional_dependency("wx", raise_error=False)
             if wx is None:
                 self.pushButton_cross.setEnabled(False)
-        GUI._add_label(
-            self, 850, 225, 140, 32, "eye_tracker", "Eye Tracker", "center"
-        )
+        GUI._add_label(self, 850, 225, 140, 32, "eye_tracker", "Eye Tracker", "center")
 
         # add separation lines
         GUI._add_line(self, 0, 208, 1000, 20, "line1", "h")
@@ -631,9 +607,7 @@ class GUI(QMainWindow):
                 args[3] = np.median(np.diff(self.sequence_timings))
                 logger.info("Delay for isochronous: %.2f (s).", args[3])
             if btype == "asynchronous":
-                timings = generate_async_timings_based_on_mean(
-                    self.sequence_timings
-                )
+                timings = generate_async_timings_based_on_mean(self.sequence_timings)
                 args[3] = timings
                 logger.info(
                     "Average delay for asynchronous: %.2f (s).",
@@ -678,8 +652,7 @@ class GUI(QMainWindow):
         self.args_mapping["asynchronous"][4] = volume
 
         logger.debug(
-            "Setting the volume to %.2f -> "
-            "(sync: %.1f, iso: %.1f, async: %.1f)",
+            "Setting the volume to %.2f -> " "(sync: %.1f, iso: %.1f, async: %.1f)",
             volume,
             self.args_mapping["synchronous"][8],
             self.args_mapping["isochronous"][4],
@@ -701,9 +674,7 @@ class GUI(QMainWindow):
 
     # -------------------------------------------------------------------------
     def connect_signals_to_slots(self):  # noqa: D102
-        self.pushButton_example.clicked.connect(
-            self.pushButton_example_clicked
-        )
+        self.pushButton_example.clicked.connect(self.pushButton_example_clicked)
         self.pushButton_start.clicked.connect(self.pushButton_start_clicked)
         self.pushButton_pause.clicked.connect(self.pushButton_pause_clicked)
         self.pushButton_stop.clicked.connect(self.pushButton_stop_clicked)
@@ -712,18 +683,12 @@ class GUI(QMainWindow):
         )
 
         # detection settings
-        self.doubleSpinBox_height.valueChanged.connect(
-            self.doubleSpinBox_valueChanged
-        )
+        self.doubleSpinBox_height.valueChanged.connect(self.doubleSpinBox_valueChanged)
         self.doubleSpinBox_prominence.valueChanged.connect(
             self.doubleSpinBox_valueChanged
         )
-        self.doubleSpinBox_width.valueChanged.connect(
-            self.doubleSpinBox_valueChanged
-        )
-        self.pushButton_prominence.clicked.connect(
-            self.pushButton_prominence_clicked
-        )
+        self.doubleSpinBox_width.valueChanged.connect(self.doubleSpinBox_valueChanged)
+        self.pushButton_prominence.clicked.connect(self.pushButton_prominence_clicked)
         self.pushButton_width.clicked.connect(self.pushButton_width_clicked)
 
         # volume
@@ -734,15 +699,11 @@ class GUI(QMainWindow):
         self.pushButton_volume.clicked.connect(self.pushButton_volume_clicked)
 
         # eye-tracking
-        self.pushButton_calibrate.clicked.connect(
-            self.pushButton_calibrate_clicked
-        )
+        self.pushButton_calibrate.clicked.connect(self.pushButton_calibrate_clicked)
         self.pushButton_cross.clicked.connect(self.pushButton_cross_clicked)
 
         # amplifier
-        self.pushButton_amplifier.clicked.connect(
-            self.pushButton_amplifier_clicked
-        )
+        self.pushButton_amplifier.clicked.connect(self.pushButton_amplifier_clicked)
 
     @pyqtSlot()
     def pushButton_example_clicked(self):
@@ -766,9 +727,7 @@ class GUI(QMainWindow):
                 int(self.doubleSpinBox_seed.value()),
             )
         # sanity-check
-        assert all(
-            len(elt) == 1 for elt in self.instrument_file_example.values()
-        )
+        assert all(len(elt) == 1 for elt in self.instrument_file_example.values())
 
         logger.debug(
             "[Example] The selected sound for the synchronous category is %s",
@@ -834,9 +793,7 @@ class GUI(QMainWindow):
             assert len(set(categories)) == len(categories)  # uniqueness
 
             # check that instruments have been picked for example
-            if all(
-                elt is None for elt in self.instrument_file_example.values()
-            ):
+            if all(elt is None for elt in self.instrument_file_example.values()):
                 self.instrument_file_example = pick_instrument_sound(
                     instru_sync,
                     instru_iso,
@@ -846,13 +803,9 @@ class GUI(QMainWindow):
                     int(self.doubleSpinBox_seed.value()),
                 )
             # sanity-check
-            assert all(
-                len(elt) == 1 for elt in self.instrument_file_example.values()
-            )
+            assert all(len(elt) == 1 for elt in self.instrument_file_example.values())
             exclude = [
-                elt
-                for elt in self.instrument_file_example.values()
-                if elt is not None
+                elt for elt in self.instrument_file_example.values() if elt is not None
             ]
             exclude = list(chain(*exclude))
             logger.debug(
@@ -878,12 +831,8 @@ class GUI(QMainWindow):
             )
         else:
             logger.debug(
-                "[Start] The selected sounds for the synchronous category "
-                "are %s",
-                [
-                    elt.name
-                    for elt in self.instrument_file_sleep["synchronous"]
-                ],
+                "[Start] The selected sounds for the synchronous category " "are %s",
+                [elt.name for elt in self.instrument_file_sleep["synchronous"]],
             )
         if self.instrument_file_sleep["isochronous"] is None:
             logger.debug(
@@ -892,12 +841,8 @@ class GUI(QMainWindow):
             )
         else:
             logger.debug(
-                "[Start] The selected sounds for the isochronous category "
-                "are %s",
-                [
-                    elt.name
-                    for elt in self.instrument_file_sleep["isochronous"]
-                ],
+                "[Start] The selected sounds for the isochronous category " "are %s",
+                [elt.name for elt in self.instrument_file_sleep["isochronous"]],
             )
         if self.instrument_file_sleep["asynchronous"] is None:
             logger.debug(
@@ -906,12 +851,8 @@ class GUI(QMainWindow):
             )
         else:
             logger.debug(
-                "[Start] The selected sounds for the asynchronous category "
-                "are %s",
-                [
-                    elt.name
-                    for elt in self.instrument_file_sleep["asynchronous"]
-                ],
+                "[Start] The selected sounds for the asynchronous category " "are %s",
+                [elt.name for elt in self.instrument_file_sleep["asynchronous"]],
             )
 
         # launch first block
@@ -1042,9 +983,7 @@ class GUI(QMainWindow):
                 int(self.doubleSpinBox_seed.value()),
             )
         # sanity-check
-        assert all(
-            len(elt) == 1 for elt in self.instrument_file_example.values()
-        )
+        assert all(len(elt) == 1 for elt in self.instrument_file_example.values())
 
         logger.debug(
             "[Example] The selected sound for the synchronous category is %s",
@@ -1062,15 +1001,11 @@ class GUI(QMainWindow):
         # pick instruments
         assert len(set((instru_sync, instru_iso, instru_async))) == 3
         exclude_example = [
-            elt
-            for elt in self.instrument_file_example.values()
-            if elt is not None
+            elt for elt in self.instrument_file_example.values() if elt is not None
         ]
         exclude_example = list(chain(*exclude_example))
         exclude_sleep = [
-            elt
-            for elt in self.instrument_file_sleep.values()
-            if elt is not None
+            elt for elt in self.instrument_file_sleep.values() if elt is not None
         ]
         exclude_sleep = list(chain(*exclude_sleep))
         exclude = exclude_example + exclude_sleep
@@ -1087,33 +1022,20 @@ class GUI(QMainWindow):
             int(self.doubleSpinBox_seed.value()),
         )
         # sanity-check
-        assert all(
-            len(elt) == 2 for elt in self.instrument_file_recollection.values()
-        )
+        assert all(len(elt) == 2 for elt in self.instrument_file_recollection.values())
 
         logger.debug(
-            "[Recollection] The selected sounds for the synchronous category "
-            "are %s",
-            [
-                elt.name
-                for elt in self.instrument_file_recollection["synchronous"]
-            ],
+            "[Recollection] The selected sounds for the synchronous category " "are %s",
+            [elt.name for elt in self.instrument_file_recollection["synchronous"]],
         )
         logger.debug(
-            "[Recollection] The selected sounds for the isochronous category "
-            "are %s",
-            [
-                elt.name
-                for elt in self.instrument_file_recollection["isochronous"]
-            ],
+            "[Recollection] The selected sounds for the isochronous category " "are %s",
+            [elt.name for elt in self.instrument_file_recollection["isochronous"]],
         )
         logger.debug(
             "[Recollection] The selected sounds for the asynchronous category "
             "are %s",
-            [
-                elt.name
-                for elt in self.instrument_file_recollection["asynchronous"]
-            ],
+            [elt.name for elt in self.instrument_file_recollection["asynchronous"]],
         )
 
         # close fixation cross window if it was open
@@ -1218,14 +1140,10 @@ class GUI(QMainWindow):
         self.pushButton_width.setChecked(state)
         if state:  # previously enabled, now disabled
             self.args_mapping["synchronous"][7] = None
-            logger.debug(
-                "Disabling width -> %s", self.args_mapping["synchronous"][7]
-            )
+            logger.debug("Disabling width -> %s", self.args_mapping["synchronous"][7])
         else:  # previously disabled, now enabled
             value = self.doubleSpinBox_width.value()
-            self.args_mapping["synchronous"][
-                7
-            ] = self.doubleSpinBox_width.value()
+            self.args_mapping["synchronous"][7] = self.doubleSpinBox_width.value()
             logger.debug(
                 "Setting width to %.2f -> %.2f",
                 value,
@@ -1237,14 +1155,11 @@ class GUI(QMainWindow):
         height = self.doubleSpinBox_height.value()
         prominence = self.doubleSpinBox_prominence.value()
         width = self.doubleSpinBox_width.value()
-        prominence = (
-            prominence if self.doubleSpinBox_prominence.isEnabled() else None
-        )
+        prominence = prominence if self.doubleSpinBox_prominence.isEnabled() else None
         width = width if self.doubleSpinBox_width.isEnabled() else None
 
         logger.debug(
-            "(Height, Prominence, Width) set from (%s, %s, %s) to "
-            "(%s, %s, %s).",
+            "(Height, Prominence, Width) set from (%s, %s, %s) to " "(%s, %s, %s).",
             self.args_mapping["synchronous"][5],
             self.args_mapping["synchronous"][6],
             self.args_mapping["synchronous"][7],
@@ -1274,9 +1189,7 @@ class GUI(QMainWindow):
         # sanity-check
         assert self.dial_volume.value() == self.doubleSpinBox_volume.value()
         logger.debug("Playing sound at volume %.2f.", self.dial_volume.value())
-        process = mp.Process(
-            target=test_volume, args=(self.dial_volume.value(),)
-        )
+        process = mp.Process(target=test_volume, args=(self.dial_volume.value(),))
         process.start()
         process.join()
 
@@ -1314,16 +1227,14 @@ class GUI(QMainWindow):
     @pyqtSlot()
     def pushButton_amplifier_clicked(self):
         try:
-            stream_name = search_ANT_amplifier()
-            logger.info("eego amplifier found: %s", stream_name)
-            self.label_amplifier.setText(
-                f"Detected amplifier: '{stream_name}'"
-            )
+            stream_name = search_amplifier("micromed")
+            logger.info("Amplifier found: %s", stream_name)
+            self.label_amplifier.setText(f"Detected amplifier: '{stream_name}'")
             self._stream_name = stream_name
         except RuntimeError:
             logger.error(
-                "/!\ eego amplifier could not be found on the netowkr. "
-                "Make sure it's plug-in, turn on, and that the eego2lsl "
+                "/!\ Amplifier could not be found on the netowkr. "
+                "Make sure it's plug-in, turn on, and that the LSL "
                 "app is linked."
             )
 

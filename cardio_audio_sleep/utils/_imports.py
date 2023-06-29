@@ -14,9 +14,7 @@ INSTALL_MAPPING = {
 }
 
 
-def import_optional_dependency(
-    name: str, extra: str = "", raise_error: bool = True
-):
+def import_optional_dependency(name: str, extra: str = "", raise_error: bool = True):
     """Import an optional dependency.
 
     By default, if a dependency is missing an ImportError with a nice message

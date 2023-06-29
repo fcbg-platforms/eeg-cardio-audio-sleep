@@ -34,9 +34,7 @@ def generate_async_timings(
     sequence_timings : array
         List of timings at which a stimuli occurs for the asynchronous blocks.
     """
-    _check_type(
-        sequence_timings, (list, tuple, np.ndarray), "sequence_timings"
-    )
+    _check_type(sequence_timings, (list, tuple, np.ndarray), "sequence_timings")
     _check_type(perc, ("numeric",), "perc")
     _check_type(n, (None, "int"), "n")
     if perc < 0 or 50 <= perc:
@@ -52,8 +50,7 @@ def generate_async_timings(
     n = len(sequence_timings) if n is None else n
     diff = np.diff(sequence_timings)
     mask = np.where(
-        (np.percentile(diff, perc) <= diff)
-        & (diff <= np.percentile(diff, 100 - perc))
+        (np.percentile(diff, perc) <= diff) & (diff <= np.percentile(diff, 100 - perc))
     )
     assert diff[mask].size != 0
 
@@ -90,9 +87,7 @@ def generate_async_timings_based_on_mean(
     sequence_timings : array
         List of timings at which a stimuli occurs for the asynchronous blocks.
     """
-    _check_type(
-        sequence_timings, (list, tuple, np.ndarray), "sequence_timings"
-    )
+    _check_type(sequence_timings, (list, tuple, np.ndarray), "sequence_timings")
     _check_type(n, (None, "int"), "n")
     if n is not None and n <= 0:
         raise ValueError("Argument 'n' should be a strictly positive integer.")

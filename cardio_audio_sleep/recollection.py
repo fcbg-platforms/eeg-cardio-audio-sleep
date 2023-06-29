@@ -8,14 +8,7 @@ from numpy.random import default_rng
 from numpy.typing import NDArray
 from psychopy.clock import Clock
 from psychopy.hardware.keyboard import Keyboard
-from psychopy.visual import (
-    ButtonStim,
-    ImageStim,
-    ShapeStim,
-    Slider,
-    TextStim,
-    Window,
-)
+from psychopy.visual import ButtonStim, ImageStim, ShapeStim, Slider, TextStim, Window
 
 from . import logger
 from .config import load_config
@@ -104,9 +97,7 @@ def recollection(
             responses["instrument"].append(instrument.name)
             # prepare arguments
             args = args_mapping[condition]
-            n_stimuli = stimuli_distribution[condition][
-                condition_counters[condition]
-            ]
+            n_stimuli = stimuli_distribution[condition][condition_counters[condition]]
             args[2] = generate_sequence(
                 n_stimuli,
                 config[condition]["n_omissions"],
@@ -174,11 +165,7 @@ def _list_recollection_tests(
     recollection_tests = list()
     for condition in conditions:
         if not dev:
-            files = [
-                elt
-                for elt in instrument_files_sleep.values()
-                if elt is not None
-            ]
+            files = [elt for elt in instrument_files_sleep.values() if elt is not None]
             for file in chain(*files):
                 recollection_tests.append((condition, file))
         for file in chain(*instrument_files_recollection.values()):

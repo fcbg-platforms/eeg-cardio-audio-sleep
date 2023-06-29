@@ -33,10 +33,7 @@ def input_peak_height_perc():
 
 def input_peak_prominence():
     """Input function for peak detection settings prominence."""
-    msg = (
-        "[IN] Input the peak prominence parameter (use None to disable):"
-        + "\n>>> "
-    )
+    msg = "[IN] Input the peak prominence parameter (use None to disable):" + "\n>>> "
     attempt = 1
     while attempt <= RETRIES:
         try:
@@ -49,8 +46,7 @@ def input_peak_prominence():
                 break
         except Exception:
             logger.warning(
-                "The peak prominence parameter must be a strictly positive "
-                "float."
+                "The peak prominence parameter must be a strictly positive " "float."
             )
             attempt += 1
     else:
@@ -61,9 +57,7 @@ def input_peak_prominence():
 
 def input_peak_width():
     """Input function for peak detection settings width."""
-    msg = (
-        "[IN] Input the peak width parameter (use None to disable):" + "\n>>> "
-    )
+    msg = "[IN] Input the peak width parameter (use None to disable):" + "\n>>> "
     attempt = 1
     while attempt <= RETRIES:
         try:
@@ -76,8 +70,7 @@ def input_peak_width():
                 break
         except Exception:
             logger.warning(
-                "The peak width parameter must be a strictly positive "
-                "float."
+                "The peak width parameter must be a strictly positive " "float."
             )
             attempt += 1
     else:

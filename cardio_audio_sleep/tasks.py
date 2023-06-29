@@ -107,15 +107,11 @@ def synchronous(
     wait(0.2, hogCPUperiod=0)
 
     logger.info("Starting to deliver pure tone sounds.")
-    sequence_timings = _synchronous_loop(
-        sound, sequence, detector, trigger, tdef
-    )
+    sequence_timings = _synchronous_loop(sound, sequence, detector, trigger, tdef)
     if instrument is not None:
         logger.info("Starting to deliver instrument sounds.")
         sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
-        _synchronous_loop(
-            sound_instru, sequence_instru, detector, trigger, tdef
-        )
+        _synchronous_loop(sound_instru, sequence_instru, detector, trigger, tdef)
 
     if not disable_end_trigger:
         trigger.signal(tdef.sync_stop)
@@ -133,14 +129,17 @@ def _synchronous_loop(sound, sequence, detector, trigger, tdef):  # noqa: D401
     # create counter/timers
     counter = 0
     # create containers for sequence timings
-    sequence_timings = list()
+    sequence_timings = np.zeros(len(sequence))
     # loop
     while counter <= len(sequence) - 1:
         detector.update_loop()
         pos = detector.new_peaks()
         if pos is not None:
-            delay = ptb.GetSecs() - detector.timestamps_buffer[pos]
-            wait(0.038 - delay, hogCPUperiod=1)  # computer specific delay
+            # compute the delay based on the number of samples because LSL local_clock
+            # is not reliable
+            delay = (detector.duration_buffer_samples - pos - 1) / detector.sample_rate
+            logger.debug("Delay between last sample and r-peak: %.2f ms.", delay * 1000)
+            wait(0.035 - delay, hogCPUperiod=1)
             # trigger
             trigger.signal(sequence[counter])
             # sound
@@ -148,7 +147,7 @@ def _synchronous_loop(sound, sequence, detector, trigger, tdef):  # noqa: D401
                 sound.play()
             logger.info("Stimuli %i/%i delivered.", counter + 1, len(sequence))
             # next
-            sequence_timings.append(detector.timestamps_buffer[pos])
+            sequence_timings[counter] = detector.timestamps_buffer[pos]
             counter += 1
             # wait for sound to be delivered before updating again
             # and give CPU time to other processes
@@ -314,9 +313,7 @@ def asynchronous(
         logger.info("Starting to deliver instrument sounds.")
         sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
         delays_instru = np.random.choice(delays, size=3)
-        _asynchronous_loop(
-            sound_instru, sequence_instru, delays_instru, trigger, tdef
-        )
+        _asynchronous_loop(sound_instru, sequence_instru, delays_instru, trigger, tdef)
     if not disable_end_trigger:
         trigger.signal(tdef.async_stop)
 
@@ -347,9 +344,7 @@ def _asynchronous_loop(sound, sequence, delays, trigger, tdef):  # noqa: D401
 
 
 @fill_doc
-def baseline(
-    trigger: Trigger, tdef: TriggerDef, duration: float, verbose: bool = True
-):
+def baseline(trigger: Trigger, tdef: TriggerDef, duration: float, verbose: bool = True):
     """
     Baseline block corresponding to a resting-state recording.
 

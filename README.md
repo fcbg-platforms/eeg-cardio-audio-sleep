@@ -18,7 +18,7 @@ instructions can be found [here](https://www.psychopy.org/download.html).
 On Linux, PsychToolbox requires the following libraries:
 
 ```
-sudo apt-get install libusb-1.0-0-dev portaudio19-dev libasound2-dev libsdl2-2.0-0
+sudo apt install libusb-1.0-0-dev portaudio19-dev libasound2-dev libsdl2-2.0-0
 ```
 
 The user should have elevated privileges, either directly or through a group,

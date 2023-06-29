@@ -138,9 +138,7 @@ def _synchronous_loop(sound, sequence, detector, trigger, tdef):  # noqa: D401
             # compute the delay based on the number of samples because LSL local_clock
             # is not reliable
             delay = (detector.duration_buffer_samples - pos - 1) / detector.sample_rate
-            logger.debug(
-                "Delay between last sample and r-peak: %.2f ms.", delay * 1000
-            )
+            logger.debug("Delay between last sample and r-peak: %.2f ms.", delay * 1000)
             wait(0.035 - delay, hogCPUperiod=1)
             # trigger
             trigger.signal(sequence[counter])
@@ -315,9 +313,7 @@ def asynchronous(
         logger.info("Starting to deliver instrument sounds.")
         sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
         delays_instru = np.random.choice(delays, size=3)
-        _asynchronous_loop(
-            sound_instru, sequence_instru, delays_instru, trigger, tdef
-        )
+        _asynchronous_loop(sound_instru, sequence_instru, delays_instru, trigger, tdef)
     if not disable_end_trigger:
         trigger.signal(tdef.async_stop)
 
@@ -348,9 +344,7 @@ def _asynchronous_loop(sound, sequence, delays, trigger, tdef):  # noqa: D401
 
 
 @fill_doc
-def baseline(
-    trigger: Trigger, tdef: TriggerDef, duration: float, verbose: bool = True
-):
+def baseline(trigger: Trigger, tdef: TriggerDef, duration: float, verbose: bool = True):
     """
     Baseline block corresponding to a resting-state recording.
 

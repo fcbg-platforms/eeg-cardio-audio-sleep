@@ -25,9 +25,7 @@ def generate_blocks_sequence(previous_blocks: list) -> str:
     # Above that, look by group of 4
     idx = len(previous_blocks) % 4
     if idx == 0:
-        return random.choice(
-            [val for val in options if val != previous_blocks[-1]]
-        )
+        return random.choice([val for val in options if val != previous_blocks[-1]])
     else:
         segment = previous_blocks[-idx:]
         return random.choice(tuple(set(options) - set(segment)))

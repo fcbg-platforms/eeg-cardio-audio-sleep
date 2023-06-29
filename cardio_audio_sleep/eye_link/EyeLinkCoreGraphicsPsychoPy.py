@@ -111,8 +111,7 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
         # Show some instruction to let the experimenter know that the tracker
         # is running in mouse simulation mode
         __mouse_sim_msg__ = (
-            "Simulating gaze using the mouse\n\n"
-            + "NO CAMERA IMAGE IS AVAILABLE"
+            "Simulating gaze using the mouse\n\n" + "NO CAMERA IMAGE IS AVAILABLE"
         )
         self._msgMouseSim = visual.TextStim(
             self._display,
@@ -430,9 +429,7 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
                     color,
                     1,
                 )
-                self._img.arc(
-                    [x, y, x + rad * 2, y + rad * 2], 90, 270, color, 1
-                )
+                self._img.arc([x, y, x + rad * 2, y + rad * 2], 90, 270, color, 1)
                 self._img.arc(
                     [x + width - rad * 2, y, x + width, y + height],
                     270,
@@ -451,9 +448,7 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
                     color,
                     1,
                 )
-                self._img.arc(
-                    [x, y, x + rad * 2, y + rad * 2], 180, 360, color, 1
-                )
+                self._img.arc([x, y, x + rad * 2, y + rad * 2], 180, 360, color, 1)
                 self._img.arc(
                     [x, y + height - rad * 2, x + rad * 2, y + height],
                     0,

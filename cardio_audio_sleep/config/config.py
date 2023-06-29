@@ -36,9 +36,7 @@ def load_triggers() -> TriggerDef:
     )
     for key in keys:
         if not hasattr(tdef, key):
-            raise ValueError(
-                f"Key '{key}' is missing from trigger definition."
-            )
+            raise ValueError(f"Key '{key}' is missing from trigger definition.")
 
     directory = Path(__file__).parent.parent / "audio"
     assert directory.exists() and directory.is_dir()  # sanity-check
@@ -47,9 +45,7 @@ def load_triggers() -> TriggerDef:
     )
     for instrument in instrument_categories:
         if not hasattr(tdef, instrument):
-            raise ValueError(
-                f"Key '{instrument}' is missing from trigger definition."
-            )
+            raise ValueError(f"Key '{instrument}' is missing from trigger definition.")
 
     return tdef
 
@@ -72,9 +68,7 @@ def load_triggerbox_triggers() -> TriggerDef:
     )
     for instrument in instrument_categories:
         if not hasattr(tdef, instrument):
-            raise ValueError(
-                f"Key '{instrument}' is missing from trigger definition."
-            )
+            raise ValueError(f"Key '{instrument}' is missing from trigger definition.")
 
     return tdef
 
@@ -124,20 +118,15 @@ def load_config(fname: str, dev: bool = False) -> Tuple[dict, str]:
 
     # convert all to int
     block = {key: int(value) for key, value in dict(config["block"]).items()}
-    baseline = {
-        key: int(value) for key, value in dict(config["baseline"]).items()
-    }
+    baseline = {key: int(value) for key, value in dict(config["baseline"]).items()}
     synchronous = {
-        key: int(eval(value))
-        for key, value in dict(config["synchronous"]).items()
+        key: int(eval(value)) for key, value in dict(config["synchronous"]).items()
     }
     isochronous = {
-        key: int(eval(value))
-        for key, value in dict(config["isochronous"]).items()
+        key: int(eval(value)) for key, value in dict(config["isochronous"]).items()
     }
     asynchronous = {
-        key: int(eval(value))
-        for key, value in dict(config["asynchronous"]).items()
+        key: int(eval(value)) for key, value in dict(config["asynchronous"]).items()
     }
 
     # check keys

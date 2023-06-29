@@ -44,13 +44,9 @@ class Detector:
         peak_width: Optional[float] = None,
     ):
         # Check arguments and create StreamReceiver
-        self._peak_height_perc = Detector._check_peak_height_perc(
-            peak_height_perc
-        )
+        self._peak_height_perc = Detector._check_peak_height_perc(peak_height_perc)
         self._peak_width = Detector._check_peak_width(peak_width)
-        self._peak_prominence = Detector._check_peak_prominence(
-            peak_prominence
-        )
+        self._peak_prominence = Detector._check_peak_prominence(peak_prominence)
         _check_type(stream_name, (str,), item_name="stream_name")
         _check_type(ecg_ch_name, (str,), item_name="ecg_ch_name")
         _check_type(duration_buffer, ("numeric",), item_name="duration_buffer")
@@ -97,9 +93,7 @@ class Detector:
         self._timestamps_buffer = np.zeros(
             self._duration_buffer_samples, dtype=np.float32
         )
-        self._ecg_buffer = np.zeros(
-            self._duration_buffer_samples, dtype=np.float32
-        )
+        self._ecg_buffer = np.zeros(self._duration_buffer_samples, dtype=np.float32)
 
         # R-Peak detectors
         self._last_peak = None
@@ -116,9 +110,7 @@ class Detector:
 
         Avoids any discontinuities in the ECG buffer.
         """
-        logger.info(
-            "Filling an entire buffer of %s seconds..", self._duration_buffer
-        )
+        logger.info("Filling an entire buffer of %s seconds..", self._duration_buffer)
         timer = Timer()
         while timer.sec() <= self._duration_buffer:
             self.update_loop()
@@ -218,9 +210,7 @@ class Detector:
             - Data: 2048 Hz - 8192 samples
               18.3 ms ± 102 µs per loop
         """
-        return filter_data(
-            self._ecg_buffer, self._sample_rate, 1.0, 15.0, phase="zero"
-        )
+        return filter_data(self._ecg_buffer, self._sample_rate, 1.0, 15.0, phase="zero")
 
     def detrend_data(self):
         """
@@ -311,9 +301,7 @@ class Detector:
     @staticmethod
     def _check_peak_height_perc(peak_height_perc: Union[int, float]):
         """Check argument 'peak_height_perc'."""
-        _check_type(
-            peak_height_perc, ("numeric",), item_name="peak_height_perc"
-        )
+        _check_type(peak_height_perc, ("numeric",), item_name="peak_height_perc")
         if peak_height_perc <= 0:
             raise ValueError(
                 "Argument 'peak_height_perc' must be a strictly positive "
@@ -350,9 +338,7 @@ class Detector:
     @staticmethod
     def _check_peak_prominence(peak_prominence: Optional[Union[int, float]]):
         """Check argument 'peak_prominence'."""
-        _check_type(
-            peak_prominence, ("numeric", None), item_name="peak_prominence"
-        )
+        _check_type(peak_prominence, ("numeric", None), item_name="peak_prominence")
         if peak_prominence is None:
             return None
         if peak_prominence <= 0:

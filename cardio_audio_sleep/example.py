@@ -34,9 +34,7 @@ def example(
         images = list()
         for instrument, position in zip(instruments, positions):
             images.append(
-                ImageStim(
-                    win, instrument_images[instrument], pos=(position, 0)
-                )
+                ImageStim(win, instrument_images[instrument], pos=(position, 0))
             )
         for img in images:
             img.setAutoDraw(True)
@@ -44,9 +42,7 @@ def example(
         # display
         win.flip()
         # start playing sounds
-        process = mp.Process(
-            target=play_sounds, args=(instrument_sounds, volume)
-        )
+        process = mp.Process(target=play_sounds, args=(instrument_sounds, volume))
         process.start()
         keyboard.start()
         while True:  # wait for 'space'

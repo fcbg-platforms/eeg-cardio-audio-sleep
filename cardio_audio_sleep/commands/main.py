@@ -19,12 +19,8 @@ from .gui import GUI
 
 def cas():
     """Entrypoint for cas <command> usage."""
-    parser = argparse.ArgumentParser(
-        prog="CAS", description="Cardio-Audio-Sleep GUI"
-    )
-    parser.add_argument(
-        "--ecg", help="name of the ECG channel", type=str, metavar=str
-    )
+    parser = argparse.ArgumentParser(prog="CAS", description="Cardio-Audio-Sleep GUI")
+    parser.add_argument("--ecg", help="name of the ECG channel", type=str, metavar=str)
     parser.add_argument(
         "--eye_tracker", help="enable eye-tracking", action="store_true"
     )
@@ -34,9 +30,7 @@ def cas():
     parser.add_argument(
         "--dev", help="load short sequence for testing", action="store_true"
     )
-    parser.add_argument(
-        "--verbose", help="enable debug logs", action="store_true"
-    )
+    parser.add_argument("--verbose", help="enable debug logs", action="store_true")
     args = parser.parse_args()
     set_log_level("DEBUG" if args.verbose else "INFO")
 
@@ -111,9 +105,7 @@ def pds():
 
 def test():
     """Run test on the LSL stream and triggers."""
-    parser = argparse.ArgumentParser(
-        prog="CAS - Test", description="Test CAS system."
-    )
+    parser = argparse.ArgumentParser(prog="CAS - Test", description="Test CAS system.")
     parser.add_argument(
         "--amplifier",
         type=str,
@@ -141,9 +133,7 @@ def test():
     idx = stream_names.index(stream_name)
     sinfo = stream_infos[idx]
     if sinfo.nominal_srate() == 1024:
-        logger.info(
-            "ANT LSL stream sampling rate is correctly set at 1024 Hz."
-        )
+        logger.info("ANT LSL stream sampling rate is correctly set at 1024 Hz.")
     else:
         logger.error(
             "ANT LSL stream sampling rate is not correctly set! "
@@ -176,7 +166,8 @@ def test():
     elif len(triggers) == 0:
         logger.error(
             "Could not find a parallel port or an arduino to parallel port converter. "
-            "Aborting further tests..")
+            "Aborting further tests.."
+        )
         return None
 
     # check the trigger pins

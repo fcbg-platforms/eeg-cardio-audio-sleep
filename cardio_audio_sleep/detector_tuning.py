@@ -116,9 +116,7 @@ def peak_detection_parameters_tuning(
         height_lines = _draw_height(axs, data, height_slider.val)
         prominence = None if prominence_disabled else prominence_slider.val
         width = None if width_disabled else width_slider.val
-        peak_lines = _draw_peaks(
-            axs, data, height_slider.val, prominence, width, fs
-        )
+        peak_lines = _draw_peaks(axs, data, height_slider.val, prominence, width, fs)
 
         # update fig
         fig.canvas.draw_idle()
@@ -175,9 +173,7 @@ def peak_detection_parameters_tuning(
         # draw new lines
         prominence = None if prominence_disabled else prominence_slider.val
         width = None if width_disabled else width_slider.val
-        peak_lines = _draw_peaks(
-            axs, data, height_slider.val, prominence, width, fs
-        )
+        peak_lines = _draw_peaks(axs, data, height_slider.val, prominence, width, fs)
 
         # update fig
         fig.canvas.draw_idle()
@@ -201,9 +197,7 @@ def peak_detection_parameters_tuning(
         # draw new lines
         prominence = None if prominence_disabled else prominence_slider.val
         width = None if width_disabled else width_slider.val
-        peak_lines = _draw_peaks(
-            axs, data, height_slider.val, prominence, width, fs
-        )
+        peak_lines = _draw_peaks(axs, data, height_slider.val, prominence, width, fs)
 
         # update fig
         fig.canvas.draw_idle()
@@ -270,9 +264,7 @@ def _acquire_data(ecg_ch_name, stream_name, duration_buffer):
     sr = StreamReceiver(bufsize=duration_buffer, stream_name=stream_name)
     if len(sr.streams) == 0:
         raise ValueError("The StreamReceiver did not connect to any streams.")
-    _check_value(
-        ecg_ch_name, sr.streams[stream_name].ch_list, item_name="ecg_ch_name"
-    )
+    _check_value(ecg_ch_name, sr.streams[stream_name].ch_list, item_name="ecg_ch_name")
     ecg_ch_idx = sr.streams[stream_name].ch_list.index(ecg_ch_name)
 
     # Acquisition
@@ -280,9 +272,7 @@ def _acquire_data(ecg_ch_name, stream_name, duration_buffer):
     time.sleep(0.5)
     data = list()
     for k in range(4):
-        logger.info(
-            "%i/4: Waiting %ss to fill the buffer..", k + 1, duration_buffer
-        )
+        logger.info("%i/4: Waiting %ss to fill the buffer..", k + 1, duration_buffer)
         time.sleep(duration_buffer + 0.2)
         sr.acquire()
         data_, _ = sr.get_buffer()

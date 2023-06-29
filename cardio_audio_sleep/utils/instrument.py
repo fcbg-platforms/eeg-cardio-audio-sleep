@@ -88,9 +88,7 @@ def pick_instrument_sound(
     if instrument_iso is not None:
         _check_value(instrument_iso, instrument_categories, "instrument_iso")
     if instrument_async is not None:
-        _check_value(
-            instrument_async, instrument_categories, "instrument_async"
-        )
+        _check_value(instrument_async, instrument_categories, "instrument_async")
 
     instruments = dict(
         synchronous=instrument_sync,

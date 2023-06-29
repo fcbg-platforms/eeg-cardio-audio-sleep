@@ -41,9 +41,7 @@ class Eyelink(EYELink):
         if fname.endswith(".EDF"):
             fname = fname.split(".EDF")[0]
         if 8 < len(fname):
-            raise ValueError(
-                "The fname should not exceed 8 alphanumeric characters."
-            )
+            raise ValueError("The fname should not exceed 8 alphanumeric characters.")
         self.edf_fname = fname
 
         # ----------------------------------------------------------------------
@@ -74,32 +72,23 @@ class Eyelink(EYELink):
         if host_ip is not None:
             vstr = self.el_tracker.getTrackerVersionString()
             eyelink_ver = int(vstr.split()[-1].split(".")[0])
-            logger.debug(
-                "Running experiment on %s, version %d", vstr, eyelink_ver
-            )
+            logger.debug("Running experiment on %s, version %d", vstr, eyelink_ver)
 
         # File and Link data control
         # -> what eye events to save in the EDF file?
         # -> include everything by default
-        file_event_flags = (
-            "LEFT,RIGHT,FIXATION,SACCADE,BLINK,MESSAGE,BUTTON,INPUT"
-        )
+        file_event_flags = "LEFT,RIGHT,FIXATION,SACCADE,BLINK,MESSAGE,BUTTON,INPUT"
         # -> what eye events to make available over the link?
         # -> include everything by default
-        link_event_flags = (
-            "LEFT,RIGHT,FIXATION,SACCADE,BLINK,BUTTON,FIXUPDATE,INPUT"
-        )
+        link_event_flags = "LEFT,RIGHT,FIXATION,SACCADE,BLINK,BUTTON,FIXUPDATE,INPUT"
         # what sample data to save in the EDF data file and to make available
         # over the link, include the 'HTARGET' flag to save head target sticker
         # data for supported eye trackers.
         if eyelink_ver > 3:
             file_sample_flags = (
-                "LEFT,RIGHT,GAZE,HREF,RAW,AREA,HTARGET,"
-                + "GAZERES,BUTTON,STATUS,INPUT"
+                "LEFT,RIGHT,GAZE,HREF,RAW,AREA,HTARGET," + "GAZERES,BUTTON,STATUS,INPUT"
             )
-            link_sample_flags = (
-                "LEFT,RIGHT,GAZE,GAZERES,AREA,HTARGET,STATUS,INPUT"
-            )
+            link_sample_flags = "LEFT,RIGHT,GAZE,GAZERES,AREA,HTARGET,STATUS,INPUT"
         else:
             file_sample_flags = (
                 "LEFT,RIGHT,GAZE,HREF,RAW,AREA,GAZERES,BUTTON,STATUS,INPUT"
@@ -114,9 +103,7 @@ class Eyelink(EYELink):
         # Choose a calibration type, H3, HV3, HV5, HV13
         # (HV = horizontal/vertical)
         self.el_tracker.sendCommand("calibration_type = HV9")
-        self.el_tracker.sendCommand(
-            "button_function 5 'accept_target_fixation'"
-        )
+        self.el_tracker.sendCommand("button_function 5 'accept_target_fixation'")
 
         # Step 4: set up a graphics environment for calibration
         self.win = visual.Window(
@@ -130,8 +117,7 @@ class Eyelink(EYELink):
         # Pass the display pixel coordinates (left, top, right, bottom) to the
         # tracker, c.f EyeLink Installation Guide "Customizing Screen Settings"
         el_coords = (
-            "screen_pixel_coords = 0 0 "
-            + f"{self.scn_width - 1} {self.scn_height - 1}"
+            "screen_pixel_coords = 0 0 " + f"{self.scn_width - 1} {self.scn_height - 1}"
         )
         self.el_tracker.sendCommand(el_coords)
 

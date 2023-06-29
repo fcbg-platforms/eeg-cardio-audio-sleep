@@ -79,9 +79,7 @@ def generate_sequence(
     while True:
         groups = [(n, list(group)) for n, group in groupby(middle)]
 
-        if all(
-            len(group[1]) == 1 for group in groups if group[0] == tdef.omission
-        ):
+        if all(len(group[1]) == 1 for group in groups if group[0] == tdef.omission):
             converged = True
             break
 
@@ -99,18 +97,12 @@ def generate_sequence(
                 continue
 
             # find the longest group of TRIGGERS['sound']
-            idx = np.argmax(
-                [len(g) if n == tdef.sound else 0 for n, g in groups]
-            )
-            pos_sound = sum(
-                len(g) for k, (_, g) in enumerate(groups) if k < idx
-            )
+            idx = np.argmax([len(g) if n == tdef.sound else 0 for n, g in groups])
+            pos_sound = sum(len(g) for k, (_, g) in enumerate(groups) if k < idx)
             pos_sound = pos_sound + len(groups[idx][1]) // 2  # center
 
             # find position of current group
-            pos_omission = sum(
-                len(g) for k, (_, g) in enumerate(groups) if k < i
-            )
+            pos_omission = sum(len(g) for k, (_, g) in enumerate(groups) if k < i)
 
             # swap first element from omissions with center of group of sounds
             middle[pos_sound], middle[pos_omission] = (
@@ -124,12 +116,9 @@ def generate_sequence(
 
     # sanity-check
     if converged:
-        assert all(
-            len(group) == 1 for n, group in groups if n == tdef.omission
-        )
+        assert all(len(group) == 1 for n, group in groups if n == tdef.omission)
         assert not any(
-            middle[i - 1] == middle[i] == tdef.omission
-            for i in range(1, len(middle))
+            middle[i - 1] == middle[i] == tdef.omission for i in range(1, len(middle))
         )
 
     end = [tdef.sound] * n_edge

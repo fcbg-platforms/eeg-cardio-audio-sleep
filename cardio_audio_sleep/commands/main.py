@@ -123,18 +123,18 @@ def test():
     )
     args = parser.parse_args()
 
-    error = False
     # look for the LSL stream
     logger.info("Looking for LSL stream..")
     try:
         stream_name = search_amplifier(args.amplifier)
         logger.info("LSL stream found!")
     except RuntimeError:
-        error = True
         logger.error(
             "LSL stream could not be found. Is the amplifier "
-            "correctly connected and the LSL app started?"
+            "correctly connected and the LSL app started? "
+            "Aborting further tests.."
         )
+        return None
 
     # check the sampling rate
     stream_names, stream_infos = list_lsl_streams(ignore_markers=True)
@@ -145,28 +145,38 @@ def test():
             "ANT LSL stream sampling rate is correctly set at 1024 Hz."
         )
     else:
-        error = True
         logger.error(
             "ANT LSL stream sampling rate is not correctly set! "
-            "Currently %s Hz, while 1024 Hz is expected!",
+            "Currently %s Hz, while 1024 Hz is expected! "
+            "Aborting further tests..",
             sinfo.nominal_srate(),
         )
+        return None
 
     # check the trigger
+    triggers = dict()
+    try:
+        trigger = ParallelPortTrigger("/dev/parport0", delay=5)
+        triggers["lpt"] = trigger
+    except Exception:
+        pass
     try:
         trigger = ParallelPortTrigger("arduino", delay=5)
+        triggers["arduino"] = trigger
     except Exception:
-        error = True
-        logger.error(
-            "Could not initialize the parallel port trigger. Is the LPT "
-            "cable correctly connected and does '/dev/parport0' exist?"
-        )
+        pass
 
-    if error:
-        logger.info(
-            "Something went wrong.. please check the setup! "
-            "Aborting further tests.."
+    if len(triggers) == 2:
+        logger.error(
+            "Found both a LPT port on '/dev/parport0' and an arduino to LPT converter. "
+            "Please use the on-board LPT port instead of a converter and set 'lpt' in "
+            "the configuration. Aborting further tests.."
         )
+        return None
+    elif len(triggers) == 0:
+        logger.error(
+            "Could not find a parallel port or an arduino to parallel port converter. "
+            "Aborting further tests..")
         return None
 
     # check the trigger pins

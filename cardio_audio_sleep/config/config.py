@@ -120,7 +120,7 @@ def load_config(fname: str, dev: bool = False) -> Tuple[dict, str]:
 
     # retrieve trigger type
     trigger = config["trigger"]["type"]
-    _check_value(trigger, ("lpt", "mock"), "trigger")
+    _check_value(trigger, ("lpt", "mock", "arduino"), "trigger")
 
     # convert all to int
     block = {key: int(value) for key, value in dict(config["block"]).items()}

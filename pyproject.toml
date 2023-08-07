@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'cardio_audio_sleep'
-version = '0.4.0.dev'
+version = '0.4.0'
 description = 'Cardio-audio-sleep study.'
 readme = 'README.md'
 license = {file = 'LICENSE'}

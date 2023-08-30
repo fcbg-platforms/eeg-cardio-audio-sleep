@@ -35,7 +35,7 @@ classifiers = [
     'Topic :: Scientific/Engineering',
 ]
 dependencies = [
-    'bsl>=0.6.1',
+    'bs==0.6.3',
     'matplotlib',
     'mne>=1.0.0',
     'numpy>=1.21',

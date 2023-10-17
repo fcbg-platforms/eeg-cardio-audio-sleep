@@ -133,11 +133,15 @@ class GUI(QMainWindow):
         if trigger_type == "lpt":
             trigger = ParallelPortTrigger("/dev/parport0", delay=5)
         elif trigger_type == "arduino":
-            trigger = ParallelPortTrigger("arduino", delay=5)
+            trigger = trigger_type
         elif trigger_type == "mock":
             trigger = MockTrigger()
         self.eye_link = eye_link
-        self.trigger = Trigger(trigger, self.eye_link)
+        self.trigger = (
+            trigger
+            if isinstance(trigger, str)
+            else Trigger(trigger, self.eye_link)
+        )
 
         # create instrument trigger
         self.trigger_instrument = TriggerInstrument()
@@ -876,7 +880,8 @@ class GUI(QMainWindow):
                 self.psutil_process.suspend()
             except psutil.NoSuchProcess:
                 logger.warning("[Pause] No process found to suspend.")
-            self.trigger.signal(self.tdef.pause)
+            if not isinstance(self.trigger, str):
+                self.trigger.signal(self.tdef.pause)
 
             # enable updating the amplifier if pause in something else than a
             # synchronous block
@@ -896,7 +901,8 @@ class GUI(QMainWindow):
                 self.psutil_process.resume()
             except psutil.NoSuchProcess:
                 logger.warning("[Resume] No process found to resume.")
-            self.trigger.signal(self.tdef.resume)
+            if not isinstance(self.trigger, str):
+                self.trigger.signal(self.tdef.resume)
 
             # disable updating the amplifier if pause in something else than a
             # synchronous block
@@ -1233,7 +1239,7 @@ class GUI(QMainWindow):
             self._stream_name = stream_name
         except RuntimeError:
             logger.error(
-                "/!\ Amplifier could not be found on the netowkr. "
+                r"/!\ Amplifier could not be found on the netowkr. "
                 "Make sure it's plug-in, turn on, and that the LSL "
                 "app is linked."
             )

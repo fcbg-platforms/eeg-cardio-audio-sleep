@@ -138,9 +138,7 @@ class GUI(QMainWindow):
             trigger = MockTrigger()
         self.eye_link = eye_link
         self.trigger = (
-            trigger
-            if isinstance(trigger, str)
-            else Trigger(trigger, self.eye_link)
+            trigger if isinstance(trigger, str) else Trigger(trigger, self.eye_link)
         )
 
         # create instrument trigger

@@ -7,7 +7,7 @@ from typing import Optional
 
 import numpy as np
 import psychtoolbox as ptb
-from bsl.triggers import TriggerDef
+from bsl.triggers import ParallelPortTrigger, TriggerDef
 from numpy.typing import ArrayLike
 from psychopy.clock import wait
 from scipy.signal.windows import tukey
@@ -101,6 +101,10 @@ def synchronous(
         peak_width=peak_width,
     )
     detector.prefill_buffer()
+
+    # check trigger
+    if trigger == "arduino":
+        trigger = ParallelPortTrigger("arduino", delay=5)
 
     # task loop
     trigger.signal(tdef.sync_start)
@@ -206,6 +210,10 @@ def isochronous(
         )
     assert sound.duration < delay  # sanity-check
 
+    # check trigger
+    if trigger == "arduino":
+        trigger = ParallelPortTrigger("arduino", delay=5)
+
     wait(4, hogCPUperiod=0)  # fake buffer prefill
     # task loop
     trigger.signal(tdef.iso_start)
@@ -301,6 +309,10 @@ def asynchronous(
     delays = np.diff(sequence_timings)  # a[i+1] - a[i]
     assert all(sound.duration < delay for delay in delays)  # sanity-check
 
+    # check trigger
+    if trigger == "arduino":
+        trigger = ParallelPortTrigger("arduino", delay=5)
+
     wait(4, hogCPUperiod=0)  # fake buffer prefill
     # Task loop
     trigger.signal(tdef.async_start)
@@ -367,6 +379,10 @@ def baseline(trigger: Trigger, tdef: TriggerDef, duration: float, verbose: bool 
             f"Provided: '{duration}' seconds."
         )
     _check_type(verbose, (bool,), "verbose")
+
+    # check trigger
+    if trigger == "arduino":
+        trigger = ParallelPortTrigger("arduino", delay=5)
 
     # Start trigger
     trigger.signal(tdef.baseline_start)

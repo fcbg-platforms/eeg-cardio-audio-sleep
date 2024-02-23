@@ -24,6 +24,7 @@ dependencies = [
   'byte_triggers',
   'matplotlib',
   'mne>=1.6.0',
+  'mne-lsl>=1.2.0',
   'numpy>=1.21',
   'packaging',
   'pandas',
@@ -88,6 +89,26 @@ check-hidden = true
 ignore-words = '.codespellignore'
 skip = 'build,.git,.mypy_cache,.pytest_cache'
 
+[tool.coverage.report]
+exclude_lines = [
+  'if __name__ == .__main__.:',
+  'if TYPE_CHECKING:',
+  'pragma: no cover',
+]
+precision = 2
+
+[tool.coverage.run]
+branch = true
+cover_pylib = false
+omit = [
+  '**/__init__.py',
+  '**/conftest.py',
+  '**/cardio_audio_sleep/_version.py',
+  '**/cardio_audio_sleep/commands/*',
+  '**/cardio_audio_sleep/utils/_fixes.py',
+  '**/tests/**',
+]
+
 [tool.isort]
 extend_skip_glob = [
   'data/*',
@@ -104,6 +125,10 @@ convention = 'numpy'
 ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot|Slot)'
 match = '^(?!__init__|test_).*\.py'
 match-dir = '^cardio_audio_sleep.*'
+
+[tool.pytest.ini_options]
+addopts = '--durations 20 --junit-xml=junit-results.xml --verbose'
+minversion = '8.0'
 
 [tool.ruff]
 extend-exclude = [

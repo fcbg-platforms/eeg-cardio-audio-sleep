@@ -35,8 +35,6 @@ def search_amplifier(amp_type: str = "ant") -> str:
         stream_name = search_lsl(ignore_markers=True, timeout=5)
     else:
         stream_name = ""
-
     if amp_type == "ant" and "eego" not in stream_name:
         raise RuntimeError("ANT Neuro amplifier could not be found.")
-
     return stream_name

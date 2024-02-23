@@ -11,6 +11,8 @@ from typing import TYPE_CHECKING
 import numpy as np
 from bsl.triggers import TriggerDef
 
+from ._docs import fill_doc
+
 if TYPE_CHECKING:
     from typing import Any
 

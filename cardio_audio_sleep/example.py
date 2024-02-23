@@ -9,9 +9,7 @@ from psychopy.visual import ImageStim, TextStim, Window
 from .utils import load_instrument_categories, load_instrument_images
 
 
-def example(
-    win: Window, instrument_sounds: dict[str, Path], volume: float
-) -> None:  # noqa: D401
+def example(win: Window, instrument_sounds: dict[str, Path], volume: float) -> None:  # noqa: D401
     """Example task."""
     try:
         # prepare keyboard for interaction

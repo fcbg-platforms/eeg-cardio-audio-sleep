@@ -281,7 +281,9 @@ def _instructions(win: Window, keyboard: Keyboard):
     # create images/texts
     images = list()
     texts = list()
-    for k, (instrument, position) in enumerate(zip(instruments, positions, strict=True)):
+    for k, (instrument, position) in enumerate(
+        zip(instruments, positions, strict=True)
+    ):
         images.append(
             ImageStim(win, instrument_images[instrument], pos=(position, -0.2))
         )

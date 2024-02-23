@@ -182,8 +182,7 @@ class Detector:
         return peaks
 
     def filter_data(self):
-        """
-        Filter the ECG buffer with an acausal filter.
+        """Filter the ECG buffer with an acausal filter.
 
         Timeit
         ------

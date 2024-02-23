@@ -128,7 +128,7 @@ py_version = 310
 add_ignore = 'D100,D104,D107'
 convention = 'numpy'
 ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot|Slot)'
-match = '^(?!__init__|test_).*\.py'
+match = '^(?!__init__|test_|EyeLinkCoreGraphicsPsychoPy).*\.py'
 match-dir = '^cardio_audio_sleep.*'
 
 [tool.pytest.ini_options]

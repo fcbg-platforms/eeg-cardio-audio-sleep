@@ -4,51 +4,92 @@ Inspired from mne: https://mne.tools/stable/index.html
 Inspired from mne.utils.docs.py by Eric Larson <larson.eric.d@gmail.com>
 """
 
+from __future__ import annotations  # c.f. PEP 563, PEP 649
+
 import sys
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from typing import Any
 
-# ------------------------- Documentation dictionary -------------------------
-docdict = dict()
+# -- Documentation dictionary ----------------------------------------------------------
+docdict: dict[str, str] = dict()
 
-# ----------------------------------- tasks ----------------------------------
-docdict["task_verbose"] = """
-verbose : bool
-    If True, a timer is logged with the info level every second."""
-docdict["trigger"] = """
-trigger : Trigger
-    A combination of a BSL trigger instance and of a mock or real eye-link."""
-docdict["volume"] = """
-volume : float
-    Sound volume between 0 (mute) and 100."""
-docdict["instrument"] = """
-instrument : Path | None
-    Path to the instrument sound to play. If None, instrument sounds are
-    disabled."""
-docdict["n_instrument"] = """
-n_instrument : int
-    Number of instrument sounds played after the pure tone if instrument is not
-    None."""
-docdict["sequence"] = """
-sequence : array
-    Sequence of stimulus/omissions.
-    1 corresponds to a stound stimulus. 2 corresponds to an omission."""
+# -- A ---------------------------------------------------------------------------------
+# -- B ---------------------------------------------------------------------------------
+# -- C ---------------------------------------------------------------------------------
+# -- D ---------------------------------------------------------------------------------
 docdict["disable_end_trigger"] = """
 disable_end_trigger : bool
     If True, disable the end of block trigger."""
 
-# --------------------------------- eye-tracker ------------------------------
+# -- E ---------------------------------------------------------------------------------
 docdict["eye_link"] = """
 eye_link : Eyelink
     Eyelink class which communicates with the Eye-Tracker device."""
 
-# ------------------------- Documentation functions --------------------------
-docdict_indented = dict()
+# -- F ---------------------------------------------------------------------------------
+# -- G ---------------------------------------------------------------------------------
+# -- H ---------------------------------------------------------------------------------
+# -- I ---------------------------------------------------------------------------------
+docdict["instrument"] = """
+instrument : Path | None
+    Path to the instrument sound to play. If None, instrument sounds are
+    disabled."""
+
+# -- J ---------------------------------------------------------------------------------
+# -- K ---------------------------------------------------------------------------------
+# -- L ---------------------------------------------------------------------------------
+# -- M ---------------------------------------------------------------------------------
+# -- N ---------------------------------------------------------------------------------
+docdict["n_instrument"] = """
+n_instrument : int
+    Number of instrument sounds played after the pure tone if instrument is not
+    None."""
+
+# -- O ---------------------------------------------------------------------------------
+# -- P ---------------------------------------------------------------------------------
+# -- Q ---------------------------------------------------------------------------------
+# -- R ---------------------------------------------------------------------------------
+# -- S ---------------------------------------------------------------------------------
+docdict["sequence"] = """
+sequence : array
+    Sequence of stimulus/omissions.
+    1 corresponds to a stound stimulus. 2 corresponds to an omission."""
+
+# -- T ---------------------------------------------------------------------------------
+docdict["task_verbose"] = """
+verbose : bool
+    If True, a timer is logged with the info level every second."""
+
+docdict["trigger"] = """
+trigger : Trigger
+    A combination of a BSL trigger instance and of a mock or real eye-link."""
+
+# -- U ---------------------------------------------------------------------------------
+# -- V ---------------------------------------------------------------------------------
+docdict["verbose"] = """
+verbose : int | str | bool | None
+    Sets the verbosity level. The verbosity increases gradually between ``"CRITICAL"``,
+    ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``. If None is provided, the
+    verbosity is set to ``"WARNING"``. If a bool is provided, the verbosity is set to
+    ``"WARNING"`` for False and to ``"INFO"`` for True."""
+
+docdict["volume"] = """
+volume : float
+    Sound volume between 0 (mute) and 100."""
+
+# -- W ---------------------------------------------------------------------------------
+# -- X ---------------------------------------------------------------------------------
+# -- Y ---------------------------------------------------------------------------------
+# -- Z ---------------------------------------------------------------------------------
+
+# -- Documentation functions -----------------------------------------------------------
+docdict_indented: dict[int, dict[str, str]] = dict()
 
 
-def fill_doc(f: Callable) -> Callable:
+def fill_doc(f: Callable[..., Any]) -> Callable[..., Any]:
     """Fill a docstring with docdict entries.
 
     Parameters
@@ -113,19 +154,17 @@ def _indentcount_lines(lines: list[str]) -> int:
         line_stripped = line.lstrip()
         if line_stripped:
             indent = min(indent, len(line) - len(line_stripped))
-    if indent == sys.maxsize:
-        return 0
     return indent
 
 
-def copy_doc(source: Callable) -> Callable:
+def copy_doc(source: Callable[..., Any]) -> Callable[..., Any]:
     """Copy the docstring from another function (decorator).
 
-    The docstring of the source function is prepepended to the docstring of the
-    function wrapped by this decorator.
+    The docstring of the source function is prepepended to the docstring of the function
+    wrapped by this decorator.
 
-    This is useful when inheriting from a class and overloading a method. This
-    decorator can be used to copy the docstring of the original method.
+    This is useful when inheriting from a class and overloading a method. This decorator
+    can be used to copy the docstring of the original method.
 
     Parameters
     ----------
@@ -152,11 +191,11 @@ def copy_doc(source: Callable) -> Callable:
     Docstring for m1 this gets appended
     """
 
-    def wrapper(func):
+    def wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
         if source.__doc__ is None or len(source.__doc__) == 0:
             raise RuntimeError(
-                f"The docstring from {source.__name__} could not be copied "
-                "because it was empty."
+                f"The docstring from {source.__name__} could not be copied because it "
+                "was empty."
             )
         doc = source.__doc__
         if func.__doc__ is not None:

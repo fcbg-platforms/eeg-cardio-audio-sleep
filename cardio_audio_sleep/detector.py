@@ -4,7 +4,7 @@ import math
 import xml.etree.ElementTree as ET
 
 import numpy as np
-from bsl.lsl import StreamInlet, resolve_streams
+from mne_lsl.lsl import StreamInlet, resolve_streams
 from bsl.utils import Timer
 from mne.filter import filter_data
 from scipy.signal import find_peaks

@@ -8,7 +8,7 @@ def generate_async_timings(
     sequence_timings: ArrayLike,
     perc: float = 10.0,
     n: int | None = None,
-) -> NDArray[float]:
+) -> NDArray[np.float64]:
     """Generate timings for an asynchronous block from a synchronous block.
 
     Given the sequence of timings of a synchronous block, generate the sequence
@@ -64,7 +64,7 @@ def generate_async_timings(
 def generate_async_timings_based_on_mean(
     sequence_timings: ArrayLike,
     n: int | None = None,
-) -> NDArray[float]:
+) -> NDArray[np.float64]:
     """Generate timings for an asynchronous block from a synchronous block.
 
     Given the sequence of timings of a synchronous block, generate the sequence

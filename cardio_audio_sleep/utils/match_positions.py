@@ -1,7 +1,13 @@
+from __future__ import annotations  # c.f. PEP 563, PEP 649
+
+from typing import TYPE_CHECKING
+
 import numpy as np
-from numpy.typing import ArrayLike
 
 from ._checks import check_type, ensure_int
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
 
 
 def match_positions(x: ArrayLike, y: ArrayLike, threshold: int):
@@ -36,10 +42,8 @@ def match_positions(x: ArrayLike, y: ArrayLike, threshold: int):
             "Argument 'threshold' must be a strictly positive integer. "
             f"Provided: '{threshold}'."
         )
-
     d = np.repeat(x, y.shape[0]).reshape(x.shape[0], y.shape[0])
     d -= y
     idx, idy = np.where((-threshold < d) & (d < threshold))
     assert idx.shape == idy.shape  # sanity-check
-
     return idx, idy

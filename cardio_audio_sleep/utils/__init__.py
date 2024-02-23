@@ -1,5 +1,7 @@
 """Utilities module."""
 
+from . import config  # noqa: F401
+from . import logs  # noqa: F401
 from .async_timings import (  # noqa: F401
     generate_async_timings,
     generate_async_timings_based_on_mean,

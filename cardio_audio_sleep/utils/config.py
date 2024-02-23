@@ -61,6 +61,7 @@ def sys_info(fid: IO | None = None, developer: bool = False):
         keys = (
             "build",
             "style",
+            "test",
         )
         for key in keys:
             extra_dependencies = [

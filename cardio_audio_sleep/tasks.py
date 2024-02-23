@@ -16,10 +16,10 @@ from . import logger
 from .config.constants import TONE_FQ
 from .triggers import Trigger
 from .utils._checks import (
-    ensure_valid_sequence,
-    ensure_valid_sequence_timings,
     check_tdef,
     check_type,
+    ensure_valid_sequence,
+    ensure_valid_sequence_timings,
 )
 from .utils._docs import fill_doc
 

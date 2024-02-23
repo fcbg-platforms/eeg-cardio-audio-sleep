@@ -1,5 +1,5 @@
-from mne_lsl.lsl import StreamInfo, StreamOutlet
 from byte_triggers import LSLTrigger
+from mne_lsl.lsl import StreamInfo, StreamOutlet
 
 from .._typing import EYELink
 from ..utils._checks import check_type

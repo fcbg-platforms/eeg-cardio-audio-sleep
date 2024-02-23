@@ -6,7 +6,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from ._checks import check_type, check_value, ensure_int
-from ._logs import logger
+from .logs import logger
 
 
 def generate_sequence(

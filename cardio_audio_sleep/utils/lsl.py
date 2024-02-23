@@ -1,7 +1,7 @@
 from bsl.utils.lsl import list_lsl_streams, search_lsl
 
 from ._checks import check_type, check_value
-from ._logs import logger
+from .logs import logger
 
 
 def search_amplifier(amp_type: str = "ant") -> str:

@@ -10,7 +10,7 @@ from mne.filter import filter_data
 from scipy.signal import find_peaks
 
 from .utils._checks import check_type, check_value
-from .utils._logs import logger
+from .utils.logs import logger
 
 
 class Detector:

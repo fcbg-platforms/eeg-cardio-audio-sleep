@@ -1,69 +1,74 @@
 [build-system]
-requires = ['setuptools >= 61.0.0']
 build-backend = 'setuptools.build_meta'
+requires = ['setuptools >= 64.0.0']
 
 [project]
-name = 'cardio_audio_sleep'
-version = '0.5.0.dev'
-description = 'Cardio-audio-sleep study.'
-readme = 'README.md'
-license = {file = 'LICENSE'}
-requires-python = '>=3.9'
 authors = [
-    {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'},
-]
-maintainers = [
-    {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'},
-]
-keywords = [
-    'python',
-    'neuroscience',
-    'neuroimaging',
-    'sleep',
+  {email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne'},
 ]
 classifiers = [
-    'Operating System :: Microsoft :: Windows',
-    'Operating System :: Unix',
-    'Operating System :: MacOS',
-    'Programming Language :: Python :: 3 :: Only',
-    'Programming Language :: Python :: 3.9',
-    'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.11',
-    'Natural Language :: English',
-    'License :: OSI Approved :: MIT License',
-    'Intended Audience :: Science/Research',
-    'Topic :: Scientific/Engineering',
+  'Intended Audience :: Science/Research',
+  'License :: OSI Approved :: MIT License',
+  'Natural Language :: English',
+  'Operating System :: MacOS',
+  'Operating System :: Microsoft :: Windows',
+  'Operating System :: Unix',
+  'Programming Language :: Python :: 3 :: Only',
+  'Programming Language :: Python :: 3.10',
+  'Programming Language :: Python :: 3.11',
+  'Programming Language :: Python :: 3.12',
+  'Topic :: Scientific/Engineering',
 ]
 dependencies = [
-    'bsl==0.6.4',
-    'byte_triggers',
-    'matplotlib',
-    'mne>=1.6.0',
-    'numpy>=1.21',
-    'packaging',
-    'pandas',
-    'psutil',
-    'psychopy',
-    'PyQt5',
-    'pyxdf',
-    'scipy',
-    'stimuli>=0.4.3',
+  'bsl==0.6.4',
+  'byte_triggers',
+  'matplotlib',
+  'mne>=1.6.0',
+  'numpy>=1.21',
+  'packaging',
+  'pandas',
+  'psutil',
+  'psychopy',
+  'PyQt5',
+  'pyxdf',
+  'scipy',
+  'stimuli>=0.5.0',
 ]
+description = 'Cardio-audio-sleep study.'
+keywords = [
+  'neuroimaging',
+  'neuroscience',
+  'python',
+  'sleep',
+  'cardiac',
+]
+license = {file = 'LICENSE'}
+maintainers = [
+  {email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne'},
+]
+name = 'cardio_audio_sleep'
+readme = 'README.md'
+requires-python = '>=3.10'
+version = '0.5.0.dev'
 
 [project.optional-dependencies]
-build = ['build', 'twine']
-style = ['black', 'codespell', 'isort', 'pydocstyle[toml]', 'ruff']
 all = [
-    'cardio_audio_sleep[build]',
-    'cardio_audio_sleep[style]',
+  'cardio_audio_sleep[build]',
+  'cardio_audio_sleep[style]',
+]
+build = [
+  'build',
+  'twine',
 ]
 full = ['cardio_audio_sleep[all]']
-
-[project.urls]
-homepage = 'https://github.com/fcbg-hnp-meeg/eeg-cardio-audio-sleep'
-documentation = 'https://github.com/fcbg-hnp-meeg/eeg-cardio-audio-sleep'
-source = 'https://github.com/fcbg-hnp-meeg/eeg-cardio-audio-sleep'
-tracker = 'https://github.com/fcbg-hnp-meeg/eeg-cardio-audio-sleep/issues'
+style = [
+  'codespell[toml]>=2.2.4',
+  'isort',
+  'pydocstyle[toml]',
+  'ruff>=0.1.8',
+  'toml-sort',
+  'yamllint',
+]
 
 [project.scripts]
 cas = 'cardio_audio_sleep.commands.main:cas'
@@ -71,59 +76,70 @@ cas-sys_info = 'cardio_audio_sleep.commands.sys_info:run'
 cas_test = 'cardio_audio_sleep.commands.main:test'
 pds = 'cardio_audio_sleep.commands.main:pds'
 
+[project.urls]
+documentation = 'https://github.com/fcbg-hnp-meeg/eeg-cardio-audio-sleep'
+homepage = 'https://github.com/fcbg-hnp-meeg/eeg-cardio-audio-sleep'
+source = 'https://github.com/fcbg-hnp-meeg/eeg-cardio-audio-sleep'
+tracker = 'https://github.com/fcbg-hnp-meeg/eeg-cardio-audio-sleep/issues'
+
+[tool.codespell]
+check-filenames = true
+check-hidden = true
+ignore-words = '.codespellignore'
+skip = 'build,.git,.mypy_cache,.pytest_cache'
+
+[tool.isort]
+extend_skip_glob = [
+  'data/*',
+  'script/*',
+]
+line_length = 88
+multi_line_output = 3
+profile = "black"
+py_version = 310
+
+[tool.pydocstyle]
+add_ignore = 'D100,D104,D107'
+convention = 'numpy'
+ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot|Slot)'
+match = '^(?!__init__|test_).*\.py'
+match-dir = '^cardio_audio_sleep.*'
+
+[tool.ruff]
+extend-exclude = [
+  'data',
+  'script',
+]
+line-length = 88
+target-version = 'py310'
+
+[tool.ruff.format]
+docstring-code-format = true
+line-ending = "lf"
+
+[tool.ruff.lint]
+ignore = []
+select = ['A', 'B', 'E', 'F', 'UP', 'W']
+
+[tool.ruff.lint.per-file-ignores]
+'*' = [
+  'B904', # 'Within an except clause, raise exceptions with raise ... from ...'
+]
+'__init__.py' = ['F401']
+
 [tool.setuptools]
 include-package-data = false
-
-[tool.setuptools.packages.find]
-include = ['cardio_audio_sleep*']
-exclude = ['cardio_audio_sleep*tests']
 
 [tool.setuptools.package-data]
 "cardio_audio_sleep.audio" = ["*/*.wav"]
 "cardio_audio_sleep.config" = ["*.ini"]
 "cardio_audio_sleep.visuals" = ["*.png"]
 
-[tool.black]
-line-length = 88
-target-version = ['py39']
-include = '\.pyi?$'
-extend-exclude = '''
-(
-      __pycache__
-    | .github
-    | .ruff_cache
-    | setup.py
-    | script/
-    | data/
-)
-'''
+[tool.setuptools.packages.find]
+exclude = ['cardio_audio_sleep*tests']
+include = ['cardio_audio_sleep*']
 
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-line_length = 88
-py_version = 39
-extend_skip_glob = [
-    'setup.py',
-    'script/*',
-    'data/*',
-]
-
-[tool.pydocstyle]
-convention = 'numpy'
-ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot|Slot)'
-match = '^(?!setup|__init__|test_).*\.py'
-match-dir = '^cardio_audio_sleep.*'
-add_ignore = 'D100,D104,D107'
-
-[tool.ruff]
-line-length = 88
-extend-exclude = [
-    "doc",
-    "setup.py",
-    "script/",
-    "data/",
-]
-
-[tool.ruff.per-file-ignores]
-"__init__.py" = ["F401"]
+[tool.tomlsort]
+all = true
+ignore_case = true
+trailing_comma_inline_array = true

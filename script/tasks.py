@@ -1,5 +1,5 @@
 import numpy as np
-from bsl.triggers import ParallelPortTrigger
+from byte_trigger import ParallelPortTrigger
 
 from cardio_audio_sleep.config import load_triggers
 from cardio_audio_sleep.tasks import (

@@ -1,4 +1,4 @@
-from bsl.triggers import ParallelPortTrigger
+from byte_trigger import ParallelPortTrigger
 
 from cardio_audio_sleep import Detector
 from cardio_audio_sleep.config import load_triggers

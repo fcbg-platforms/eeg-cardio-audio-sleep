@@ -5,8 +5,8 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from bsl.triggers import ParallelPortTrigger
 from bsl.utils.lsl import list_lsl_streams
+from byte_triggers import ParallelPortTrigger
 from PyQt5.QtWidgets import QApplication
 
 from .. import logger, peak_detection_parameters_tuning, set_log_level

@@ -4,7 +4,7 @@ import multiprocessing as mp
 import time
 
 import psutil
-from bsl.triggers import ParallelPortTrigger
+from byte_trgger import ParallelPortTrigger
 
 from cardio_audio_sleep.config import load_triggers
 from cardio_audio_sleep.tasks import isochronous

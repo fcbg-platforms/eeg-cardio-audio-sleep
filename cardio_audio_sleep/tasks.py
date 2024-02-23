@@ -7,7 +7,8 @@ from typing import Optional
 
 import numpy as np
 import psychtoolbox as ptb
-from bsl.triggers import ParallelPortTrigger, TriggerDef
+from bsl.triggers import TriggerDef
+from byte_triggers import ParallelPortTrigger
 from numpy.typing import ArrayLike
 from psychopy.clock import wait
 from scipy.signal.windows import tukey

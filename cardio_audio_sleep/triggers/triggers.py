@@ -2,7 +2,7 @@ from bsl.lsl import StreamInfo, StreamOutlet
 from bsl.triggers import LSLTrigger
 
 from .._typing import EYELink
-from ..utils._checks import _check_type
+from ..utils._checks import check_type
 from ..utils._docs import fill_doc
 
 
@@ -69,7 +69,7 @@ class TriggerInstrument:
         value : str
             Value sent on the LSL outlet.
         """
-        _check_type(value, (str,), "value")
+        check_type(value, (str,), "value")
         self._outlet.push_sample([value])
 
     def close(self) -> None:

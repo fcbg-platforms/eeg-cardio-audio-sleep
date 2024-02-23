@@ -5,7 +5,10 @@ Inspired from mne.utils.docs.py by Eric Larson <larson.eric.d@gmail.com>
 """
 
 import sys
-from typing import Callable, List
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 # ------------------------- Documentation dictionary -------------------------
 docdict = dict()
@@ -104,7 +107,7 @@ def fill_doc(f: Callable) -> Callable:
     return f
 
 
-def _indentcount_lines(lines: List[str]) -> int:
+def _indentcount_lines(lines: list[str]) -> int:
     """Minimum indent for all lines in line list.
 
     >>> lines = [' one', '  two', '   three']

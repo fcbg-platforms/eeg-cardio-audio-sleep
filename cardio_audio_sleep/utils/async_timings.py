@@ -1,15 +1,13 @@
-from typing import Optional
-
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-from ._checks import _check_type
+from ._checks import check_type, ensure_int
 
 
 def generate_async_timings(
     sequence_timings: ArrayLike,
     perc: float = 10.0,
-    n: Optional[int] = None,
+    n: int | None = None,
 ) -> NDArray[float]:
     """Generate timings for an asynchronous block from a synchronous block.
 
@@ -34,9 +32,10 @@ def generate_async_timings(
     sequence_timings : array
         List of timings at which a stimuli occurs for the asynchronous blocks.
     """
-    _check_type(sequence_timings, (list, tuple, np.ndarray), "sequence_timings")
-    _check_type(perc, ("numeric",), "perc")
-    _check_type(n, (None, "int"), "n")
+    check_type(sequence_timings, (list, tuple, np.ndarray), "sequence_timings")
+    check_type(perc, ("numeric",), "perc")
+    if n is not None:
+        n = ensure_int(n, "n")
     if perc < 0 or 50 <= perc:
         raise ValueError(
             "Argument 'perc' should represent a percentage "
@@ -64,7 +63,7 @@ def generate_async_timings(
 
 def generate_async_timings_based_on_mean(
     sequence_timings: ArrayLike,
-    n: Optional[int] = None,
+    n: int | None = None,
 ) -> NDArray[float]:
     """Generate timings for an asynchronous block from a synchronous block.
 
@@ -87,8 +86,9 @@ def generate_async_timings_based_on_mean(
     sequence_timings : array
         List of timings at which a stimuli occurs for the asynchronous blocks.
     """
-    _check_type(sequence_timings, (list, tuple, np.ndarray), "sequence_timings")
-    _check_type(n, (None, "int"), "n")
+    check_type(sequence_timings, (list, tuple, np.ndarray), "sequence_timings")
+    if n is not None:
+        n = ensure_int(n, "n")
     if n is not None and n <= 0:
         raise ValueError("Argument 'n' should be a strictly positive integer.")
 

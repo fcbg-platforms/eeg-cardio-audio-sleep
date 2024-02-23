@@ -4,7 +4,6 @@ import sys
 from datetime import datetime
 from itertools import chain
 from pathlib import Path
-from typing import Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -43,7 +42,7 @@ from ..utils import (
     search_amplifier,
     test_volume,
 )
-from ..utils._checks import _check_value
+from ..utils._checks import check_value
 from ..utils._docs import fill_doc
 from ..utils._imports import import_optional_dependency
 
@@ -205,7 +204,7 @@ class GUI(QMainWindow):
         self,
         defaults: dict,
         eye_link: EYELink,
-        instrument_categories: Tuple[str],
+        instrument_categories: list[str] | tuple[str, ...],
     ):
         """Load the graphical user interface."""
         # main window
@@ -427,7 +426,7 @@ class GUI(QMainWindow):
         alignment: str,
     ) -> QLabel:
         """Add a fix label."""
-        _check_value(alignment, ("left", "center", "right"), "alignment")
+        check_value(alignment, ("left", "center", "right"), "alignment")
         label = QLabel(window.central_widget)
         label.setGeometry(QRect(x, y, w, h))
         label.setSizePolicy(GUI._sizePolicy(label))
@@ -498,10 +497,10 @@ class GUI(QMainWindow):
         w: float,
         h: float,
         name: str,
-        min_: Optional[float] = None,
-        max_: Optional[float] = None,
-        step: Optional[float] = None,
-        value: Optional[float] = None,
+        min_: float | None = None,
+        max_: float | None = None,
+        step: float | None = None,
+        value: float | None = None,
     ) -> QDoubleSpinBox:
         """Add a double SpinBox."""
         doubleSpinBox = QDoubleSpinBox(window.central_widget)

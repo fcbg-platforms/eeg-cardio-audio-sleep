@@ -1,12 +1,11 @@
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
-from ._checks import _check_type, _check_value
+from ._checks import check_type, check_value, ensure_int
 
 
-def load_instrument_categories() -> List[str]:
+def load_instrument_categories() -> list[str]:
     """Load the available instrument categories."""
     directory = Path(__file__).parent.parent / "audio"
     assert directory.exists() and directory.is_dir()  # sanity-check
@@ -17,7 +16,7 @@ def load_instrument_categories() -> List[str]:
     return sorted(instrument_categories)
 
 
-def load_instrument_images() -> Dict[str, str]:
+def load_instrument_images() -> dict[str, str]:
     """Load the available instrument categories and their images."""
     instrument_categories = load_instrument_categories()
     directory = Path(__file__).parent.parent / "visuals"
@@ -39,13 +38,13 @@ def load_instrument_images() -> Dict[str, str]:
 
 
 def pick_instrument_sound(
-    instrument_sync: Optional[str],
-    instrument_iso: Optional[str],
-    instrument_async: Optional[str],
-    exclude: Union[List[Path], Tuple[Path, ...]],
+    instrument_sync: str | None,
+    instrument_iso: str | None,
+    instrument_async: str | None,
+    exclude: list[Path] | tuple[Path, ...],
     n: int,
-    seed: Optional[int] = None,
-) -> Dict[str, Path]:
+    seed: int | None = None,
+) -> dict[str, Path]:
     """Pick N instrument sound from the instrument category.
 
     Parameters
@@ -68,15 +67,15 @@ def pick_instrument_sound(
     instrument_files : dict
         Dictionary with the path to the .wav sound picked for each condition.
     """
-    _check_type(instrument_sync, (str, None), "instrument_sync")
-    _check_type(instrument_iso, (str, None), "instrument_sync")
-    _check_type(instrument_async, (str, None), "instrument_sync")
-    _check_type(exclude, (list, tuple), "exclude")
+    check_type(instrument_sync, (str, None), "instrument_sync")
+    check_type(instrument_iso, (str, None), "instrument_sync")
+    check_type(instrument_async, (str, None), "instrument_sync")
+    check_type(exclude, (list, tuple), "exclude")
     for elt in exclude:
-        _check_type(elt, (Path,))
-    _check_type(n, ("int",), "n")
+        check_type(elt, (Path,))
+    n = ensure_int(n, "n")
     assert 0 < n
-    _check_type(seed, ("int", None), "seed")
+    check_type(seed, ("int-like", None), "seed")
     if seed is not None:
         np.random.seed(seed)
 
@@ -84,11 +83,11 @@ def pick_instrument_sound(
     assert directory.exists() and directory.is_dir()  # sanity-check
     instrument_categories = load_instrument_categories()
     if instrument_sync is not None:
-        _check_value(instrument_sync, instrument_categories, "instrument_sync")
+        check_value(instrument_sync, instrument_categories, "instrument_sync")
     if instrument_iso is not None:
-        _check_value(instrument_iso, instrument_categories, "instrument_iso")
+        check_value(instrument_iso, instrument_categories, "instrument_iso")
     if instrument_async is not None:
-        _check_value(instrument_async, instrument_categories, "instrument_async")
+        check_value(instrument_async, instrument_categories, "instrument_async")
 
     instruments = dict(
         synchronous=instrument_sync,

@@ -1,6 +1,5 @@
 import multiprocessing as mp
 from pathlib import Path
-from typing import Dict
 
 import numpy as np
 from psychopy.clock import wait
@@ -11,7 +10,7 @@ from .utils import load_instrument_categories, load_instrument_images
 
 
 def example(
-    win: Window, instrument_sounds: Dict[str, Path], volume: float
+    win: Window, instrument_sounds: dict[str, Path], volume: float
 ) -> None:  # noqa: D401
     """Example task."""
     try:
@@ -32,7 +31,7 @@ def example(
         # determine positions
         positions = np.linspace(-0.5, 0.5, len(instruments))
         images = list()
-        for instrument, position in zip(instruments, positions):
+        for instrument, position in zip(instruments, positions, strict=True):
             images.append(
                 ImageStim(win, instrument_images[instrument], pos=(position, 0))
             )
@@ -61,7 +60,7 @@ def example(
         win.close()
 
 
-def play_sounds(instrument_sounds: Dict[str, Path], volume: float) -> None:
+def play_sounds(instrument_sounds: dict[str, Path], volume: float) -> None:
     """Play example sounds."""
     from stimuli.audio import Sound
 

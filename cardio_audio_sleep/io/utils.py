@@ -95,7 +95,7 @@ def add_annotations_from_events(raw: BaseRaw) -> BaseRaw:
         onsets = [events[start, 0] / raw.info["sfreq"] for start in starts]
         durations = [
             (events[stop, 0] - events[start, 0]) / raw.info["sfreq"]
-            for start, stop in zip(starts, stops)
+            for start, stop in zip(starts, stops, strict=True)
         ]
         annotations = mne.Annotations(onsets, durations, block)
         raw.set_annotations(raw.annotations + annotations)
@@ -107,7 +107,7 @@ def add_annotations_from_events(raw: BaseRaw) -> BaseRaw:
         onsets = [events[start, 0] / raw.info["sfreq"] for start in pause]
         durations = [
             (events[stop, 0] - events[start, 0]) / raw.info["sfreq"]
-            for start, stop in zip(pause, resume)
+            for start, stop in zip(pause, resume, strict=True)
         ]
         annotations = mne.Annotations(onsets, durations, "BAD_Pause")
         raw.set_annotations(raw.annotations + annotations)

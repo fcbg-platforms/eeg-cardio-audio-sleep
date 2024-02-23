@@ -12,10 +12,10 @@ from psychopy.sound.backend_ptb import SoundPTB as Sound
 from cardio_audio_sleep import logger
 from cardio_audio_sleep.detector import Detector
 from cardio_audio_sleep.utils._checks import (
-    _check_sequence,
-    _check_sequence_timings,
-    _check_tdef,
-    _check_type,
+    ensure_valid_sequence,
+    ensure_valid_sequence_timings,
+    check_tdef,
+    check_type,
 )
 
 
@@ -76,8 +76,8 @@ def synchronous(
         hamming=True,
     )
 
-    _check_tdef(tdef)
-    sequence = _check_sequence(sequence, tdef)
+    check_tdef(tdef)
+    sequence = ensure_valid_sequence(sequence, tdef)
 
     # Create peak detector
     detector = Detector(
@@ -163,9 +163,9 @@ def isochronous(trigger, tdef, sequence: ArrayLike, delay: Union[int, float]):
     )
     scheduling_delay = 0.2
 
-    _check_tdef(tdef)
-    sequence = _check_sequence(sequence, tdef)
-    _check_type(delay, ("numeric",), "delay")
+    check_tdef(tdef)
+    sequence = ensure_valid_sequence(sequence, tdef)
+    check_type(delay, ("numeric",), "delay")
     if delay <= 0:
         raise ValueError(
             "Argument 'delay' should be a strictly positive number. "
@@ -234,9 +234,9 @@ def asynchronous(
     )
     scheduling_delay = 0.2
 
-    _check_tdef(tdef)
-    sequence = _check_sequence(sequence, tdef)
-    sequence_timings = _check_sequence_timings(
+    check_tdef(tdef)
+    sequence = ensure_valid_sequence(sequence, tdef)
+    sequence_timings = ensure_valid_sequence_timings(
         sequence_timings, sequence, scheduling_delay
     )
 

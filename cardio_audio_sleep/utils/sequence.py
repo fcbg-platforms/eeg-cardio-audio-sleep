@@ -1,19 +1,18 @@
 import math
 import random
 from itertools import groupby
-from typing import Union
 
 import numpy as np
 from numpy.typing import NDArray
 
-from ._checks import _check_type, _check_value
+from ._checks import check_type, check_value, ensure_int
 from ._logs import logger
 
 
 def generate_sequence(
     size: int,
     omissions: int,
-    edge_perc: Union[int, float],
+    edge_perc: int | float,
     tdef,
     max_iter: int = 500,
     on_diverge: str = "warn",
@@ -43,11 +42,11 @@ def generate_sequence(
         RuntimeError when the randomization does not converge within the
         maximum number of iteration allowed.
     """
-    _check_type(size, ("int",), "size")
-    _check_type(omissions, ("int",), "omissions")
-    _check_type(edge_perc, ("numeric",), "edge_perc")
-    _check_type(max_iter, ("int",), "max_iter")
-    _check_value(on_diverge, ("warn", "raise"), "on_diverge")
+    size = ensure_int(size, "size")
+    omissions = ensure_int(omissions, "omissions")
+    check_type(edge_perc, ("numeric",), "edge_perc")
+    max_iter = ensure_int(max_iter, "max_iter")
+    check_value(on_diverge, ("warn", "raise"), "on_diverge")
     if size <= 0:
         raise ValueError(
             "Argument 'size' must be a strictly positive integer. "

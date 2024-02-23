@@ -16,8 +16,6 @@ Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Last updated on 5/13/2021
 """
 
-from __future__ import division, print_function
-
 import array
 import os
 import platform
@@ -210,14 +208,14 @@ class EyeLinkCoreGraphicsPsychoPy(pylink.EyeLinkCustomDisplay):
 
         self._targetSize = size
 
-    def setTargetType(self, type):
+    def setTargetType(self, type):  # noqa: A002
         """Set calibration target size in pixels
 
         Parameters:
             type: "circle" (default), "picture", "movie", "spiral"
         """
 
-        self._calTarget = type
+        self._calTarget = type  # noqa: A002
 
     def setMoiveTarget(self, movie_target):
         """Set the movie file to use as the calibration target"""

@@ -3,7 +3,6 @@
 import datetime
 from multiprocessing import Queue
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import psychtoolbox as ptb
@@ -17,10 +16,10 @@ from . import logger
 from .config.constants import TONE_FQ
 from .triggers import Trigger
 from .utils._checks import (
-    _check_sequence,
-    _check_sequence_timings,
-    _check_tdef,
-    _check_type,
+    ensure_valid_sequence,
+    ensure_valid_sequence_timings,
+    check_tdef,
+    check_type,
 )
 from .utils._docs import fill_doc
 
@@ -33,12 +32,12 @@ def synchronous(
     stream_name: str,
     ecg_ch_name: str,
     peak_height_perc: float,
-    peak_prominence: Optional[float],
-    peak_width: Optional[float],
+    peak_prominence: float | None,
+    peak_width: float | None,
     volume: float,
-    instrument: Optional[Path],
+    instrument: Path | None,
     n_instrument: int,
-    queue: Optional[Queue],
+    queue: Queue | None,
     disable_end_trigger: bool = False,
 ) -> list:  # noqa: D401
     """Synchronous block where sounds are sync to the heartbeat.
@@ -89,8 +88,8 @@ def synchronous(
         sound_instru = Sound(instrument)
         sound_instru.volume = volume
 
-    _check_tdef(tdef)
-    sequence = _check_sequence(sequence, tdef)
+    check_tdef(tdef)
+    sequence = ensure_valid_sequence(sequence, tdef)
 
     # create peak detector
     detector = Detector(
@@ -168,7 +167,7 @@ def isochronous(
     sequence: ArrayLike,
     delay: float,
     volume: float,
-    instrument: Optional[Path],
+    instrument: Path | None,
     n_instrument: int,
     disable_end_trigger: bool = False,
 ):
@@ -201,9 +200,9 @@ def isochronous(
         sound_instru = Sound(instrument)
         sound_instru.volume = volume
 
-    _check_tdef(tdef)
-    sequence = _check_sequence(sequence, tdef)
-    _check_type(delay, ("numeric",), "delay")
+    check_tdef(tdef)
+    sequence = ensure_valid_sequence(sequence, tdef)
+    check_type(delay, ("numeric",), "delay")
     if delay <= 0:
         raise ValueError(
             "Argument 'delay' should be a strictly positive number. "
@@ -264,7 +263,7 @@ def asynchronous(
     sequence: ArrayLike,
     sequence_timings: ArrayLike,
     volume: float,
-    instrument: Optional[Path],
+    instrument: Path | None,
     n_instrument: int,
     disable_end_trigger: bool = False,
 ):
@@ -300,9 +299,9 @@ def asynchronous(
         sound_instru = Sound(instrument)
         sound_instru.volume = volume
 
-    _check_tdef(tdef)
-    sequence = _check_sequence(sequence, tdef)
-    sequence_timings = _check_sequence_timings(
+    check_tdef(tdef)
+    sequence = ensure_valid_sequence(sequence, tdef)
+    sequence_timings = ensure_valid_sequence_timings(
         sequence_timings, sequence, sound.duration
     )
 
@@ -372,14 +371,14 @@ def baseline(trigger: Trigger, tdef: TriggerDef, duration: float, verbose: bool 
         Duration of the resting-state block in seconds.
     %(task_verbose)s
     """
-    _check_tdef(tdef)
-    _check_type(duration, ("numeric",), "duration")
+    check_tdef(tdef)
+    check_type(duration, ("numeric",), "duration")
     if duration <= 0:
         raise ValueError(
             "Argument 'duration' should be a strictly positive number. "
             f"Provided: '{duration}' seconds."
         )
-    _check_type(verbose, (bool,), "verbose")
+    check_type(verbose, (bool,), "verbose")
 
     # check trigger
     if trigger == "arduino":
@@ -415,13 +414,13 @@ def inter_block(duration: float, verbose: bool = True):
         Duration of the inter-block in seconds.
     %(task_verbose)s
     """
-    _check_type(duration, ("numeric",), "duration")
+    check_type(duration, ("numeric",), "duration")
     if duration <= 0:
         raise ValueError(
             "Argument 'duration' should be a strictly positive number. "
             f"Provided: '{duration}' seconds."
         )
-    _check_type(verbose, (bool,), "verbose")
+    check_type(verbose, (bool,), "verbose")
 
     duration_ = datetime.timedelta(seconds=duration)
 

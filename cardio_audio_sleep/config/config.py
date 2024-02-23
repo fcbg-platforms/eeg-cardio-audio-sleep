@@ -1,10 +1,9 @@
 from configparser import ConfigParser
 from pathlib import Path
-from typing import Tuple
 
 from bsl.triggers import TriggerDef
 
-from ..utils._checks import _check_type, _check_value
+from ..utils._checks import check_type, check_value
 
 
 def load_triggers() -> TriggerDef:
@@ -73,7 +72,7 @@ def load_triggerbox_triggers() -> TriggerDef:
     return tdef
 
 
-def load_config(fname: str, dev: bool = False) -> Tuple[dict, str]:
+def load_config(fname: str, dev: bool = False) -> tuple[dict, str]:
     """Load config from config.ini.
 
     Parameters
@@ -89,8 +88,8 @@ def load_config(fname: str, dev: bool = False) -> Tuple[dict, str]:
     trigger : str
         Type of trigger.
     """
-    _check_type(fname, (str,), "fname")
-    _check_type(dev, (bool,), "dev")
+    check_type(fname, (str,), "fname")
+    check_type(dev, (bool,), "dev")
 
     directory = Path(__file__).parent
     config = ConfigParser(inline_comment_prefixes=("#", ";"))
@@ -114,7 +113,7 @@ def load_config(fname: str, dev: bool = False) -> Tuple[dict, str]:
 
     # retrieve trigger type
     trigger = config["trigger"]["type"]
-    _check_value(trigger, ("lpt", "mock", "arduino"), "trigger")
+    check_value(trigger, ("lpt", "mock", "arduino"), "trigger")
 
     # convert all to int
     block = {key: int(value) for key, value in dict(config["block"]).items()}

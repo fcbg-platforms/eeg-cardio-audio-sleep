@@ -1,16 +1,22 @@
+from __future__ import annotations  # c.f. PEP 563, PEP 649
+
 import platform
 import sys
 from functools import partial
 from importlib.metadata import requires, version
-from typing import IO, Callable, List, Optional
+from typing import TYPE_CHECKING
 
 import psutil
 from packaging.requirements import Requirement
 
-from ._checks import _check_type
+from ._checks import check_type
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import IO
 
 
-def sys_info(fid: Optional[IO] = None, developer: bool = False):
+def sys_info(fid: IO | None = None, developer: bool = False):
     """Print the system information for debugging.
 
     Parameters
@@ -21,7 +27,7 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
     developer : bool
         If True, display information about optional dependencies.
     """
-    _check_type(developer, (bool,), "developer")
+    check_type(developer, (bool,), "developer")
 
     ljust = 26
     out = partial(print, end="", file=fid)
@@ -69,14 +75,14 @@ def sys_info(fid: Optional[IO] = None, developer: bool = False):
 
 
 def _list_dependencies_info(
-    out: Callable, ljust: int, package: str, dependencies: List[Requirement]
+    out: Callable, ljust: int, package: str, dependencies: list[Requirement]
 ):
     """List dependencies names and versions."""
     unicode = sys.stdout.encoding.lower().startswith("utf")
     if unicode:
         ljust += 1
 
-    not_found: List[Requirement] = list()
+    not_found: list[Requirement] = list()
     for dep in dependencies:
         if dep.name == package:
             continue

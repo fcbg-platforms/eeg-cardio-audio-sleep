@@ -7,7 +7,7 @@ from psychopy import event, logging, visual
 from .. import logger
 from .._typing import EYELink
 from ..config.constants import SCREEN_KWARGS
-from ..utils._checks import _check_type
+from ..utils._checks import check_type
 from .EyeLinkCoreGraphicsPsychoPy import EyeLinkCoreGraphicsPsychoPy
 
 # set psychopy log level
@@ -33,11 +33,11 @@ class Eyelink(EYELink):
     """
 
     def __init__(self, pname="./", fname: str = "TEST", host_ip="100.1.1.1"):
-        pname = Path(_check_type(pname, ("path-like",), "pname"))
+        pname = Path(check_type(pname, ("path-like",), "pname"))
         if not pname.exists():
             os.makedirs(pname)
         self.edf_pname = pname
-        fname = _check_type(fname, (str,), "fname")
+        fname = check_type(fname, (str,), "fname")
         if fname.endswith(".EDF"):
             fname = fname.split(".EDF")[0]
         if 8 < len(fname):

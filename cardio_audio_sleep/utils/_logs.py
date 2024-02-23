@@ -2,7 +2,7 @@ import logging
 import sys
 from pathlib import Path
 
-from ._checks import _check_verbose
+from ._checks import check_verbose
 
 name = Path(__file__).parent.parent.name
 logger = logging.getLogger(name)
@@ -30,7 +30,7 @@ def add_stream_handler(stream, verbose="INFO"):
     verbose : int | str
         Handler verbosity.
     """
-    verbose = _check_verbose(verbose)
+    verbose = check_verbose(verbose)
     handler = logging.StreamHandler(stream)
     handler.setFormatter(LoggerFormatter())
     logger.addHandler(handler)
@@ -48,7 +48,7 @@ def add_file_handler(fname, mode="a", verbose="INFO"):
     verbose : int | str
         Handler verbosity.
     """
-    verbose = _check_verbose(verbose)
+    verbose = check_verbose(verbose)
     handler = logging.FileHandler(fname, mode)
     handler.setFormatter(LoggerFormatter())
     logger.addHandler(handler)
@@ -67,7 +67,7 @@ def set_handler_log_level(verbose, handler_id=0):
     handler_id : int
         ID of the handler among 'logger.handlers'.
     """
-    verbose = _check_verbose(verbose)
+    verbose = check_verbose(verbose)
     logger.handlers[handler_id].setLevel = verbose
 
 
@@ -79,7 +79,7 @@ def set_log_level(verbose):
     verbose : int | str
         Logger verbosity.
     """
-    verbose = _check_verbose(verbose)
+    verbose = check_verbose(verbose)
     logger.setLevel(verbose)
 
 

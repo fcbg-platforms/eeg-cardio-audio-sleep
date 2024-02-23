@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ._checks import _check_type
+from ._checks import check_type, ensure_int
 
 
 def match_positions(x: ArrayLike, y: ArrayLike, threshold: int):
@@ -26,9 +26,9 @@ def match_positions(x: ArrayLike, y: ArrayLike, threshold: int):
     idy : array
         Indices from positions in Y close to a position in X.
     """
-    _check_type(x, (list, tuple, np.ndarray), "x")
-    _check_type(y, (list, tuple, np.ndarray), "y")
-    _check_type(threshold, ("int",), "threshold")
+    check_type(x, (list, tuple, np.ndarray), "x")
+    check_type(y, (list, tuple, np.ndarray), "y")
+    threshold = ensure_int(threshold, "threshold")
     x = np.array(x)
     y = np.array(y)
     if threshold <= 0:

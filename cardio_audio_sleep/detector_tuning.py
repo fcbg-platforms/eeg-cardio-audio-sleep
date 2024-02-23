@@ -3,7 +3,6 @@
 import math
 import time
 from itertools import cycle
-from typing import Optional, Tuple
 
 import numpy as np
 from bsl import StreamReceiver
@@ -12,15 +11,15 @@ from matplotlib.widgets import Button, Slider
 from scipy.signal import find_peaks
 
 from .utils import search_amplifier
-from .utils._checks import _check_type, _check_value
+from .utils._checks import check_type, check_value
 from .utils._logs import logger
 
 
 def peak_detection_parameters_tuning(
     ecg_ch_name: str,
-    stream_name: Optional[str] = None,
+    stream_name: str | None = None,
     duration_buffer: float = 4.0,
-) -> Tuple[float, Optional[float], Optional[float]]:
+) -> tuple[float, float | None, float | None]:
     """
     GUI to tune the height and width parameter of the R-peak detector.
 
@@ -103,7 +102,7 @@ def peak_detection_parameters_tuning(
         global width_disabled
 
         # remove outdated height lines
-        for k in range(len(height_lines) - 1, -1, -1):
+        for _ in range(len(height_lines) - 1, -1, -1):
             height_lines[-1].remove()
             del height_lines[-1]
         # remove outdated peak lines
@@ -251,9 +250,9 @@ def peak_detection_parameters_tuning(
 
 def _acquire_data(ecg_ch_name, stream_name, duration_buffer):
     """Acquire data for plot from LSL stream."""
-    _check_type(ecg_ch_name, (str,), item_name="ecg_ch_name")
-    _check_type(stream_name, (str, None), item_name="stream_name")
-    _check_type(duration_buffer, ("numeric",), item_name="duration_buffer")
+    check_type(ecg_ch_name, (str,), item_name="ecg_ch_name")
+    check_type(stream_name, (str, None), item_name="stream_name")
+    check_type(duration_buffer, ("numeric",), item_name="duration_buffer")
     if stream_name is None:
         stream_name = search_amplifier("micromed")
     if duration_buffer <= 0.2:
@@ -264,7 +263,7 @@ def _acquire_data(ecg_ch_name, stream_name, duration_buffer):
     sr = StreamReceiver(bufsize=duration_buffer, stream_name=stream_name)
     if len(sr.streams) == 0:
         raise ValueError("The StreamReceiver did not connect to any streams.")
-    _check_value(ecg_ch_name, sr.streams[stream_name].ch_list, item_name="ecg_ch_name")
+    check_value(ecg_ch_name, sr.streams[stream_name].ch_list, item_name="ecg_ch_name")
     ecg_ch_idx = sr.streams[stream_name].ch_list.index(ecg_ch_name)
 
     # Acquisition

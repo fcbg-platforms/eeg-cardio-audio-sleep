@@ -1,5 +1,5 @@
-from bsl.lsl import StreamInfo, StreamOutlet
-from bsl.triggers import LSLTrigger
+from mne_lsl.lsl import StreamInfo, StreamOutlet
+from byte_triggers import LSLTrigger
 
 from .._typing import EYELink
 from ..utils._checks import check_type
@@ -8,19 +8,19 @@ from ..utils._docs import fill_doc
 
 @fill_doc
 class Trigger:
-    """Trigger class combining a BSL trigger and an eye-link system.
+    """Trigger class combining an hardware trigger and an eye-link system.
 
     Parameters
     ----------
     trigger : Trigger
-        A BSL trigger instance.
+        A trigger instance.
     %(eye_link)s
     """
 
     def __init__(self, trigger, eye_link: EYELink, instruments: bool = True):
         if isinstance(trigger, LSLTrigger):
             raise RuntimeError(
-                "The BSL trigger can not be an LSL trigger as "
+                "The trigger can not be an LSL trigger as "
                 "it is incompatible with multiprocessing."
             )
         self._trigger = trigger

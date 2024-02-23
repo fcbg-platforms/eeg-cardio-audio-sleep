@@ -1,11 +1,11 @@
-import mne
+from mne import rename_channels
+from mne.io import read_raw_fif
 
 from .utils import add_annotations_from_events, map_aux
 
 
 def read_raw_fif(fname):
-    """
-    Read raw FIF files saved with BSL StreamRecorder.
+    """Read raw FIF files saved with BSL StreamRecorder.
 
     Parameters
     ----------
@@ -17,12 +17,9 @@ def read_raw_fif(fname):
     raw : Raw
         MNE raw instance.
     """
-    raw = mne.io.read_raw_fif(fname, preload=True)
-
-    # AUX channels
+    raw = read_raw_fif(fname, preload=True)
     raw = map_aux(raw)
-
-    # Old eego LSL plugin has upper case channel names
+    # old eego LSL plugin has upper case channel names
     mapping = {
         "FP1": "Fp1",
         "FPZ": "Fpz",
@@ -37,11 +34,8 @@ def read_raw_fif(fname):
     }
     for key, value in mapping.items():
         try:
-            mne.rename_channels(raw.info, {key: value})
+            rename_channels(raw.info, {key: value})
         except Exception:
             pass
-
-    # Set annotations
     raw = add_annotations_from_events(raw)
-
     return raw

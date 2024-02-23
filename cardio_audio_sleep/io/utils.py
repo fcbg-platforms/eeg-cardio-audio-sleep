@@ -1,8 +1,14 @@
-import mne
+from __future__ import annotations  # c.f. PEP 563, PEP 649
+
+from typing import TYPE_CHECKING
+
 import numpy as np
-from mne.io import BaseRaw
+from mne import Annotations, find_events
 
 from ..config import load_triggerbox_triggers, load_triggers
+
+if TYPE_CHECKING:
+    from mne.io import BaseRaw
 
 
 def map_aux(
@@ -76,7 +82,7 @@ def add_annotations_from_events(raw: BaseRaw) -> BaseRaw:
     -------
     raw : Raw
     """
-    events = mne.find_events(raw, stim_channel="TRIGGER")
+    events = find_events(raw, stim_channel="TRIGGER")
     tdef = load_triggers()
     tdef_hardware = load_triggerbox_triggers()
 
@@ -97,7 +103,7 @@ def add_annotations_from_events(raw: BaseRaw) -> BaseRaw:
             (events[stop, 0] - events[start, 0]) / raw.info["sfreq"]
             for start, stop in zip(starts, stops, strict=True)
         ]
-        annotations = mne.Annotations(onsets, durations, block)
+        annotations = Annotations(onsets, durations, block)
         raw.set_annotations(raw.annotations + annotations)
 
     # Pause/Resume
@@ -109,7 +115,7 @@ def add_annotations_from_events(raw: BaseRaw) -> BaseRaw:
             (events[stop, 0] - events[start, 0]) / raw.info["sfreq"]
             for start, stop in zip(pause, resume, strict=True)
         ]
-        annotations = mne.Annotations(onsets, durations, "BAD_Pause")
+        annotations = Annotations(onsets, durations, "BAD_Pause")
         raw.set_annotations(raw.annotations + annotations)
 
     # Sounds/Omissions
@@ -117,7 +123,7 @@ def add_annotations_from_events(raw: BaseRaw) -> BaseRaw:
     for name, event in (("Sound", tdef.sound), ("Omission", tdef.omission)):
         stim = np.where(events[:, 2] == event)[0]
         onsets = [events[start, 0] / raw.info["sfreq"] for start in stim]
-        annotations = mne.Annotations(onsets, duration, name)
+        annotations = Annotations(onsets, duration, name)
         raw.set_annotations(raw.annotations + annotations)
 
     # Instrument sounds
@@ -129,7 +135,7 @@ def add_annotations_from_events(raw: BaseRaw) -> BaseRaw:
     ):
         stim = np.where(events[:, 2] == event)[0]
         onsets = [events[start, 0] / raw.info["sfreq"] for start in stim]
-        annotations = mne.Annotations(onsets, duration, name)
+        annotations = Annotations(onsets, duration, name)
         raw.set_annotations(raw.annotations + annotations)
 
     # Instrument responses
@@ -141,7 +147,7 @@ def add_annotations_from_events(raw: BaseRaw) -> BaseRaw:
     ):
         stim = np.where(events[:, 2] == event)[0]
         onsets = [events[start, 0] / raw.info["sfreq"] for start in stim]
-        annotations = mne.Annotations(onsets, duration, name)
+        annotations = Annotations(onsets, duration, name)
         raw.set_annotations(raw.annotations + annotations)
 
     return raw

@@ -29,19 +29,15 @@ def read_raw_xdf(fname):
     except IndexError:
         instrument_stream = None
     del streams
-
     # retrieve information
     ch_names, ch_types, units = _get_eeg_ch_info(eeg_stream)
     sfreq = int(eeg_stream["info"]["nominal_srate"][0])
     data = eeg_stream["time_series"].T
-
     # create MNE raw
     info = create_info(ch_names, sfreq, ch_types)
     raw = RawArray(data, info, first_samp=0)
-
     # AUX channels
     raw = map_aux(raw)
-
     # rename channels to standard 10/20 convention
     mapping = {
         "FP1": "Fp1",
@@ -62,17 +58,11 @@ def read_raw_xdf(fname):
             pass
 
     # scaling
-    def uVolt2Volt(timearr):
-        """Convert from uV to Volts."""
-        return timearr * 1e-6
-
     raw.apply_function(
-        uVolt2Volt, picks=["eeg", "eog", "ecg", "misc"], channel_wise=True
+        lambda x: x*1e-6, picks=["eeg", "eog", "ecg", "misc"], channel_wise=False
     )
-
     # annotations
     raw = add_annotations_from_events(raw)
-
     if instrument_stream is not None:
         onsets = list()
         durations = list()

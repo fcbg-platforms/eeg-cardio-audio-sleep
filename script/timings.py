@@ -1,8 +1,8 @@
 import math
 
-import mne
 import numpy as np
 from matplotlib import pyplot as plt
+from mne import find_events
 from scipy.signal import find_peaks, hilbert
 
 from cardio_audio_sleep.config import load_triggers
@@ -24,7 +24,7 @@ start = tdef.sync_start
 stop = tdef.sync_stop
 
 #%% Events
-events = mne.find_events(raw, stim_channel="TRIGGER")
+events = find_events(raw, stim_channel="TRIGGER")
 try:
     tmin = events[np.where(events[:, 2] == start)[0][0], 0] / raw.info["sfreq"]
     tmax = events[np.where(events[:, 2] == stop)[0][0], 0] / raw.info["sfreq"]
@@ -32,7 +32,7 @@ try:
 except IndexError:
     pass
 
-events = mne.find_events(raw, stim_channel="TRIGGER")
+events = find_events(raw, stim_channel="TRIGGER")
 events = np.array([ev[0] for ev in events if ev[2] != start and ev[2] != stop])
 events -= raw.first_samp
 

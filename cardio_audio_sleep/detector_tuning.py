@@ -11,7 +11,7 @@ from mne_lsl.stream import StreamLSL as Stream
 from scipy.signal import find_peaks
 
 from .utils import search_amplifier
-from .utils._checks import check_type, check_value
+from .utils._checks import check_type
 from .utils.logs import logger
 
 

@@ -1,5 +1,5 @@
 from mne import rename_channels
-from mne.io import read_raw_fif
+from mne.io import read_raw_fif as mne_read_raw_fif
 
 from .utils import add_annotations_from_events, map_aux
 
@@ -17,7 +17,7 @@ def read_raw_fif(fname):
     raw : Raw
         MNE raw instance.
     """
-    raw = read_raw_fif(fname, preload=True)
+    raw = mne_read_raw_fif(fname, preload=True)
     raw = map_aux(raw)
     # old eego LSL plugin has upper case channel names
     mapping = {

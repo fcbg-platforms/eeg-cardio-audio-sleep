@@ -29,7 +29,7 @@ dependencies = [
   'pandas',
   'psutil',
   'psychopy',
-  'PyQt5',
+  'PyQt6',
   'pyxdf',
   'scipy',
   'stimuli>=0.5.0',

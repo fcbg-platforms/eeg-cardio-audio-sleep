@@ -6,7 +6,7 @@ from pathlib import Path
 
 from byte_triggers import ParallelPortTrigger
 from mne_lsl.lsl import resolve_streams
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 
 from .. import logger, peak_detection_parameters_tuning, set_log_level
 from ..config.constants import TRIGGERS

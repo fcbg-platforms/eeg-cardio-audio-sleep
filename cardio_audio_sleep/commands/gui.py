@@ -13,9 +13,9 @@ import pandas as pd
 import psutil
 from byte_triggers import MockTrigger, ParallelPortTrigger
 from psychopy.visual import ShapeStim, Window
-from PyQt5.QtCore import QRect, QSize, Qt, QTimer, pyqtSlot
-from PyQt5.QtGui import QColor, QFont, QPalette
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import QRect, QSize, Qt, QTimer, pyqtSlot
+from PyQt6.QtGui import QColor, QFont, QPalette
+from PyQt6.QtWidgets import (
     QComboBox,
     QDial,
     QDoubleSpinBox,

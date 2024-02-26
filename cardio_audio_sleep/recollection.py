@@ -7,10 +7,9 @@ from typing import TYPE_CHECKING
 import numpy as np
 from bsl.triggers import LSLTrigger
 from numpy.random import default_rng
-from numpy.typing import NDArray
 from psychopy.clock import Clock
 from psychopy.hardware.keyboard import Keyboard
-from psychopy.visual import ButtonStim, ImageStim, ShapeStim, Slider, TextStim, Window
+from psychopy.visual import ButtonStim, ImageStim, ShapeStim, Slider, TextStim
 
 from . import logger
 from .config import load_config
@@ -24,6 +23,9 @@ from .utils import (
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+
+    from numpy.typing import NDArray
+    from psychopy.visual import Window
 
 
 def recollection(
@@ -152,9 +154,15 @@ def recollection(
                 sequence_timings = result  # replace previous sequence timings
     except Exception:
         raise
-    finally:  # close
-        win.flip()  # flip one last time before closing to flush events
-        win.close()
+    finally:
+        try:
+            win.flip()  # flip one last time before closing to flush events
+        except Exception:
+            pass
+        try:
+            win.close()
+        except Exception:
+            pass
     return responses
 
 
@@ -429,7 +437,7 @@ def _task_routine(
     task: Callable,
     args: tuple,
     images: tuple[ImageStim | ShapeStim, ...],
-) -> NDArray[float] | None:
+) -> NDArray[np.float64] | None:
     """Fixation cross routine."""
     for img in images:
         img.setAutoDraw(True)

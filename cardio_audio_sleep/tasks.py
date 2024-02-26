@@ -1,14 +1,16 @@
 """Tasks functions."""
 
+from __future__ import annotations  # c.f. PEP 563, PEP 649
+
 import datetime
 from multiprocessing import Queue
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
 import psychtoolbox as ptb
 from bsl.triggers import TriggerDef
 from byte_triggers import ParallelPortTrigger
-from numpy.typing import ArrayLike
 from psychopy.clock import wait
 from scipy.signal.windows import tukey
 
@@ -22,6 +24,9 @@ from .utils._checks import (
     ensure_valid_sequence_timings,
 )
 from .utils._docs import fill_doc
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike, NDArray
 
 
 @fill_doc
@@ -39,7 +44,7 @@ def synchronous(
     n_instrument: int,
     queue: Queue | None,
     disable_end_trigger: bool = False,
-) -> list:  # noqa: D401
+) -> NDArray[np.float64]:  # noqa: D401
     """Synchronous block where sounds are sync to the heartbeat.
 
     Parameters
@@ -73,8 +78,8 @@ def synchronous(
 
     Returns
     -------
-    sequence_timings : list
-        List of timings at which an R-peak occurred.
+    sequence_timings : array of shape (n_stimuli,)
+        Array of timings at which an R-peak occurred.
     """
     from stimuli.audio import Sound, Tone
 
@@ -128,7 +133,7 @@ def synchronous(
     return sequence_timings
 
 
-def _synchronous_loop(sound, sequence, detector, trigger, tdef):  # noqa: D401
+def _synchronous_loop(sound, sequence, detector, trigger, tdef) -> None:  # noqa: D401
     """Main loop of the synchronous task."""
     # create counter/timers
     counter = 0
@@ -170,7 +175,7 @@ def isochronous(
     instrument: Path | None,
     n_instrument: int,
     disable_end_trigger: bool = False,
-):
+) -> None:
     """Isochronous block where sounds are delivered at a fix interval.
 
     Parameters
@@ -266,7 +271,7 @@ def asynchronous(
     instrument: Path | None,
     n_instrument: int,
     disable_end_trigger: bool = False,
-):
+) -> None:
     """Asynchronous block where a synchronous sequence is repeated.
 
     Omissions are randomized compared to the synchronous task they are
@@ -330,7 +335,7 @@ def asynchronous(
         trigger.signal(tdef.async_stop)
 
 
-def _asynchronous_loop(sound, sequence, delays, trigger, tdef):  # noqa: D401
+def _asynchronous_loop(sound, sequence, delays, trigger, tdef) -> None:  # noqa: D401
     """Main loop of the asynchronous task."""
     # create counter/timers
     counter = 0
@@ -356,9 +361,10 @@ def _asynchronous_loop(sound, sequence, delays, trigger, tdef):  # noqa: D401
 
 
 @fill_doc
-def baseline(trigger: Trigger, tdef: TriggerDef, duration: float, verbose: bool = True):
-    """
-    Baseline block corresponding to a resting-state recording.
+def baseline(
+    trigger: Trigger, tdef: TriggerDef, duration: float, verbose: bool = True
+) -> None:
+    """Baseline block corresponding to a resting-state recording.
 
     Parameters
     ----------
@@ -388,7 +394,6 @@ def baseline(trigger: Trigger, tdef: TriggerDef, duration: float, verbose: bool 
     trigger.signal(tdef.baseline_start)
 
     duration_ = datetime.timedelta(seconds=duration)
-
     # Counts second instead of using a clock. Less precise, but compatible
     # with a process interruption.
     counter = 0
@@ -404,7 +409,7 @@ def baseline(trigger: Trigger, tdef: TriggerDef, duration: float, verbose: bool 
 
 
 @fill_doc
-def inter_block(duration: float, verbose: bool = True):
+def inter_block(duration: float, verbose: bool = True) -> None:
     """
     Inter-block task-like to wait a specific duration.
 

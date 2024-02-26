@@ -6,7 +6,6 @@ from ..utils._imports import import_optional_dependency
 from ._base import BaseEyelink  # noqa: F401
 from .mock import EyelinkMock
 
-
 pylink = import_optional_dependency("pylink", raise_error=False)
 if sys.platform == "linux":
     wx = import_optional_dependency("wx", raise_error=False)

@@ -5,7 +5,6 @@ import xml.etree.ElementTree as ET
 
 import numpy as np
 from bsl.utils import Timer
-from mne.filter import filter_data
 from mne_lsl.lsl import StreamInlet, resolve_streams
 from scipy.signal import find_peaks
 
@@ -182,29 +181,8 @@ class Detector:
         return peaks
 
     def filter_data(self):
-        """Filter the ECG buffer with an acausal filter.
-
-        Timeit
-        ------
-        (mean ± std. dev. of 7 runs, 100 loops each)
-
-        Windows -- AMD 5600X - DDR4 3600 MHz
-            - Data: 512 Hz - 2048 samples
-              3.71 ms ± 17.7 µs per loop
-            - Data: 1024 Hz - 4096 samples
-              7.03 ms ± 101 µs per loop
-            - Data: 2048 Hz - 8192 samples
-              13.3 ms ± 44.2 µs per loop
-
-        Linux -- i5-4590 - DDR3 1600 MHz
-            - Data: 512 Hz - 2048 samples
-              5 ms ± 34 µs per loop
-            - Data: 1024 Hz - 4096 samples
-              9.43 ms ± 83.2 µs per loop
-            - Data: 2048 Hz - 8192 samples
-              18.3 ms ± 102 µs per loop
-        """
-        return filter_data(self._ecg_buffer, self._sample_rate, 1.0, 15.0, phase="zero")
+        """Filter the ECG buffer with an acausal filter."""
+        raise NotImplementedError
 
     def detrend_data(self):
         """

@@ -1,6 +1,5 @@
 import argparse
 import os
-import sys
 import time
 from datetime import datetime
 from pathlib import Path
@@ -12,7 +11,6 @@ from PyQt5.QtWidgets import QApplication
 from .. import logger, peak_detection_parameters_tuning, set_log_level
 from ..config import load_triggers
 from ..utils import search_amplifier
-from ..utils._imports import import_optional_dependency
 from .cli import input_ecg_ch_name
 from .gui import GUI
 
@@ -36,10 +34,12 @@ def cas():
 
     # setup eye-tracker
     if args.eye_tracker:
-        import_optional_dependency("pylink", raise_error=True)
-        if sys.platform == "linux":
-            import_optional_dependency("wx", raise_error=True)
-        from ..eye_link import Eyelink
+        from ..eye_link import Eyelink, EyelinkMock
+
+        if isinstance(Eyelink, EyelinkMock):
+            raise ImportError(
+                "Eyetracker requires 'pylink' on all platforms and 'wxPython' on Linux."
+            )
 
         directory = str(Path().home() / "cardio-audio-sleep-eye-tracker")
         os.makedirs(directory, exist_ok=True)

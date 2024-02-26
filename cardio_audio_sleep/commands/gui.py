@@ -1,13 +1,12 @@
 from __future__ import annotations  # c.f. PEP 563, PEP 649
 
-from typing import TYPE_CHECKING
-
 import multiprocessing as mp
 import os
 import sys
 from datetime import datetime
 from itertools import chain
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd

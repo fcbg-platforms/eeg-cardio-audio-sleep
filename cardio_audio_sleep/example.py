@@ -1,12 +1,18 @@
+from __future__ import annotations  # c.f. PEP 563, PEP 649
+
 import multiprocessing as mp
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
-from psychopy.clock import wait
 from psychopy.hardware.keyboard import Keyboard
-from psychopy.visual import ImageStim, TextStim, Window
+from psychopy.visual import ImageStim, TextStim
+from psychopy.clock import wait
 
 from .utils import load_instrument_categories, load_instrument_images
+
+if TYPE_CHECKING:
+    from psychopy.visual import Window
 
 
 def example(win: Window, instrument_sounds: dict[str, Path], volume: float) -> None:  # noqa: D401
@@ -54,8 +60,14 @@ def example(win: Window, instrument_sounds: dict[str, Path], volume: float) -> N
     except Exception:
         raise
     finally:
-        win.flip()  # flush win.callOnFlip() and win.timeOnFlip()
-        win.close()
+        try:
+            win.flip()  # flush win.callOnFlip() and win.timeOnFlip()
+        except Exception:
+            pass
+        try:
+            win.close()
+        except Exception:
+            pass
 
 
 def play_sounds(instrument_sounds: dict[str, Path], volume: float) -> None:

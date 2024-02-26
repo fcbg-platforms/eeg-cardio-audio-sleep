@@ -9,21 +9,21 @@ from cardio_audio_sleep.config import load_triggers
 from cardio_audio_sleep.io import read_raw_fif
 from cardio_audio_sleep.utils import match_positions
 
-#%% Sound
+# %% Sound
 sound_frequency = 250.0  # in Hz
 detection_threshold = 88  # in %
 
-#%% Load
+# %% Load
 fname = r""
 raw = read_raw_fif(fname)
 raw.pick_channels(["TRIGGER", "Sound", "ECG"])
 
-#%% Triggers
+# %% Triggers
 tdef = load_triggers()
 start = tdef.sync_start
 stop = tdef.sync_stop
 
-#%% Events
+# %% Events
 events = find_events(raw, stim_channel="TRIGGER")
 try:
     tmin = events[np.where(events[:, 2] == start)[0][0], 0] / raw.info["sfreq"]
@@ -36,13 +36,13 @@ events = find_events(raw, stim_channel="TRIGGER")
 events = np.array([ev[0] for ev in events if ev[2] != start and ev[2] != stop])
 events -= raw.first_samp
 
-#%% Find peaks on ECG
+# %% Find peaks on ECG
 raw.filter(1.0, 15.0, picks="ECG", phase="zero-double")
 ecg = raw.get_data(picks="ECG")[0, :]
 ecg_height = np.percentile(ecg, 97.5)
 ecg_peaks, _ = find_peaks(ecg, height=ecg_height)
 
-#%% Find sounds on Sound channel
+# %% Find sounds on Sound channel
 raw.filter(
     sound_frequency - 10,
     sound_frequency + 10,
@@ -71,35 +71,36 @@ for k, elt in enumerate(supra_threshold_idx):
 
 assert len(sound_onsets) == len(sound_offsets)  # sanity-check
 sound_durations = [
-    offset - onset for onset, offset in zip(sound_onsets, sound_offsets)
+    offset - onset for onset, offset in zip(sound_onsets, sound_offsets, strict=True)
 ]
 
-#%% Match trigger/sound and compute delay
+# %% Match trigger/sound and compute delay
 threshold = math.ceil(0.1 * raw.info["sfreq"])
 id_sounds, id_events = match_positions(sound_onsets, events, threshold)
 trigger_sound_delays = [
-    sound_onsets[ids] - events[ide] for ids, ide in zip(id_sounds, id_events)
+    sound_onsets[ids] - events[ide]
+    for ids, ide in zip(id_sounds, id_events, sitrct=True, strict=False)
 ]
 
-#%% Match R-peak/triggers and compute delay
+# %% Match R-peak/triggers and compute delay
 threshold = math.ceil(0.1 * raw.info["sfreq"])
 id_rpeaks, id_events = match_positions(ecg_peaks, events, threshold)
 rpeak_trigger_delays = [
-    events[ide] - ecg_peaks[idr] for ide, idr in zip(id_events, id_rpeaks)
+    events[ide] - ecg_peaks[idr] for ide, idr in zip(id_events, id_rpeaks, strict=False)
 ]
 
-#%% Match R-peak/sound and compute delay
+# %% Match R-peak/sound and compute delay
 threshold = math.ceil(0.1 * raw.info["sfreq"])
 id_rpeaks, id_sounds = match_positions(ecg_peaks, sound_onsets, threshold)
 rpeak_sounds_delays = [
     sound_onsets[ids] - ecg_peaks[idr]
-    for ids, idr in zip(id_sounds, id_rpeaks)
+    for ids, idr in zip(id_sounds, id_rpeaks, strict=False)
 ]
 
-#%% Sound/Sound delays
+# %% Sound/Sound delays
 sound_sound_delays = np.diff(sound_onsets)
 
-#%% Plots
+# %% Plots
 f, ax = plt.subplots(3, 1, sharex=True)
 
 # ECG
@@ -131,40 +132,32 @@ for ev in events:
     for a in ax:
         a.axvline(ev, color="lightblue", linestyle="--")
 
-#%% Histograms
+# %% Histograms
 f, ax = plt.subplots(4, 1, figsize=(5, 20))
 
 # Trigger/Sound
 ax[0].set_title("Trigger/Sound delay (samples)")
-bins = np.arange(
-    min(trigger_sound_delays) - 0.5, max(trigger_sound_delays) + 0.5, 1
-)
+bins = np.arange(min(trigger_sound_delays) - 0.5, max(trigger_sound_delays) + 0.5, 1)
 ax[0].hist(trigger_sound_delays, bins=bins)
 
 # R-peak/Trigger
 ax[1].set_title("R-Peak/Trigger delay (samples)")
-bins = np.arange(
-    min(rpeak_trigger_delays) - 0.5, max(rpeak_trigger_delays) + 0.5, 1
-)
+bins = np.arange(min(rpeak_trigger_delays) - 0.5, max(rpeak_trigger_delays) + 0.5, 1)
 ax[1].hist(rpeak_trigger_delays, bins=bins)
 
 # R-Peak/Sound
 ax[2].set_title("R-Peak/Sound delay (samples)")
-bins = np.arange(
-    min(rpeak_sounds_delays) - 0.5, max(rpeak_sounds_delays) + 0.5, 1
-)
+bins = np.arange(min(rpeak_sounds_delays) - 0.5, max(rpeak_sounds_delays) + 0.5, 1)
 ax[2].hist(rpeak_sounds_delays, bins=bins)
 
 # Sound/Sound
 ax[3].set_title("Sound/Sound delay (samples)")
-bins = np.arange(
-    min(sound_sound_delays) - 0.5, max(sound_sound_delays) + 0.5, 1
-)
+bins = np.arange(min(sound_sound_delays) - 0.5, max(sound_sound_delays) + 0.5, 1)
 ax[3].hist(sound_sound_delays, bins=bins)
 
 f.tight_layout(pad=5, h_pad=5)
 
-#%% Async
+# %% Async
 fname = r""
 sequence_timings = np.load(fname)
 

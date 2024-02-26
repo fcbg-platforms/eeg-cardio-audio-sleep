@@ -110,6 +110,7 @@ omit = [
   '**/conftest.py',
   '**/cardio_audio_sleep/_version.py',
   '**/cardio_audio_sleep/commands/*',
+  '**/cardio_audio_sleep/eye_link/EyeLinkCoreGraphicsPsychoPy.py',
   '**/cardio_audio_sleep/utils/_fixes.py',
   '**/tests/**',
 ]
@@ -117,7 +118,6 @@ omit = [
 [tool.isort]
 extend_skip_glob = [
   'data/*',
-  'script/*',
 ]
 line_length = 88
 multi_line_output = 3
@@ -138,7 +138,6 @@ minversion = '8.0'
 [tool.ruff]
 extend-exclude = [
   'data',
-  'script',
 ]
 line-length = 88
 target-version = 'py310'

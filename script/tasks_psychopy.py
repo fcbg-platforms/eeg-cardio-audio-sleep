@@ -1,7 +1,6 @@
 """Tasks functions."""
 
 from multiprocessing import Queue
-from typing import Optional, Union
 
 import numpy as np
 import psychtoolbox as ptb
@@ -12,10 +11,10 @@ from psychopy.sound.backend_ptb import SoundPTB as Sound
 from cardio_audio_sleep import logger
 from cardio_audio_sleep.detector import Detector
 from cardio_audio_sleep.utils._checks import (
-    ensure_valid_sequence,
-    ensure_valid_sequence_timings,
     check_tdef,
     check_type,
+    ensure_valid_sequence,
+    ensure_valid_sequence_timings,
 )
 
 
@@ -25,10 +24,10 @@ def synchronous(
     sequence: ArrayLike,
     stream_name: str,
     ecg_ch_name: str,
-    peak_height_perc: Union[int, float],
-    peak_prominence: Optional[Union[int, float]],
-    peak_width: Optional[Union[int, float]],
-    queue: Optional[Queue] = None,
+    peak_height_perc: int | float,
+    peak_prominence: int | float | None,
+    peak_width: int | float | None,
+    queue: Queue | None = None,
 ) -> list:  # noqa: D401
     """Synchronous block where sounds are sync to the heartbeat.
 
@@ -132,7 +131,7 @@ def synchronous(
     return sequence_timings
 
 
-def isochronous(trigger, tdef, sequence: ArrayLike, delay: Union[int, float]):
+def isochronous(trigger, tdef, sequence: ArrayLike, delay: int | float):
     """Isochronous block where sounds are delivered at a fix interval.
 
     Parameters
@@ -197,9 +196,7 @@ def isochronous(trigger, tdef, sequence: ArrayLike, delay: Union[int, float]):
     trigger.signal(tdef.iso_stop)
 
 
-def asynchronous(
-    trigger, tdef, sequence: ArrayLike, sequence_timings: ArrayLike
-):
+def asynchronous(trigger, tdef, sequence: ArrayLike, sequence_timings: ArrayLike):
     """Asynchronous block where a synchronous sequence is repeated.
 
     Omissions are randomized compared to the synchronous task they are

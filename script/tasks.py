@@ -2,12 +2,7 @@ import numpy as np
 from byte_trigger import ParallelPortTrigger
 
 from cardio_audio_sleep.config import load_triggers
-from cardio_audio_sleep.tasks import (
-    asynchronous,
-    baseline,
-    isochronous,
-    synchronous,
-)
+from cardio_audio_sleep.tasks import asynchronous, baseline, isochronous, synchronous
 from cardio_audio_sleep.utils import generate_sequence, search_ANT_amplifier
 
 #%% Triggers

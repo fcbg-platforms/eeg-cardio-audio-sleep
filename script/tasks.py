@@ -1,28 +1,27 @@
 import numpy as np
 from byte_trigger import ParallelPortTrigger
 
-from cardio_audio_sleep.config import load_triggers
+from cardio_audio_sleep.config.constants import TRIGGERS
 from cardio_audio_sleep.tasks import asynchronous, baseline, isochronous, synchronous
 from cardio_audio_sleep.utils import generate_sequence, search_ANT_amplifier
 
-#%% Triggers
+# %% Triggers
 trigger = ParallelPortTrigger("/dev/parport0")
-tdef = load_triggers()
 
 
-#%% LSL Streams
+# %% LSL Streams
 stream_name = search_ANT_amplifier()
 ecg_ch_name = "AUX7"
 
 
-#%% Synchronous
+# %% Synchronous
 
 # Peak detection settings
 peak_height_perc = 97.5  # %
 peak_prominence = 500
 peak_width = None  # ms | None
 # Sequence
-sequence = generate_sequence(100, 0, 10, tdef)
+sequence = generate_sequence(100, 0, 10, TRIGGERS)
 # Task
 sequence_timings = synchronous(
     trigger,
@@ -36,27 +35,27 @@ sequence_timings = synchronous(
 )
 
 
-#%% Isochronous
+# %% Isochronous
 
 # Compute inter-stimulus delay
 delay = np.median(np.diff(sequence_timings))
 # Sequence
-sequence = generate_sequence(100, 0, 10, tdef)
+sequence = generate_sequence(100, 0, 10, TRIGGERS)
 # Task
-isochronous(trigger, tdef, sequence, delay)
+isochronous(trigger, TRIGGERS, sequence, delay)
 
 
-#%% Asynchronous
+# %% Asynchronous
 
 # Sequence
-sequence = generate_sequence(100, 0, 10, tdef)
+sequence = generate_sequence(100, 0, 10, TRIGGERS)
 # Task
-asynchronous(trigger, tdef, sequence, sequence_timings)
+asynchronous(trigger, TRIGGERS, sequence, sequence_timings)
 
 
-#%% Baseline
+# %% Baseline
 
 # Compute duration
 duration = 5 * 60  # seconds
 # Task
-baseline(trigger, tdef, duration)
+baseline(trigger, TRIGGERS, duration)

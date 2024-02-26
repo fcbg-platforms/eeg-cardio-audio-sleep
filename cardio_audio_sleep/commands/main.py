@@ -4,12 +4,12 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from bsl.utils.lsl import list_lsl_streams
 from byte_triggers import ParallelPortTrigger
+from mne_lsl.lsl import resolve_streams
 from PyQt5.QtWidgets import QApplication
 
 from .. import logger, peak_detection_parameters_tuning, set_log_level
-from ..config import load_triggers
+from ..config.constants import TRIGGERS
 from ..utils import search_amplifier
 from .cli import input_ecg_ch_name
 from .gui import GUI
@@ -105,20 +105,10 @@ def pds():
 
 def test():
     """Run test on the LSL stream and triggers."""
-    parser = argparse.ArgumentParser(prog="CAS - Test", description="Test CAS system.")
-    parser.add_argument(
-        "--amplifier",
-        type=str,
-        metavar="str",
-        help="Either 'ant' or 'micromed'.",
-        default="micromed",
-    )
-    args = parser.parse_args()
-
     # look for the LSL stream
     logger.info("Looking for LSL stream..")
     try:
-        stream_name = search_amplifier(args.amplifier)
+        stream_name = search_amplifier()
         logger.info("LSL stream found!")
     except RuntimeError:
         logger.error(
@@ -129,17 +119,15 @@ def test():
         return None
 
     # check the sampling rate
-    stream_names, stream_infos = list_lsl_streams(ignore_markers=True)
-    idx = stream_names.index(stream_name)
-    sinfo = stream_infos[idx]
-    if sinfo.nominal_srate() == 1024:
+    sinfo = resolve_streams(timeout=5, name=stream_name)[0]
+    if sinfo.sfreq == 1024:
         logger.info("ANT LSL stream sampling rate is correctly set at 1024 Hz.")
     else:
         logger.error(
             "ANT LSL stream sampling rate is not correctly set! "
             "Currently %s Hz, while 1024 Hz is expected! "
             "Aborting further tests..",
-            sinfo.nominal_srate(),
+            sinfo.sfreq,
         )
         return None
 
@@ -175,8 +163,7 @@ def test():
         "Testing all the triggers. Please look at a StreamViewer and "
         "confirm that each value is correctly displayed."
     )
-    tdef = load_triggers()
-    for value in tdef.by_value:
+    for value in TRIGGERS.values():
         logger.info("Testing trigger %i..", value)
         trigger.signal(value)
         time.sleep(1)

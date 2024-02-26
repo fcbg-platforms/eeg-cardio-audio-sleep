@@ -1,40 +1,38 @@
-from bsl.utils.lsl import list_lsl_streams, search_lsl
+from warnings import warn
 
-from ._checks import check_type, check_value
-from .logs import logger
+from mne_lsl.lsl import resolve_streams
+
+from .logs import _use_log_level, logger
 
 
-def search_amplifier(amp_type: str = "ant") -> str:
+def search_amplifier() -> str:
     """Look for an (i)EEG amplifier on the LSL network.
-
-    Parameters
-    ----------
-    amp_type : "ant" | "micromed"
-        Type of amplifier to look for.
 
     Returns
     -------
     stream_name : str
         Name of the LSL stream.
     """
-    check_type(amp_type, (str,), "amp_type")
-    check_value(amp_type, ("ant", "micromed"), "amp_type")
-    stream_names, _ = list_lsl_streams(ignore_markers=True)
-    if amp_type == "ant":
-        stream_names = [stream for stream in stream_names if "eego" in stream]
-    elif amp_type == "micromed":
-        stream_names = stream_names
-    if len(stream_names) == 1:
-        logger.info("Found LSL stream from EEG amplifier.")
-        stream_name = stream_names[0]
-    elif 1 < len(stream_names):
-        logger.warning(
-            "Multiple LSL streams found matching the amplifier type "
-            "name. Please select a stream manually."
-        )
-        stream_name = search_lsl(ignore_markers=True, timeout=5)
+    sinfos = [sinfo for sinfo in resolve_streams(timeout=5) if sinfo.sfreq != 0]
+    if len(sinfos) == 0:
+        raise RuntimeError("Could not find LSL stream from amplifier.")
+    elif len(sinfos) == 1:
+        logger.info("Found LSL stream from amplifier:\n\n%s\n", sinfos[0])
+        stream_name = sinfos[0].name
     else:
-        stream_name = ""
-    if amp_type == "ant" and "eego" not in stream_name:
-        raise RuntimeError("ANT Neuro amplifier could not be found.")
+        warn(
+            "Multiple LSL stream found on the network. Please select a stream "
+            "manually.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+        with _use_log_level("INFO"):
+            logger.info("-- List of LSL servers --")
+            for k, sinfo in enumerate(sinfos):
+                logger.info("%i: %s", k, sinfo.name)
+        index = input(
+            "Stream index? Hit enter without index to select the first server.\n>> "
+        )
+        index = 0 if index.strip() == "" else int(index.strip())
+        stream_name = sinfos[index].name
     return stream_name

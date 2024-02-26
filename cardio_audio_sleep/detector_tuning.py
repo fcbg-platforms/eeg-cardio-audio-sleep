@@ -254,7 +254,7 @@ def _acquire_data(ecg_ch_name, stream_name, duration_buffer):
     check_type(stream_name, (str, None), item_name="stream_name")
     check_type(duration_buffer, ("numeric",), item_name="duration_buffer")
     if stream_name is None:
-        stream_name = search_amplifier("micromed")
+        stream_name = search_amplifier()
     if duration_buffer <= 0.2:
         raise ValueError(
             "Argument 'duration_buffer' must be strictly larger than 0.2. "

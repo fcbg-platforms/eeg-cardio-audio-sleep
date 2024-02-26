@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import psychtoolbox as ptb
-from bsl.triggers import TriggerDef
 from byte_triggers import ParallelPortTrigger
 from psychopy.clock import wait
 from scipy.signal.windows import tukey
@@ -32,7 +31,7 @@ if TYPE_CHECKING:
 @fill_doc
 def synchronous(
     trigger,
-    tdef: TriggerDef,
+    tdef: dict[str, int],
     sequence: ArrayLike,
     stream_name: str,
     ecg_ch_name: str,
@@ -50,7 +49,7 @@ def synchronous(
     Parameters
     ----------
     %(trigger)s
-    tdef : TriggerDef
+    tdef : dict
         Trigger definition instance. Must contain the keys:
             - sync_start
             - sound (aligned on sequence)
@@ -112,18 +111,18 @@ def synchronous(
         trigger = ParallelPortTrigger("arduino", delay=5)
 
     # task loop
-    trigger.signal(tdef.sync_start)
+    trigger.signal(tdef["sync_start"])
     wait(0.2, hogCPUperiod=0)
 
     logger.info("Starting to deliver pure tone sounds.")
     sequence_timings = _synchronous_loop(sound, sequence, detector, trigger, tdef)
     if instrument is not None:
         logger.info("Starting to deliver instrument sounds.")
-        sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
+        sequence_instru = [tdef[instrument.parent.name]] * n_instrument
         _synchronous_loop(sound_instru, sequence_instru, detector, trigger, tdef)
 
     if not disable_end_trigger:
-        trigger.signal(tdef.sync_stop)
+        trigger.signal(tdef["sync_stop"])
 
     if queue is not None:
         queue.put(sequence_timings)
@@ -133,7 +132,7 @@ def synchronous(
     return sequence_timings
 
 
-def _synchronous_loop(sound, sequence, detector, trigger, tdef) -> None:  # noqa: D401
+def _synchronous_loop(sound, sequence, detector, trigger, tdef: dict[str, int]) -> None:  # noqa: D401
     """Main loop of the synchronous task."""
     # create counter/timers
     counter = 0
@@ -152,7 +151,7 @@ def _synchronous_loop(sound, sequence, detector, trigger, tdef) -> None:  # noqa
             # trigger
             trigger.signal(sequence[counter])
             # sound
-            if sequence[counter] != tdef.omission:
+            if sequence[counter] != tdef["omission"]:
                 sound.play()
             logger.info("Stimuli %i/%i delivered.", counter + 1, len(sequence))
             # next
@@ -168,7 +167,7 @@ def _synchronous_loop(sound, sequence, detector, trigger, tdef) -> None:  # noqa
 @fill_doc
 def isochronous(
     trigger,
-    tdef: TriggerDef,
+    tdef: dict[str, int],
     sequence: ArrayLike,
     delay: float,
     volume: float,
@@ -181,7 +180,7 @@ def isochronous(
     Parameters
     ----------
     %(trigger)s
-    tdef : TriggerDef
+    tdef : dict
         Trigger definition instance. Must contain the keys:
             - iso_start
             - sound (aligned on sequence)
@@ -221,7 +220,7 @@ def isochronous(
 
     wait(4, hogCPUperiod=0)  # fake buffer prefill
     # task loop
-    trigger.signal(tdef.iso_start)
+    trigger.signal(tdef["iso_start"])
     wait(0.2, hogCPUperiod=0)
 
     logger.info("Starting to deliver pure tone sounds.")
@@ -229,14 +228,14 @@ def isochronous(
     if instrument is not None:
         wait(delay - sound.duration - 0.005, hogCPUperiod=0)
         logger.info("Starting to deliver instrument sounds.")
-        sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
+        sequence_instru = [tdef[instrument.parent.name]] * n_instrument
         _isochronous_loop(sound_instru, sequence_instru, delay, trigger, tdef)
 
     if not disable_end_trigger:
-        trigger.signal(tdef.iso_stop)
+        trigger.signal(tdef["iso_stop"])
 
 
-def _isochronous_loop(sound, sequence, delay, trigger, tdef):  # noqa: D401
+def _isochronous_loop(sound, sequence, delay, trigger, tdef: dict[str, int]) -> None:  # noqa: D401
     """Main loop of the isochronous task."""
     # create counter/timers
     counter = 0
@@ -245,7 +244,7 @@ def _isochronous_loop(sound, sequence, delay, trigger, tdef):  # noqa: D401
         now = ptb.GetSecs()
         trigger.signal(sequence[counter])
         # stimuli
-        if sequence[counter] != tdef.omission:
+        if sequence[counter] != tdef["omission"]:
             sound.play()
         logger.info("Stimuli %i/%i delivered.", counter + 1, len(sequence))
         stim_delay = ptb.GetSecs() - now
@@ -264,7 +263,7 @@ def _isochronous_loop(sound, sequence, delay, trigger, tdef):  # noqa: D401
 @fill_doc
 def asynchronous(
     trigger,
-    tdef: TriggerDef,
+    tdef: dict[str, int],
     sequence: ArrayLike,
     sequence_timings: ArrayLike,
     volume: float,
@@ -280,7 +279,7 @@ def asynchronous(
     Parameters
     ----------
     %(trigger)s
-    tdef : TriggerDef
+    tdef : dict
         Trigger definition instance. Must contain the keys:
             - async_start
             - sound (aligned on sequence)
@@ -320,7 +319,7 @@ def asynchronous(
 
     wait(4, hogCPUperiod=0)  # fake buffer prefill
     # Task loop
-    trigger.signal(tdef.async_start)
+    trigger.signal(tdef["async_start"])
     wait(0.2, hogCPUperiod=0)
 
     logger.info("Starting to deliver pure tone sounds.")
@@ -328,14 +327,14 @@ def asynchronous(
     if instrument is not None:
         wait(delays[-1] - sound.duration - 0.005, hogCPUperiod=0)
         logger.info("Starting to deliver instrument sounds.")
-        sequence_instru = [tdef.by_name[instrument.parent.name]] * n_instrument
+        sequence_instru = [tdef[instrument.parent.name]] * n_instrument
         delays_instru = np.random.choice(delays, size=3)
         _asynchronous_loop(sound_instru, sequence_instru, delays_instru, trigger, tdef)
     if not disable_end_trigger:
-        trigger.signal(tdef.async_stop)
+        trigger.signal(tdef["async_stop"])
 
 
-def _asynchronous_loop(sound, sequence, delays, trigger, tdef) -> None:  # noqa: D401
+def _asynchronous_loop(sound, sequence, delays, trigger, tdef: dict[str, int]) -> None:  # noqa: D401
     """Main loop of the asynchronous task."""
     # create counter/timers
     counter = 0
@@ -344,7 +343,7 @@ def _asynchronous_loop(sound, sequence, delays, trigger, tdef) -> None:  # noqa:
         now = ptb.GetSecs()
         trigger.signal(sequence[counter])
         # stimuli
-        if sequence[counter] != tdef.omission:
+        if sequence[counter] != tdef["omission"]:
             sound.play()
         logger.info("Stimuli %i/%i delivered.", counter + 1, len(sequence))
         stim_delay = ptb.GetSecs() - now
@@ -362,14 +361,14 @@ def _asynchronous_loop(sound, sequence, delays, trigger, tdef) -> None:  # noqa:
 
 @fill_doc
 def baseline(
-    trigger: Trigger, tdef: TriggerDef, duration: float, verbose: bool = True
+    trigger: Trigger, tdef: dict[str, int], duration: float, verbose: bool = True
 ) -> None:
     """Baseline block corresponding to a resting-state recording.
 
     Parameters
     ----------
     %(trigger)s
-    tdef : TriggerDef
+    tdef : dict
         Trigger definition instance. Must contain the keys:
             - baseline_start
             - baseline_stop
@@ -391,7 +390,7 @@ def baseline(
         trigger = ParallelPortTrigger("arduino", delay=5)
 
     # Start trigger
-    trigger.signal(tdef.baseline_start)
+    trigger.signal(tdef["baseline_start"])
 
     duration_ = datetime.timedelta(seconds=duration)
     # Counts second instead of using a clock. Less precise, but compatible
@@ -405,7 +404,7 @@ def baseline(
             logger.info("Baseline: %s / %s", now, duration_)
 
     # Stop trigger
-    trigger.signal(tdef.baseline_stop)
+    trigger.signal(tdef["baseline_stop"])
 
 
 @fill_doc

@@ -28,8 +28,8 @@ from PyQt5.QtWidgets import (
 )
 
 from .. import logger
-from ..config import load_config, load_triggers
-from ..config.constants import SCREEN_KWARGS
+from ..config import load_config
+from ..config.constants import SCREEN_KWARGS, TRIGGERS
 from ..example import example
 from ..eye_link import EyelinkMock
 from ..recollection import recollection
@@ -131,7 +131,7 @@ class GUI(QMainWindow):
         """Set the variables and tasks arguments."""
         fname = "config-sleep-instrument.ini" if instrument else "config-sleep.ini"
         self.config, trigger_type = load_config(fname, dev)
-        self.tdef = load_triggers()
+        self.tdef = TRIGGERS
 
         # combine trigger with eye-link
         if trigger_type == "lpt":
@@ -149,7 +149,7 @@ class GUI(QMainWindow):
         self.trigger_instrument = TriggerInstrument()
 
         # search for LSL stream
-        self._stream_name = search_amplifier("micromed")
+        self._stream_name = search_amplifier()
         self._ecg_ch_name = ecg_ch_name
 
         # Create task mapping
@@ -1235,7 +1235,7 @@ class GUI(QMainWindow):
     @pyqtSlot()
     def pushButton_amplifier_clicked(self):
         try:
-            stream_name = search_amplifier("micromed")
+            stream_name = search_amplifier()
             logger.info("Amplifier found: %s", stream_name)
             self.label_amplifier.setText(f"Detected amplifier: '{stream_name}'")
             self._stream_name = stream_name

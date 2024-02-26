@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
-from bsl.triggers import LSLTrigger
 from numpy.random import default_rng
 from psychopy.clock import Clock
 from psychopy.hardware.keyboard import Keyboard
@@ -27,11 +26,13 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
     from psychopy.visual import Window
 
+    from .triggers import TriggerInstrument
+
 
 def recollection(
     win: Window,
     args_mapping: dict,
-    trigger_instrument: LSLTrigger,
+    trigger_instrument: TriggerInstrument,
     instrument_files_example: dict,
     instrument_files_sleep: dict,
     instrument_files_recollection: dict,

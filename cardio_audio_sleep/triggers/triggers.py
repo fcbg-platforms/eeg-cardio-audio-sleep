@@ -31,8 +31,8 @@ class Trigger:
     ):
         if isinstance(trigger, LSLTrigger):
             raise RuntimeError(
-                "The trigger can not be an LSL trigger as "
-                "it is incompatible with multiprocessing."
+                "The trigger can not be an LSL trigger as it is incompatible with "
+                "multiprocessing."
             )
         self._trigger = trigger
         self._eye_link = eye_link

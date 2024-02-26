@@ -20,7 +20,6 @@ classifiers = [
   'Topic :: Scientific/Engineering',
 ]
 dependencies = [
-  'bsl==0.6.4',
   'byte_triggers',
   'matplotlib',
   'mne>=1.6.0',

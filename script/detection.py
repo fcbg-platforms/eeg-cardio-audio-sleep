@@ -1,24 +1,22 @@
 from byte_trigger import ParallelPortTrigger
 
 from cardio_audio_sleep import Detector
-from cardio_audio_sleep.config import load_triggers
 from cardio_audio_sleep.utils import search_ANT_amplifier
 
-#%% Triggers
+# %% Triggers
 trigger = ParallelPortTrigger("/dev/parport0")
-tdef = load_triggers()
 
-#%% LSL Streams
+# %% LSL Streams
 stream_name = search_ANT_amplifier()
 ecg_ch_name = "AUX7"
 
-#%% Peak detection
+# %% Peak detection
 peak_height_perc = 97.5  # %
 peak_prominence = 500
 peak_width = None  # ms | None
 n = 30
 
-#%% Loop
+# %% Loop
 detector = Detector(
     stream_name,
     ecg_ch_name,

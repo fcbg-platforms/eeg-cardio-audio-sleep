@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
-from bsl.triggers import TriggerDef
 
 from ._docs import fill_doc
 
@@ -252,9 +251,8 @@ def ensure_path(item: Any, must_exist: bool) -> Path:
     return item
 
 
-def check_tdef(tdef: Any) -> TriggerDef:
+def check_tdef(tdef: Any) -> None:
     """Check that the trigger definition contains all the required keys."""
-    check_type(tdef, (TriggerDef,), "tdef")
     keys = (
         "sound",
         "omission",
@@ -267,11 +265,10 @@ def check_tdef(tdef: Any) -> TriggerDef:
         "baseline_start",
         "baseline_stop",
     )
-    assert all(hasattr(tdef, attribute) for attribute in keys)
-    return TriggerDef
+    assert all(key in tdef for key in keys)
 
 
-def ensure_valid_sequence(sequence: Any, tdef: TriggerDef) -> NDArray:
+def ensure_valid_sequence(sequence: Any, tdef: dict[str, int]) -> NDArray:
     """Check that the sequence is valid."""
     check_type(sequence, (list | tuple | np.ndarray), "sequence")
     if isinstance(sequence, (list | tuple)):
@@ -281,7 +278,7 @@ def ensure_valid_sequence(sequence: Any, tdef: TriggerDef) -> NDArray:
             "Argument 'sequence' should be a 1D iterable and not a "
             f"{len(sequence.shape)}D iterable. "
         )
-    valids = (tdef.sound, tdef.omission)
+    valids = (tdef["sound"], tdef["omission"])
     if any(elt not in valids for elt in sequence):
         raise ValueError(
             "Unknown value within 'sequence'. All elements should be among "

@@ -5,9 +5,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
+from psychopy.clock import wait
 from psychopy.hardware.keyboard import Keyboard
 from psychopy.visual import ImageStim, TextStim
-from psychopy.clock import wait
 
 from .utils import load_instrument_categories, load_instrument_images
 

@@ -2,9 +2,9 @@
 
 import math
 import xml.etree.ElementTree as ET
+from time import time
 
 import numpy as np
-from bsl.utils import Timer
 from mne_lsl.lsl import StreamInlet, resolve_streams
 from scipy.signal import find_peaks
 
@@ -41,7 +41,7 @@ class Detector:
         peak_prominence: float | None = 20.0,
         peak_width: float | None = None,
     ):
-        # Check arguments and create StreamReceiver
+        # Check arguments and create receiver
         self._peak_height_perc = Detector._check_peak_height_perc(peak_height_perc)
         self._peak_width = Detector._check_peak_width(peak_width)
         self._peak_prominence = Detector._check_peak_prominence(peak_prominence)
@@ -53,12 +53,8 @@ class Detector:
                 "Argument 'duration_buffer' must be strictly larger than 0.2. "
                 f"Provided: '{duration_buffer}' seconds."
             )
-
-        sinfos = list()
-        while len(sinfos) == 0:
-            sinfos = resolve_streams(timeout=10, name=stream_name)
+        sinfos = resolve_streams(timeout=10, name=stream_name)
         assert len(sinfos) == 1
-
         self._inlet = StreamInlet(
             sinfos[0],
             max_buffered=10,
@@ -105,8 +101,8 @@ class Detector:
         Avoids any discontinuities in the ECG buffer.
         """
         logger.info("Filling an entire buffer of %s seconds..", self._duration_buffer)
-        timer = Timer()
-        while timer.sec() <= self._duration_buffer:
+        start = time()
+        while time() <= start + self._duration_buffer:
             self.update_loop()
         logger.info("Buffer pre-filled, ready to start!")
 

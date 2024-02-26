@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from mne import find_events
 from scipy.signal import find_peaks, hilbert
 
-from cardio_audio_sleep.config import load_triggers
+from cardio_audio_sleep.config.constants import TRIGGERS
 from cardio_audio_sleep.io import read_raw_fif
 from cardio_audio_sleep.utils import match_positions
 
@@ -19,9 +19,8 @@ raw = read_raw_fif(fname)
 raw.pick_channels(["TRIGGER", "Sound", "ECG"])
 
 # %% Triggers
-tdef = load_triggers()
-start = tdef.sync_start
-stop = tdef.sync_stop
+start = TRIGGERS["sync_start"]
+stop = TRIGGERS["sync_stop"]
 
 # %% Events
 events = find_events(raw, stim_channel="TRIGGER")

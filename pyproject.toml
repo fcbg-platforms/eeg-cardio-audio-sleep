@@ -22,8 +22,8 @@ classifiers = [
 dependencies = [
   'byte_triggers',
   'matplotlib',
-  'mne>=1.6.0',
   'mne-lsl>=1.2.0',
+  'mne>=1.6.0',
   'numpy>=1.21',
   'packaging',
   'pandas',
@@ -36,11 +36,11 @@ dependencies = [
 ]
 description = 'Cardio-audio-sleep study.'
 keywords = [
+  'cardiac',
   'neuroimaging',
   'neuroscience',
   'python',
   'sleep',
-  'cardiac',
 ]
 license = {file = 'LICENSE'}
 maintainers = [
@@ -106,11 +106,11 @@ branch = true
 cover_pylib = false
 omit = [
   '**/__init__.py',
-  '**/conftest.py',
   '**/cardio_audio_sleep/_version.py',
   '**/cardio_audio_sleep/commands/*',
   '**/cardio_audio_sleep/eye_link/EyeLinkCoreGraphicsPsychoPy.py',
   '**/cardio_audio_sleep/utils/_fixes.py',
+  '**/conftest.py',
   '**/tests/**',
 ]
 

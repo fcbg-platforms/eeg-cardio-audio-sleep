@@ -59,7 +59,7 @@ def read_raw_xdf(fname):
 
     # scaling
     raw.apply_function(
-        lambda x: x*1e-6, picks=["eeg", "eog", "ecg", "misc"], channel_wise=False
+        lambda x: x * 1e-6, picks=["eeg", "eog", "ecg", "misc"], channel_wise=False
     )
     # annotations
     raw = add_annotations_from_events(raw)

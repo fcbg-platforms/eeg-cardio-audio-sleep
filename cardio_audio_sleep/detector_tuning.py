@@ -269,8 +269,8 @@ def _acquire_data(ecg_ch_name, stream_name, duration_buffer):
     for k in range(4):
         logger.info("%i/4: Waiting %ss to fill the buffer..", k + 1, duration_buffer)
         time.sleep(duration_buffer + 0.2)
-        data_, _ = stream.get_data()[0, :]
-        data.append(data_)
+        data_, _ = stream.get_data()
+        data.append(data_[0, :])
         time.sleep(2.5)
         logger.info("%i/4 complete!", k + 1)
     return data, stream.info["sfreq"]

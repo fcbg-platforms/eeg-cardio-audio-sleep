@@ -1,3 +1,7 @@
+from __future__ import annotations  # c.f. PEP 563, PEP 649
+
+from typing import TYPE_CHECKING
+
 import multiprocessing as mp
 import os
 import sys
@@ -25,7 +29,6 @@ from PyQt5.QtWidgets import (
 )
 
 from .. import logger
-from .._typing import EYELink
 from ..config import load_config, load_triggers
 from ..config.constants import SCREEN_KWARGS
 from ..example import example
@@ -46,6 +49,9 @@ from ..utils._checks import check_value
 from ..utils._docs import fill_doc
 from ..utils._imports import import_optional_dependency
 
+if TYPE_CHECKING:
+    from ..eye_link import BaseEyelink
+
 
 @fill_doc
 class GUI(QMainWindow):
@@ -63,7 +69,7 @@ class GUI(QMainWindow):
     def __init__(
         self,
         ecg_ch_name: str,
-        eye_link: EYELink,
+        eye_link: BaseEyelink,
         instrument: bool = True,
         dev: bool = False,
     ):
@@ -119,7 +125,7 @@ class GUI(QMainWindow):
         self,
         ecg_ch_name: str,
         defaults: dict,
-        eye_link: EYELink,
+        eye_link: BaseEyelink,
         instrument: bool,
         dev: bool,
     ):
@@ -203,7 +209,7 @@ class GUI(QMainWindow):
     def load_ui(
         self,
         defaults: dict,
-        eye_link: EYELink,
+        eye_link: BaseEyelink,
         instrument_categories: list[str] | tuple[str, ...],
     ):
         """Load the graphical user interface."""

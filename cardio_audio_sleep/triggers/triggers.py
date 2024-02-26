@@ -1,9 +1,18 @@
+from __future__ import annotations  # c.f. PEP 563, PEP 649
+
+from typing import TYPE_CHECKING
+
 from byte_triggers import LSLTrigger
 from mne_lsl.lsl import StreamInfo, StreamOutlet
 
-from .._typing import EYELink
+from ..eye_link import BaseEyelink
 from ..utils._checks import check_type
 from ..utils._docs import fill_doc
+
+if TYPE_CHECKING:
+    from byte_triggers._base import BaseTrigger
+
+    from ..eye_link import BaseEyelink
 
 
 @fill_doc
@@ -17,7 +26,9 @@ class Trigger:
     %(eye_link)s
     """
 
-    def __init__(self, trigger, eye_link: EYELink, instruments: bool = True):
+    def __init__(
+        self, trigger: BaseTrigger, eye_link: BaseEyelink, instruments: bool = True
+    ):
         if isinstance(trigger, LSLTrigger):
             raise RuntimeError(
                 "The trigger can not be an LSL trigger as "

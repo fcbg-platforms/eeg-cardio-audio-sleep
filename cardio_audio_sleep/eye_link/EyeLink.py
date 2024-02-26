@@ -5,19 +5,17 @@ import pylink
 from psychopy import event, logging, visual
 
 from .. import logger
-from .._typing import EYELink
 from ..config.constants import SCREEN_KWARGS
 from ..utils._checks import check_type
+from ._base import BaseEyelink
 from .EyeLinkCoreGraphicsPsychoPy import EyeLinkCoreGraphicsPsychoPy
 
 # set psychopy log level
 logging.console.setLevel(logging.CRITICAL)
 
 
-class Eyelink(EYELink):
-    """
-    Eyelink class which communicates with the Eye-Tracker device from
-    SR Research.
+class Eyelink(BaseEyelink):
+    """Eyelink class which communicates with the Eye-Tracker device from SR Research.
 
     Parameters
     ----------

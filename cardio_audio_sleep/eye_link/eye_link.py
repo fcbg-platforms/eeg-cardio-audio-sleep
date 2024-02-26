@@ -8,7 +8,7 @@ from .. import logger
 from ..config.constants import SCREEN_KWARGS
 from ..utils._checks import check_type
 from ._base import BaseEyelink
-from .EyeLinkCoreGraphicsPsychoPy import EyeLinkCoreGraphicsPsychoPy
+from ._graphics import EyeLinkCoreGraphicsPsychoPy
 
 # set psychopy log level
 logging.console.setLevel(logging.CRITICAL)
@@ -133,12 +133,12 @@ class Eyelink(BaseEyelink):
         pylink.openGraphicsEx(self.genv)
 
     def clear_screen(self):
-        """clear up the PsychoPy window"""
+        """Clear the PsychoPy window."""
         self.win.fillColor = self.genv.getBackgroundColor()
         self.win.flip()
 
     def show_msg(self, text, wait_for_keypress=True):
-        """Show task instructions on screen"""
+        """Show task instructions on screen."""
         msg = visual.TextStim(
             self.win,
             text,
@@ -154,7 +154,7 @@ class Eyelink(BaseEyelink):
             event.waitKeys()
             self.clear_screen()
 
-    def calibrate(self):
+    def calibrate(self):  # noqa: D102
         # Show the task instructions
         task_msg = "\nPress ENTER twice to display tracker menu"
         self.show_msg(task_msg)
@@ -166,11 +166,11 @@ class Eyelink(BaseEyelink):
             self.close()
             raise
 
-    def start(self):
+    def start(self):  # noqa: D102
         self.el_tracker.startRecording(1, 1, 1, 1)
         self.el_tracker.sendMessage("START")
 
-    def stop(self):
+    def stop(self):  # noqa: D102
         self.el_tracker.stopRecording()
         self.el_tracker.setOfflineMode()
 

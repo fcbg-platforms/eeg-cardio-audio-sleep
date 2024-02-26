@@ -12,4 +12,4 @@ if sys.platform == "linux":
 if pylink is None or (sys.platform == "linux" and wx is None):
     Eyelink = EyelinkMock
 else:
-    from .EyeLink import Eyelink  # noqa: F401
+    from .eye_link import Eyelink  # noqa: F401

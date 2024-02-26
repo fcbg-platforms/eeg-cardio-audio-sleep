@@ -15,8 +15,8 @@ TONE_FQ = 1000  # Hz
 
 
 # Trigger definitions
-class TriggerDef(dict):
-    def __getattr__(self, key):
+class TriggerDef(dict):  # noqa: D101
+    def __getattr__(self, key):  # noqa: D105
         if key in self:
             warn(
                 "Triggers are exposed as dictionary keys. Attribute access is "

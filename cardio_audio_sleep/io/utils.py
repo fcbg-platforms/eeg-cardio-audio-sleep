@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 from mne import Annotations, find_events
 
-from ..config.constants import TRIGGERS, TRIGGER_HWD
+from ..config.constants import TRIGGER_HWD, TRIGGERS
 
 if TYPE_CHECKING:
     from mne.io import BaseRaw

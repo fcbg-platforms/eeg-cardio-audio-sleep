@@ -1,6 +1,5 @@
 from warnings import warn
 
-
 # PsychoPy windows constants
 SCREEN_SIZE = (1920, 1080)
 SCREEN_KWARGS = dict(

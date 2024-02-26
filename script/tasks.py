@@ -25,7 +25,7 @@ sequence = generate_sequence(100, 0, 10, TRIGGERS)
 # Task
 sequence_timings = synchronous(
     trigger,
-    tdef,
+    TRIGGERS,
     sequence,
     stream_name,
     ecg_ch_name,

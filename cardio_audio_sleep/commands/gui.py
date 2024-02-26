@@ -33,7 +33,7 @@ from ..example import example
 from ..eye_link import EyelinkMock
 from ..recollection import recollection
 from ..tasks import asynchronous, baseline, inter_block, isochronous, synchronous
-from ..triggers import Trigger, TriggerInstrument
+from ..triggers import SerialTrigger, Trigger, TriggerInstrument
 from ..utils import (
     generate_async_timings_based_on_mean,
     generate_blocks_sequence,
@@ -132,6 +132,8 @@ class GUI(QMainWindow):
         # combine trigger with eye-link
         if trigger_type == "lpt":
             trigger = ParallelPortTrigger("/dev/parport0", delay=5)
+        elif trigger_type == "serial":
+            trigger = SerialTrigger()
         elif trigger_type == "arduino":
             trigger = trigger_type
         elif trigger_type == "mock":

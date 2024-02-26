@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import QApplication
 
 from .. import logger, peak_detection_parameters_tuning, set_log_level
 from ..config import load_triggers
+from ..triggers import SerialTrigger
 from ..utils import search_amplifier
 from ..utils._imports import import_optional_dependency
 from .cli import input_ecg_ch_name
@@ -155,24 +156,25 @@ def test():
         triggers["arduino"] = trigger
     except Exception:
         pass
+    try:
+        trigger = SerialTrigger()
+        triggers["serial"] = trigger
+    except Exception:
+        pass
 
-    if len(triggers) == 2:
-        logger.error(
-            "Found both a LPT port on '/dev/parport0' and an arduino to LPT converter. "
-            "Please use the on-board LPT port instead of a converter and set 'lpt' in "
-            "the configuration. Aborting further tests.."
-        )
-        return None
-    elif len(triggers) == 0:
+    if len(triggers) == 0:
         logger.error(
             "Could not find a parallel port or an arduino to parallel port converter. "
             "Aborting further tests.."
         )
         return None
+    elif len(triggers) != 1:
+        logger.error("Found multiple triggers connected.")
+        return None
 
     # check the trigger pins
     logger.info(
-        "Testing all the triggers. Please look at a StreamViewer and "
+        "Testing all the triggers. Please look at a viewer and "
         "confirm that each value is correctly displayed."
     )
     tdef = load_triggers()

@@ -27,8 +27,8 @@ def mock_ecg_stream():
     """Create a mock stream with an 'ECG' channel."""
     fname = Path(__file__).parents[1] / "data" / "ecg1024-raw.fif"
     raw = read_raw_fif(fname, preload=True)
-    raw.apply_function(lambda x: x * 1e-6)
-    player = PlayerLSL(fname, name="mock-ECG")
-    player.set_channel_units({"ECG": "uV"})
+    raw.apply_function(lambda x: x * 1e-6)  # convert to SI
+    player = PlayerLSL(raw, name="mock-ECG")
+    player.set_channel_units({"ECG": "microvolt"})
     yield player
     player.stop()

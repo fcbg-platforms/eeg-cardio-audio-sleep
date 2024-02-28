@@ -45,6 +45,7 @@ dependencies = [
     'psutil',
     'psychopy',
     'PyQt5',
+    'pyserial',
     'pyxdf',
     'scipy',
     'stimuli>=0.4.1',

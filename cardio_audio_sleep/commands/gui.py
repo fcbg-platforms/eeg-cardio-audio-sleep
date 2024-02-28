@@ -1062,12 +1062,16 @@ class GUI(QMainWindow):
                 self._stream_name,
                 self._ecg_ch_name,
                 self.doubleSpinBox_height.value(),
-                self.doubleSpinBox_prominence.value()
-                if self.doubleSpinBox_prominence.isEnabled()
-                else None,
-                self.doubleSpinBox_width.value()
-                if self.doubleSpinBox_width.isEnabled()
-                else None,
+                (
+                    self.doubleSpinBox_prominence.value()
+                    if self.doubleSpinBox_prominence.isEnabled()
+                    else None
+                ),
+                (
+                    self.doubleSpinBox_width.value()
+                    if self.doubleSpinBox_width.isEnabled()
+                    else None
+                ),
                 self.doubleSpinBox_volume.value(),
                 None,  # instrument sound
                 None,  # number of instrument sounds

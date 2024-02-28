@@ -11,3 +11,6 @@ SCREEN_KWARGS = dict(
 
 # Pure tone stimuli
 TONE_FQ = 1000  # Hz
+# Serial trigger com port and baudrate
+COM_PORT = "COM3"
+COM_BAUDRATE = 9600

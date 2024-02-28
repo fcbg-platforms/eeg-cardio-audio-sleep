@@ -11,33 +11,49 @@ from typing import Callable, List
 docdict = dict()
 
 # ----------------------------------- tasks ----------------------------------
-docdict["task_verbose"] = """
+docdict[
+    "task_verbose"
+] = """
 verbose : bool
     If True, a timer is logged with the info level every second."""
-docdict["trigger"] = """
+docdict[
+    "trigger"
+] = """
 trigger : Trigger
     A combination of a BSL trigger instance and of a mock or real eye-link."""
-docdict["volume"] = """
+docdict[
+    "volume"
+] = """
 volume : float
     Sound volume between 0 (mute) and 100."""
-docdict["instrument"] = """
+docdict[
+    "instrument"
+] = """
 instrument : Path | None
     Path to the instrument sound to play. If None, instrument sounds are
     disabled."""
-docdict["n_instrument"] = """
+docdict[
+    "n_instrument"
+] = """
 n_instrument : int
     Number of instrument sounds played after the pure tone if instrument is not
     None."""
-docdict["sequence"] = """
+docdict[
+    "sequence"
+] = """
 sequence : array
     Sequence of stimulus/omissions.
     1 corresponds to a stound stimulus. 2 corresponds to an omission."""
-docdict["disable_end_trigger"] = """
+docdict[
+    "disable_end_trigger"
+] = """
 disable_end_trigger : bool
     If True, disable the end of block trigger."""
 
 # --------------------------------- eye-tracker ------------------------------
-docdict["eye_link"] = """
+docdict[
+    "eye_link"
+] = """
 eye_link : Eyelink
     Eyelink class which communicates with the Eye-Tracker device."""
 

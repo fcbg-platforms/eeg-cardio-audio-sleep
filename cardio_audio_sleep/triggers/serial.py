@@ -2,7 +2,7 @@
 
 from byte_triggers._base import BaseTrigger
 
-from ..config.constants import COM_BAUDRATE, COM_PORT
+from ..config.constants import COM_PORT
 from ..utils._docs import copy_doc
 from ..utils._imports import import_optional_dependency
 
@@ -12,6 +12,8 @@ class SerialTrigger(BaseTrigger):
 
     def __init__(
         self,
+        port: str = COM_PORT,
+        baudrate: int = 9600,
     ):
         import_optional_dependency(
             "serial", extra="Install 'pyserial' for serial port support."
@@ -20,7 +22,7 @@ class SerialTrigger(BaseTrigger):
         from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE, Serial, SerialException
 
         try:
-            self._port = Serial(COM_PORT, COM_BAUDRATE)
+            self._port = Serial(port, baudrate)
             self._port.parity = PARITY_NONE
             self._port.bytesize = EIGHTBITS
             self._port.stopbits = STOPBITS_ONE

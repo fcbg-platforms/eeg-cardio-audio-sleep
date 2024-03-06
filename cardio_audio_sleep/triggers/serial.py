@@ -28,7 +28,7 @@ class SerialTrigger(BaseTrigger):
             self._port.stopbits = STOPBITS_ONE
             self._port.open()
         except SerialException:
-            raise SerialException(f"Could not open serial port at {COM_PORT}.")
+            raise SerialException(f"Could not open serial port at {port}.")
 
     @copy_doc(BaseTrigger.signal)
     def signal(self, value: str) -> None:

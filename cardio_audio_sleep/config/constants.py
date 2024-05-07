@@ -14,4 +14,4 @@ TONE_FQ: float = 1000  # Hz
 # Serial trigger
 COM_PORT: str = "/dev/ttyUSB0"
 # Amplifier type
-AMPLIFIER: str = "micromed"
+AMPLIFIER: str = "ant"

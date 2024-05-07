@@ -28,7 +28,7 @@ from PyQt5.QtWidgets import (
 from .. import logger
 from .._typing import EYELink
 from ..config import load_config, load_triggers
-from ..config.constants import SCREEN_KWARGS
+from ..config.constants import AMPLIFIER, SCREEN_KWARGS
 from ..example import example
 from ..eye_link import EyelinkMock
 from ..recollection import recollection
@@ -147,7 +147,7 @@ class GUI(QMainWindow):
         self.trigger_instrument = TriggerInstrument()
 
         # search for LSL stream
-        self._stream_name = search_amplifier("micromed")
+        self._stream_name = search_amplifier(AMPLIFIER)
         self._ecg_ch_name = ecg_ch_name
 
         # Create task mapping
@@ -1237,7 +1237,7 @@ class GUI(QMainWindow):
     @pyqtSlot()
     def pushButton_amplifier_clicked(self):
         try:
-            stream_name = search_amplifier("micromed")
+            stream_name = search_amplifier(AMPLIFIER)
             logger.info("Amplifier found: %s", stream_name)
             self.label_amplifier.setText(f"Detected amplifier: '{stream_name}'")
             self._stream_name = stream_name

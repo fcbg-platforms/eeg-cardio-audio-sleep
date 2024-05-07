@@ -12,4 +12,4 @@ SCREEN_KWARGS = dict(
 # Pure tone stimuli
 TONE_FQ = 1000  # Hz
 # Serial trigger
-COM_PORT = "COM3"
+COM_PORT = "/dev/ttyUSB0"

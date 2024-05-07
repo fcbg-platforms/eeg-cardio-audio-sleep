@@ -19,14 +19,10 @@ class SerialTrigger(BaseTrigger):
             "serial", extra="Install 'pyserial' for serial port support."
         )
 
-        from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE, Serial, SerialException
+        from serial import Serial, SerialException
 
         try:
             self._port = Serial(port, baudrate)
-            self._port.parity = PARITY_NONE
-            self._port.bytesize = EIGHTBITS
-            self._port.stopbits = STOPBITS_ONE
-            self._port.open()
         except SerialException:
             raise SerialException(f"Could not open serial port at {port}.")
 
@@ -36,11 +32,11 @@ class SerialTrigger(BaseTrigger):
 
     def close(self) -> None:
         """Disconnect the serial port."""
-        try:
-            self._port.close()
-        except Exception:
-            pass
         if hasattr(self, "_port"):
+            try:
+                self._port.close()
+            except Exception:
+                pass
             try:
                 del self._port
             except Exception:

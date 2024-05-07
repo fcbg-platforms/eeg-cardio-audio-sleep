@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import QApplication
 
 from .. import logger, peak_detection_parameters_tuning, set_log_level
 from ..config import load_triggers
+from ..config.constants import AMPLIFIER
 from ..triggers import SerialTrigger
 from ..utils import search_amplifier
 from ..utils._imports import import_optional_dependency
@@ -107,19 +108,12 @@ def pds():
 def test():
     """Run test on the LSL stream and triggers."""
     parser = argparse.ArgumentParser(prog="CAS - Test", description="Test CAS system.")
-    parser.add_argument(
-        "--amplifier",
-        type=str,
-        metavar="str",
-        help="Either 'ant' or 'micromed'.",
-        default="micromed",
-    )
-    args = parser.parse_args()
+    parser.parse_args()
 
     # look for the LSL stream
     logger.info("Looking for LSL stream..")
     try:
-        stream_name = search_amplifier(args.amplifier)
+        stream_name = search_amplifier(AMPLIFIER)
         logger.info("LSL stream found!")
     except RuntimeError:
         logger.error(

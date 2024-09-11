@@ -61,10 +61,10 @@ all = [
 full = ['cardio_audio_sleep[all]']
 
 [project.urls]
-homepage = 'https://github.com/fcbg-hnp-meeg/eeg-cardio-audio-sleep'
-documentation = 'https://github.com/fcbg-hnp-meeg/eeg-cardio-audio-sleep'
-source = 'https://github.com/fcbg-hnp-meeg/eeg-cardio-audio-sleep'
-tracker = 'https://github.com/fcbg-hnp-meeg/eeg-cardio-audio-sleep/issues'
+homepage = 'https://github.com/fcbg-platforms/eeg-cardio-audio-sleep'
+documentation = 'https://github.com/fcbg-platforms/eeg-cardio-audio-sleep'
+source = 'https://github.com/fcbg-platforms/eeg-cardio-audio-sleep'
+tracker = 'https://github.com/fcbg-platforms/eeg-cardio-audio-sleep/issues'
 
 [project.scripts]
 cas = 'cardio_audio_sleep.commands.main:cas'

@@ -56,11 +56,6 @@ peaks : array of shape (n_peaks,)
 
 # -- Q ---------------------------------------------------------------------------------
 # -- R ---------------------------------------------------------------------------------
-docdict["resp_ch_name"] = """
-resp_ch_name : str
-    Name of the respiration channel in the LSL stream. This channel should contain the
-    respiration signal, typically recorded with a respiration belt or a thermistor."""
-
 # -- S ---------------------------------------------------------------------------------
 docdict["stream_name"] = """
 stream_name : str

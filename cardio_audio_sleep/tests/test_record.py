@@ -13,7 +13,7 @@ from mne.io.base import BaseRaw
 from mne_lsl.stream import StreamLSL
 from numpy.testing import assert_allclose
 
-from resp_audio_sleep.record import Recorder
+from cardio_audio_sleep.record import Recorder
 
 if TYPE_CHECKING:
     from pathlib import Path

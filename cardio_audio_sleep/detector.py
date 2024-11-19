@@ -31,9 +31,9 @@ class Detector:
     ----------
     %(stream_name)s
     %(ecg_ch_name)s
-    ecg_height : float | None
+    ecg_height : float
         The height of the ECG peaks as a percentage of the data range, between 0 and 1.
-    ecg_distance : float | None
+    ecg_distance : float
         The minimum distance between two ECG peaks in seconds.
     ecg_prominence : float | None
         The minimum prominence of the ECG peaks. Can be set to None which will disable

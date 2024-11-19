@@ -1,11 +1,5 @@
 import click
 
-ch_name_resp = click.option(
-    "--ch-name-resp",
-    prompt="Respiration channel name",
-    help="Name of the respiration channel in the stream.",
-    type=str,
-)
 ch_name_ecg = click.option(
     "--ch-name-ecg",
     prompt="ECG channel name",

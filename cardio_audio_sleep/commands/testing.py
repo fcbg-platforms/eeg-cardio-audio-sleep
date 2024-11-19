@@ -8,66 +8,9 @@ from mne_lsl.lsl import local_clock
 
 from .. import set_log_level
 from ..detector import Detector
-from ..tasks._config import (
-    ECG_DISTANCE,
-    ECG_HEIGHT,
-    ECG_PROMINENCE,
-    RESP_DISTANCE,
-    RESP_PROMINENCE,
-    TRIGGERS,
-)
+from ..tasks._config import ECG_DISTANCE, ECG_HEIGHT, ECG_PROMINENCE, TRIGGERS
 from ..tasks._utils import create_trigger, generate_sequence
-from ._utils import (
-    ch_name_ecg,
-    ch_name_resp,
-    fq_deviant,
-    fq_target,
-    no_viewer,
-    stream,
-    verbose,
-)
-
-
-@click.command()
-@stream
-@ch_name_resp
-@click.option(
-    "--n-peaks", prompt="Number of peaks", help="Number of peaks to detect.", type=int
-)
-@no_viewer
-@verbose
-def test_detector_respiration(
-    stream: str,
-    ch_name_resp: str,
-    n_peaks: int,
-    no_viewer: bool,
-    verbose: str,
-) -> None:
-    """Test the respiration detector settings."""
-    set_log_level(verbose)
-    if n_peaks <= 0:
-        raise ValueError("The number of peaks must be greater than 0.")
-    detector = Detector(
-        stream_name=stream,
-        ecg_ch_name=None,
-        resp_ch_name=ch_name_resp,
-        ecg_height=None,
-        ecg_distance=None,
-        ecg_prominence=None,
-        resp_prominence=RESP_PROMINENCE,
-        resp_distance=RESP_DISTANCE,
-        detrend=False,
-        viewer=not no_viewer,
-    )
-    counter = 0
-    while counter < n_peaks:
-        peak = detector.new_peak("resp")
-        if peak is not None:
-            delay = local_clock() - peak
-            counter += 1
-            click.echo(
-                f"Respiration peak {counter} / {n_peaks} detected after {delay:.3f}s."
-            )
+from ._utils import ch_name_ecg, fq_deviant, fq_target, no_viewer, stream, verbose
 
 
 @click.command()
@@ -78,7 +21,7 @@ def test_detector_respiration(
 )
 @no_viewer
 @verbose
-def test_detector_cardiac(
+def test_detector(
     stream: str,
     ch_name_ecg: str,
     n_peaks: int,

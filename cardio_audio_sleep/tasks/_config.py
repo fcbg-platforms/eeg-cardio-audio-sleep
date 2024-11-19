@@ -13,15 +13,15 @@ TRIGGER_TYPE: str = "arduino"  # one of 'arduino', 'serial', 'lpt', 'mock'
 TRIGGER_ARGS: str | int | None = None
 TRIGGER_TASKS: dict[str, tuple[int, int]] = {
     "baseline": (4, 5),
-    "synchronous": (16, 17),
-    "isochronous": (32, 33),
-    "asynchronous": (64, 65),
+    "synchronous": (8, 9),
+    "isochronous": (16, 17),
+    "asynchronous": (32, 33),
 }
 # sound settings
 SOUND_FREQUENCY: float = 1000.0  # pure tone frequency in Hz
 SOUND_DURATION: float = 0.2
 N_SOUND: int = 50
-N_OMISSION: int = 0
+N_OMISSION: int = 10
 BACKEND: str = "ptb"  # "ptb" or "stimuli" to select the audio playback backend
 DEVICE: str | int | None = None  # None to use the default device
 BLOCKSIZE: int = 4  # default 128, controls part of the latency <-> stability trade-off

@@ -8,7 +8,13 @@ from mne_lsl.lsl import local_clock
 
 from .. import set_log_level
 from ..detector import Detector
-from ..tasks._config import ECG_DISTANCE, ECG_HEIGHT, ECG_PROMINENCE, TRIGGERS
+from ..tasks._config import (
+    ECG_DISTANCE,
+    ECG_HEIGHT,
+    ECG_PROMINENCE,
+    TRIGGER_TASKS,
+    TRIGGERS,
+)
 from ..tasks._utils import create_trigger, generate_sequence
 from ._utils import ch_name_ecg, no_viewer, stream, verbose
 
@@ -35,17 +41,15 @@ def test_detector(
     detector = Detector(
         stream_name=stream,
         ecg_ch_name=ch_name_ecg,
-        resp_ch_name=None,
         ecg_height=ECG_HEIGHT,
         ecg_distance=ECG_DISTANCE,
         ecg_prominence=ECG_PROMINENCE,
-        resp_prominence=None,
-        resp_distance=None,
+        detrend=True,
         viewer=not no_viewer,
     )
     counter = 0
     while counter < n_peaks:
-        peak = detector.new_peak("ecg")
+        peak = detector.new_peak()
         if peak is not None:
             delay = local_clock() - peak
             counter += 1
@@ -83,4 +87,10 @@ def test_triggers(verbose: str) -> None:
     for key, value in TRIGGERS.items():
         click.echo(f"Trigger {key}: {value}")
         trigger.signal(value)
+        time.sleep(0.5)
+    for key, (start, stop) in TRIGGER_TASKS.items():
+        click.echo(f"Task {key}: {start} -> {stop}")
+        trigger.signal(start)
+        time.sleep(0.5)
+        trigger.signal(stop)
         time.sleep(0.5)

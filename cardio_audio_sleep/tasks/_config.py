@@ -30,7 +30,7 @@ BASELINE_DURATION: float = 60  # default setting when nothing is available
 EDGE_PERC: float = 10  # percentage between 0 and 100 in which deviant are absent
 OUTLIER_PERC: float = 10  # percentage between 0 and 100 to remove outliers PTP delays
 # target timing
-TARGET_DELAY: float = 0.25
+TARGET_DELAY: float = 0.05  # target delay between the R-peak and the sound/trigger
 # other
 INTER_BLOCK_DELAY: float = 5  # delay in seconds between blocks
 

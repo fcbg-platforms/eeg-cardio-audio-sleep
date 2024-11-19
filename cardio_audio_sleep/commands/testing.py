@@ -66,10 +66,10 @@ def test_sequence(verbose: str) -> None:
     sequence = generate_sequence()
     f, ax = plt.subplots(1, 1, layout="constrained")
     idx = np.where(sequence == TRIGGERS["sound"])[0]
-    ax.scatter(idx, np.ones(idx.size) * TRIGGERS["sound"], color="teal", label="target")
+    ax.scatter(idx, np.ones(idx.size) * TRIGGERS["sound"], color="teal", label="sound")
     idx = np.where(sequence == TRIGGERS["omission"])[0]
     ax.scatter(
-        idx, np.ones(idx.size) * TRIGGERS["omission"], color="coral", label="deviant"
+        idx, np.ones(idx.size) * TRIGGERS["omission"], color="coral", label="omission"
     )
     ax.set_xlabel("Stimulus number")
     ax.set_ylabel("Trigger")

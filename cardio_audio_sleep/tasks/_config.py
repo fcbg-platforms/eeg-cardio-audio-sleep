@@ -20,19 +20,19 @@ TRIGGER_TASKS: dict[str, tuple[int, int]] = {
 # sound settings
 SOUND_FREQUENCY: float = 1000.0  # pure tone frequency in Hz
 SOUND_DURATION: float = 0.2
-N_SOUND: int = 50
-N_OMISSION: int = 10
+N_SOUND: int = 240
+N_OMISSION: int = 60
 BACKEND: str = "ptb"  # "ptb" or "stimuli" to select the audio playback backend
 DEVICE: str | int | None = None  # None to use the default device
 BLOCKSIZE: int = 4  # default 128, controls part of the latency <-> stability trade-off
 # sequence and task settings
-BASELINE_DURATION: float = 60  # default setting when nothing is available
-EDGE_PERC: float = 10  # percentage between 0 and 100 in which deviant are absent
+BASELINE_DURATION: float = 240  # default setting when nothing is available
+EDGE_PERC: float = 3  # percentage between 0 and 100 in which omission are absent
 OUTLIER_PERC: float = 10  # percentage between 0 and 100 to remove outliers PTP delays
 # target timing
 TARGET_DELAY: float = 0.05  # target delay between the R-peak and the sound/trigger
 # other
-INTER_BLOCK_DELAY: float = 5  # delay in seconds between blocks
+INTER_BLOCK_DELAY: float = 30  # delay in seconds between blocks
 
 
 # TODO: Define a configuration class to handle all configuration elements.

@@ -1,0 +1,32 @@
+ci:
+    autoupdate_schedule: quarterly
+
+repos:
+    - repo: https://github.com/astral-sh/ruff-pre-commit
+      rev: v0.6.2
+      hooks:
+          - id: ruff
+            name: ruff linter
+            args: [--fix, --show-fixes]
+          - id: ruff-format
+            name: ruff formatter
+
+    - repo: https://github.com/codespell-project/codespell
+      rev: v2.3.0
+      hooks:
+          - id: codespell
+            args: [--write-changes]
+            additional_dependencies: [tomli]
+
+    - repo: https://github.com/pappasam/toml-sort
+      rev: v0.23.1
+      hooks:
+          - id: toml-sort-fix
+            files: pyproject.toml
+
+    - repo: https://github.com/adrienverge/yamllint
+      rev: v1.35.1
+      hooks:
+          - id: yamllint
+            args: [--strict, -c, .yamllint.yaml]
+            files: (.github/|.codecov.yaml|.pre-commit-config.yaml|.yamllint.yaml)

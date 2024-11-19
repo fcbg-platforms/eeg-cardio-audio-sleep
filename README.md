@@ -145,13 +145,13 @@ The paradigm is controlled by command-line from the activated environment.
 
 > [!Tip]
 > If you use VSCode, the environment will always be activated provided that your
-> workspace is set to `eeg-cardio-audio-sleep`, i.e. thjat you opened the folder
+> workspace is set to `eeg-cardio-audio-sleep`, i.e. that you opened the folder
 > `~/git/eeg-cardio-audio-sleep`.
 
 In the terminal, enter:
 
 ```bash
-$ ras
+$ cas
 ```
 
 It will display all the available commands, for instance `test-sequence`, with an
@@ -159,13 +159,13 @@ associated description. To get help on a specific command and on its argument, e
 pattern:
 
 ```bash
-$ ras COMMAND --help
+$ cas COMMAND --help
 ```
 
 For instance:
 
 ```bash
-$ ras test-sequence --help
+$ cas test-sequence --help
 ```
 
 > [!TIP]
@@ -175,19 +175,19 @@ $ ras test-sequence --help
 The arguments of a command can be entered following this pattern:
 
 ```bash
-$ ras COMMAND ARG1 VALUE1 ARG2 VALUE2
+$ cas COMMAND ARG1 VALUE1 ARG2 VALUE2
 ```
 
 For instance:
 
 ```bash
-$  ras test-sequence --target 440 --deviant 1000
+$  cas test-sequence --verbose debug
 ```
 
 > [!TIP]
 > Some argument might accept more than 1 value, in which case the pattern becomes
-> `ras COMMAND ARG1 VALUE1_1 VALUE1_2 ARG2 VALUE2` and some argument might only control
-> a boolean flag, in this case the pattern becomes `ras COMMAND ARG`.
+> `cas COMMAND ARG1 VALUE1_1 VALUE1_2 ARG2 VALUE2` and some argument might only control
+> a boolean flag, in this case the pattern becomes `cas COMMAND ARG`.
 
 Note that every mandatory argument will be requested in the terminal if it was absent
 from the command. Note that some arguments can only be provided as part of the initial
@@ -201,21 +201,18 @@ The configuration of the triggers, sound, sequence, ... is done in the file
 Important variables:
 - The variable `TARGET_DELAY` controls how long after a peak the sound should be
   delivered.
-- The variable `N_TARGET` and `N_DEVIANT` control how many target and deviant are
+- The variable `N_SOUND` and `N_OMISSION` control how many sound and omission are
   present in the sequence.
-- The variable `TRIGGERS` controls both which trigger is delivered for which sound, but
-  also which sound frequency is available. As of now, the `target` value of a task can
-  be set to `1000`, `2000`, `440` and the `deviant` value of a task can be set to
-  `1000` and `2000`.
+- The variable `TRIGGERS` controls both which trigger is delivered for a sound and for
+  an omission.
 
 The configuration of the detector settings is done in the file
 `~/git/eeg-cardio-audio-sleep/cardio_audio_sleep/tasks/_config_detector.py`.
 
 ### Note about the detector testing
 
-The cardiac and respiration detectors can be tested with the commands
-`test-detector-cardiac` and `test-detector-respiration`. In both case, a real-time
-visualization of the internal buffer and of the peak detection is displayed. In the
+The cardiac detector can be tested with the commands `test-detector`. It creates a
+real-time visualization of the internal buffer and of the peak detection. In the
 terminal, a log of the time it took to detect the last peak is displayed. This time
 might seem excessive. This is due to the visualization slowing down the online loop
 tremendously. If you want to estimate the time it takes to detect a peak, you can run
@@ -223,9 +220,5 @@ those commands with the `--no-viewer` flag which disables visualization. The tim
 the console should now be reasonable.
 
 ```bash
-$ cas test-detector-respiration --stream STREAM --ch-name-resp AUX7 --n-peaks 20 --no-viewer
+$ cas test-detector --stream STREAM --ch-name-ecg AUX7 --n-peaks 20 --no-viewer
 ```
-
-> [!IMPORTANT]
-> Make sure to disable deviant sounds with `N_DEVIANT=0` and to use a target sound which
-> can be sampled, e.g. `440` Hz.

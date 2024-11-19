@@ -1,12 +1,6 @@
 from __future__ import annotations
 
-from ._config_detector import (
-    ECG_DISTANCE,
-    ECG_HEIGHT,
-    ECG_PROMINENCE,
-    RESP_DISTANCE,
-    RESP_PROMINENCE,
-)
+from ._config_detector import ECG_DISTANCE, ECG_HEIGHT, ECG_PROMINENCE
 
 # triggers are defined in the format 'target|deviant/frequency' with frequency as float
 TRIGGERS: dict[str, int] = {
@@ -25,8 +19,7 @@ TRIGGER_TYPE: str = "arduino"  # one of 'arduino', 'serial', 'lpt', 'mock'
 TRIGGER_ARGS: str | int | None = None
 TRIGGER_TASKS: dict[str, tuple[int, int]] = {
     "baseline": (200, 201),
-    "synchronous-respiration": (210, 211),
-    "synchronous-cardiac": (220, 221),
+    "synchronous": (220, 221),
     "isochronous": (230, 231),
     "asynchronous": (240, 241),
 }
@@ -76,6 +69,4 @@ class ConfigRepr:  # noqa: D101
         repr_str += f"  ECG height: {ECG_HEIGHT}\n"
         repr_str += f"  ECG distance: {ECG_DISTANCE}\n"
         repr_str += f"  ECG prominence: {ECG_PROMINENCE}\n"
-        repr_str += f"  respiration distance: {RESP_DISTANCE}\n"
-        repr_str += f"  respiration prominence: {RESP_PROMINENCE}\n"
         return repr_str

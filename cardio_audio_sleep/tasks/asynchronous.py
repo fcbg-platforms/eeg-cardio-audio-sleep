@@ -9,15 +9,8 @@ from ..detector import _BUFSIZE
 from ..utils._checks import check_type
 from ..utils._docs import fill_doc
 from ..utils.logs import logger
-from ._config import (
-    BACKEND,
-    OUTLIER_PERC,
-    SOUND_DURATION,
-    TARGET_DELAY,
-    TRIGGER_TASKS,
-    TRIGGERS,
-)
-from ._utils import create_sound, create_trigger, generate_sequence
+from ._config import BACKEND, OUTLIER_PERC, SOUND_DURATION, TARGET_DELAY, TRIGGER_TASKS
+from ._utils import create_sound, create_trigger, generate_sequence, get_event_name
 
 if BACKEND == "ptb":
     import psychtoolbox as ptb
@@ -32,7 +25,8 @@ def asynchronous(peaks: NDArray[np.float64]) -> None:
 
     Parameters
     ----------
-    %(peaks)s
+    peaks : array of shape (n_peaks,)
+        The detected peak timings in seconds during the previous synchronous block.
     """  # noqa: D401
     check_type(peaks, (np.ndarray,), "peaks")
     if peaks.ndim != 1:
@@ -54,22 +48,18 @@ def asynchronous(peaks: NDArray[np.float64]) -> None:
     counter = 0
     trigger.signal(TRIGGER_TASKS["asynchronous"][0])
     while counter <= sequence.size - 1:
+        event = get_event_name(sequence[counter])
         start = clock.get_time()
-        if sequence[counter] == TRIGGERS["sound"]:
+        if event == "sound":
             sound.play(
                 when=ptb.GetSecs() + TARGET_DELAY if BACKEND == "ptb" else TARGET_DELAY
             )
-            logger.debug(
-                "[sound/trigger] %i in %.3f ms.", sequence[counter], TARGET_DELAY
-            )
-        else:
-            logger.debug(
-                "[omission/trigger] %i in %.3f ms.", sequence[counter], TARGET_DELAY
-            )
-        logger.debug("Triggering %i in %.2f ms.", sequence[counter], TARGET_DELAY)
+        logger.debug(
+            "[%s/trigger] %i in %.3f ms.", event, sequence[counter], TARGET_DELAY
+        )
         sleep(TARGET_DELAY)
         trigger.signal(sequence[counter])
-        logger.info("Stimulus %i / %i complete.", counter + 1, sequence.size)
+        logger.info("(%s) %i / %i complete.", event, counter + 1, sequence.size)
         # note that if the delays are too short, the value 'wait' could end up negative
         # which (1) makes no sense and (2) would raise in the sleep function.
         wait = start + delays[counter] - clock.get_time()

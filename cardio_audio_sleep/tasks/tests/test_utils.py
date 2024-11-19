@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from cardio_audio_sleep.tasks._config import N_OMISSION, N_SOUND, TRIGGERS
-from cardio_audio_sleep.tasks._utils import generate_sequence
+from cardio_audio_sleep.tasks._utils import generate_sequence, get_event_name
 
 
 def test_generate_sequence():
@@ -19,3 +19,11 @@ def test_generate_sequence():
             assert count == N_SOUND
         elif elt == TRIGGERS["omission"]:
             assert count == N_OMISSION
+
+
+def test_get_event_name():
+    """Test getting event names."""
+    assert get_event_name(TRIGGERS["sound"]) == "sound"
+    assert get_event_name(TRIGGERS["omission"]) == "omission"
+    with pytest.raises(RuntimeError, match="Unknown trigger"):
+        get_event_name(1010101)

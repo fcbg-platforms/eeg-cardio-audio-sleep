@@ -6,8 +6,8 @@ from ..detector import _BUFSIZE
 from ..utils._checks import check_type
 from ..utils._docs import fill_doc
 from ..utils.logs import logger
-from ._config import BACKEND, SOUND_DURATION, TARGET_DELAY, TRIGGER_TASKS, TRIGGERS
-from ._utils import create_sound, create_trigger, generate_sequence
+from ._config import BACKEND, SOUND_DURATION, TARGET_DELAY, TRIGGER_TASKS
+from ._utils import create_sound, create_trigger, generate_sequence, get_event_name
 
 if BACKEND == "ptb":
     import psychtoolbox as ptb
@@ -36,21 +36,18 @@ def isochronous(delay: float) -> None:
     counter = 0
     trigger.signal(TRIGGER_TASKS["isochronous"][0])
     while counter <= sequence.size - 1:
+        event = get_event_name(sequence[counter])
         start = clock.get_time()
-        if sequence[counter] == TRIGGERS["sound"]:
+        if event == "sound":
             sound.play(
                 when=ptb.GetSecs() + TARGET_DELAY if BACKEND == "ptb" else TARGET_DELAY
             )
-            logger.debug(
-                "[sound/trigger] %i in %.3f ms.", sequence[counter], TARGET_DELAY
-            )
-        else:
-            logger.debug(
-                "[omission/trigger] %i in %.3f ms.", sequence[counter], TARGET_DELAY
-            )
+        logger.debug(
+            "[%s/trigger] %i in %.3f ms.", event, sequence[counter], TARGET_DELAY
+        )
         sleep(TARGET_DELAY)
         trigger.signal(sequence[counter])
-        logger.info("Stimulus %i / %i complete.", counter + 1, sequence.size)
+        logger.info("(%s) %i / %i complete.", event, counter + 1, sequence.size)
         # note that if 'delay' is too short, the value 'wait' could end up negative
         # which (1) makes no sense and (2) would raise in the sleep function.
         wait = start + delay - clock.get_time()

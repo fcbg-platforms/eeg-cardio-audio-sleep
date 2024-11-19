@@ -37,14 +37,14 @@ class Viewer:
 
     @fill_doc
     def plot(self, ts: NDArray[np.float64], data: NDArray[np.float64]) -> None:
-        """Plot the respiration or cardiac data and peaks.
+        """Plot the cardiac data and peaks.
 
         Parameters
         ----------
         ts : array of shape (n_samples,)
-            Timestamps of the respiration data.
+            Timestamps of the cardiac data.
         data : array of shape (n_samples,)
-            Respiration or cardiac data.
+            Cardiac data.
         """
         assert ts.ndim == 1
         assert data.ndim == 1

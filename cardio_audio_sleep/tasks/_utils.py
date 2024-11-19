@@ -113,7 +113,6 @@ def generate_sequence(
     edge_perc: int | float = EDGE_PERC,
     max_iter: int = 500,
     on_diverge: str = "warn",
-    triggers: dict[str, int] = TRIGGERS,
 ) -> NDArray[np.int32]:
     """Generate a random sequence of target and omission.
 
@@ -128,7 +127,6 @@ def generate_sequence(
         Either 'warn' to log an error message or 'raise' to raise a RuntimeError when
         the randomization does not converge within the maximum number of iteration
         allowed.
-    %(triggers_dict)s
 
     Returns
     -------
@@ -215,3 +213,13 @@ def generate_sequence(
     assert TRIGGERS["omission"] not in start
     assert TRIGGERS["omission"] not in end
     return np.array(sequence, dtype=np.int32)
+
+
+def get_event_name(value) -> str:
+    """Get the event name corresponding to value in TRIGGERS."""
+    if value == TRIGGERS["sound"]:
+        return "sound"
+    elif value == TRIGGERS["omission"]:
+        return "omission"
+    else:
+        raise RuntimeError(f"Unknown trigger value '{value}'.")

@@ -69,6 +69,6 @@ def asynchronous(delays: tuple[float, float], verbose: str) -> None:
 @ch_name_ecg
 @verbose
 def synchronous(stream: str, ch_name_ecg: str, verbose: str) -> None:
-    """Run a synchronous respiration task."""
+    """Run a synchronous task."""
     set_log_level(verbose)
     synchronous_task(stream, ch_name_ecg)

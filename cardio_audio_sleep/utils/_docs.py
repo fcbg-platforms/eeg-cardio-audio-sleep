@@ -19,10 +19,6 @@ docdict: dict[str, str] = dict()
 # -- A ---------------------------------------------------------------------------------
 # -- B ---------------------------------------------------------------------------------
 # -- C ---------------------------------------------------------------------------------
-docdict["ch_type"] = """
-ch_type : str
-    The channel type to look on to, either 'resp' or 'ecg'."""
-
 # -- D ---------------------------------------------------------------------------------
 # -- E ---------------------------------------------------------------------------------
 docdict["ecg_ch_name"] = """
@@ -31,14 +27,6 @@ ecg_ch_name : str | None
     signal recorded with 2 bipolar electrodes."""
 
 # -- F ---------------------------------------------------------------------------------
-docdict["fq_deviant"] = """
-deviant : float
-    Frequency of the deviant sound. Should be part of the trigger dictionary."""
-
-docdict["fq_target"] = """
-target : float
-    Frequency of the target sound. Should be part of the trigger dictionary."""
-
 # -- G ---------------------------------------------------------------------------------
 # -- H ---------------------------------------------------------------------------------
 # -- I ---------------------------------------------------------------------------------
@@ -49,25 +37,15 @@ target : float
 # -- N ---------------------------------------------------------------------------------
 # -- O ---------------------------------------------------------------------------------
 # -- P ---------------------------------------------------------------------------------
-docdict["peaks"] = """
-peaks : array of shape (n_peaks,)
-    The detected respiration peak timings in seconds during the previous synchronous
-    block."""
-
 # -- Q ---------------------------------------------------------------------------------
 # -- R ---------------------------------------------------------------------------------
 # -- S ---------------------------------------------------------------------------------
 docdict["stream_name"] = """
 stream_name : str
-    Name of the LSL stream to use for the respiration or cardiac detection. The stream
-    should contain a respiration channel using a respiration belt or a thermistor and/or
+    Name of the LSL stream to use for the cardiac detection. The stream should contain
     an ECG channel."""
 
 # -- T ---------------------------------------------------------------------------------
-docdict["triggers_dict"] = """
-triggers : dict
-    Dictionary mapping trigger events string to their corresponding integer values."""
-
 # -- U ---------------------------------------------------------------------------------
 # -- V ---------------------------------------------------------------------------------
 docdict["verbose"] = """

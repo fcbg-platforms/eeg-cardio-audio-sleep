@@ -6,18 +6,6 @@ ch_name_ecg = click.option(
     help="Name of the ECG channel in the stream.",
     type=str,
 )
-fq_deviant = click.option(
-    "--deviant",
-    prompt="Deviant frequency (Hz)",
-    help="Frequency of the deviant stimulus in Hz.",
-    type=float,
-)
-fq_target = click.option(
-    "--target",
-    prompt="Target frequency (Hz)",
-    help="Frequency of the target stimulus in Hz.",
-    type=float,
-)
 stream = click.option(
     "--stream",
     prompt="LSL stream name",

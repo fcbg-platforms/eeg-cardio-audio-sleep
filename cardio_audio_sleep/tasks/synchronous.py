@@ -18,9 +18,8 @@ from ._config import (
     SOUND_DURATION,
     TARGET_DELAY,
     TRIGGER_TASKS,
-    TRIGGERS,
 )
-from ._utils import create_sound, create_trigger, generate_sequence
+from ._utils import create_sound, create_trigger, generate_sequence, get_event_name
 
 if BACKEND == "ptb":
     import psychtoolbox as ptb
@@ -34,7 +33,7 @@ if TYPE_CHECKING:
 
 @fill_doc
 def synchronous(stream_name: str, ecg_ch_name: str) -> NDArray[np.float64]:
-    """Synchronous auditory stimulus with the respiration peak signal.
+    """Synchronous auditory stimulus with the cardiac R-peak signal.
 
     Parameters
     ----------
@@ -67,14 +66,15 @@ def synchronous(stream_name: str, ecg_ch_name: str) -> NDArray[np.float64]:
     peaks = []
     trigger.signal(TRIGGER_TASKS["synchronous"][0])
     while counter <= sequence.size - 1:
+        event = get_event_name(sequence[counter])
         pos = detector.new_peak()
         if pos is None:
             continue
-        success = _deliver_stimuli(pos, sequence[counter], sound, trigger)
+        success = _deliver_stimuli(pos, sequence[counter], sound, trigger, event)
         if not success:
             continue
+        logger.info("(%s) %i / %i complete.", event, counter + 1, sequence.size)
         counter += 1
-        logger.info("Stimulus %i / %i complete.", counter, sequence.size)
         peaks.append(pos)
     # wait for the last sound to finish
     sleep(1.1 * SOUND_DURATION)
@@ -86,7 +86,7 @@ def synchronous(stream_name: str, ecg_ch_name: str) -> NDArray[np.float64]:
 
 
 def _deliver_stimuli(
-    pos: float, elt: int, sound: SoundPTB | Tone, trigger: BaseTrigger
+    pos: float, elt: int, sound: SoundPTB | Tone, trigger: BaseTrigger, event: str
 ) -> bool:
     """Deliver precisely a sound and its trigger."""
     wait = pos + TARGET_DELAY - local_clock()
@@ -102,11 +102,10 @@ def _deliver_stimuli(
                 wait * 1000,
             )
         return False
-    if elt == TRIGGERS["sound"]:
+
+    if event == "sound":
         sound.play(when=ptb.GetSecs() + wait if BACKEND == "ptb" else wait)
-        logger.debug("[sound/trigger] %i in %.3f ms.", elt, wait * 1000)
-    else:
-        logger.debug("[omission/trigger] %i in %.3f ms.", elt, wait * 1000)
+    logger.debug("[%s/trigger] %i in %.3f ms.", event, elt, wait * 1000)
     sleep(wait)
     trigger.signal(elt)
     return True

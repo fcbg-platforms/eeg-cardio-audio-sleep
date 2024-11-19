@@ -6,8 +6,8 @@
 
 # Cardio-Audio-Sleep study
 
-Project to study sound stimulus synchronous, asynchronous and isochronous with
-the heartbeat during sleep.
+Project to study sound/omission stimulus synchronous, asynchronous and isochronous with
+the heartbeat.
 
 ## Install
 
@@ -55,7 +55,7 @@ Recommended OS: Ubuntu 22.04 LTS or 24.04 LTS, generic kernel.
   ```
 
 > [!Tip]
-> I recommend you install [VSCode](https://code.visualstudio.com/Download) and use it to
+> I recommend to install [VSCode](https://code.visualstudio.com/Download) and use it to
 > spawn the terminal with an activated environment. In VSCode, `File` -> `OpenFolder`
 > then open the `~/git/eeg-cardio-audio-sleep` folder just cloned, `Ctrl+Shift+P` ->
 > `Create New Terminal`.
@@ -70,12 +70,14 @@ Recommended OS: Ubuntu 22.04 LTS or 24.04 LTS, generic kernel.
 > [!Tip]
 > If you are using VSCode, a pop-up on the bottom right detects the new environment
 > and ask if it should be the default environment for this folder. Select `Yes`, you
-> will not always have this environment activated in VSCode when you open the folder
+> will now always have this environment activated in VSCode when you open the folder
 > `~/git/eeg-cardio-audio-sleep`.
 
 ### PsychoPy preparation
 
-- Retrieve the wxPython wheel for your platform [here](https://extras.wxpython.org/wxPython4/extras/linux/gtk3/) (ubuntu only, wheels are available for the other OS).
+- Retrieve the wxPython wheel for your platform
+  [here](https://extras.wxpython.org/wxPython4/extras/linux/gtk3/) (ubuntu only, wheels
+  are available for the other OS).
 
 > [!Tip]
 > If you run Ubuntu 24.04 LTS, or if you want, you can build the wheel from source. Run
@@ -108,6 +110,8 @@ Recommended OS: Ubuntu 22.04 LTS or 24.04 LTS, generic kernel.
 
 > [!Tip]
 > Install `uv` first as it's faster than `pip`.
+> You could also create the environment and/or download python through `uv`.
+> You could use the standalone installation of `uv` instead of relying on `pip`.
 
 From within the created virtual environment:
 

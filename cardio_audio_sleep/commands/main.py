@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import time
-from itertools import cycle
 
 import click
 import numpy as np
@@ -14,7 +13,7 @@ from ..tasks import synchronous as synchronous_task
 from ..tasks._config import BASELINE_DURATION, INTER_BLOCK_DELAY, ConfigRepr
 from ..utils.blocks import _BLOCKS, generate_blocks_sequence
 from ..utils.logs import logger
-from ._utils import ch_name_ecg, fq_deviant, fq_target, stream, verbose
+from ._utils import ch_name_ecg, stream, verbose
 from .tasks import asynchronous, baseline, isochronous, synchronous
 from .testing import test_detector, test_sequence, test_triggers
 
@@ -32,15 +31,11 @@ def run():
 )
 @stream
 @ch_name_ecg
-@fq_target
-@fq_deviant
 @verbose
 def paradigm(
     n_blocks: int,
     stream: str,
     ch_name_ecg: str,
-    target: float,
-    deviant: float,
     verbose: str,
 ) -> None:
     """Run the paradigm, alternating between blocks."""
@@ -62,21 +57,7 @@ def paradigm(
         "asynchronous": [None],
         "synchronous": [stream, ch_name_ecg],
     }
-    assert len(set(mapping_args) - set(_BLOCKS)) == 0
-    # prepare mapping between keyword argument and block name, including target and
-    # deviant cycling frequencis
-    targets = cycle([target, deviant])
-    deviants = cycle([deviant, target])
-    # overwrite the same variables
-    target = next(targets)
-    deviant = next(deviants)
-    mapping_kwargs = {
-        "baseline": {},
-        "isochronous": {"target": target, "deviant": deviant},
-        "asynchronous": {"target": target, "deviant": deviant},
-        "synchronous": {"target": target, "deviant": deviant},
-    }
-    assert len(set(mapping_kwargs) - set(_BLOCKS)) == 0  # sanity-check
+    assert len(set(mapping_args) - set(_BLOCKS)) == 0  # sanity-check
 
     # execute paradigm loop
     blocks = list()
@@ -84,9 +65,7 @@ def paradigm(
         blocks.append(generate_blocks_sequence(blocks))
         logger.info("Running block %i / %i: %s.", len(blocks), n_blocks, blocks[-1])
         start = time.time()
-        result = mapping_func[blocks[-1]](
-            *mapping_args[blocks[-1]], **mapping_kwargs[blocks[-1]]
-        )
+        result = mapping_func[blocks[-1]](*mapping_args[blocks[-1]])
         end = time.time()
         logger.info("Block '%s' took %.3f seconds.", blocks[-1], end - start)
         # prepare arguments for future blocks if we just ran a synchronous block
@@ -104,15 +83,6 @@ def paradigm(
                 "Median delay between respiration peaks set to %.3f seconds.", delay
             )
         # prepare keyword argument for future blocks if we just ran 4 blocks
-        if len(blocks) % 4 == 0:
-            logger.info("Cycling target and deviant frequencies.")
-            target = next(targets)
-            deviant = next(deviants)
-            for key, elt in mapping_kwargs.items():
-                if key == "baseline":
-                    continue
-                elt["target"] = target
-                elt["deviant"] = deviant
         time.sleep(INTER_BLOCK_DELAY)
     logger.info("Paradigm complete.")
 

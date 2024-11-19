@@ -29,36 +29,35 @@ dependencies = [
   'pyserial',
   'stimuli[pport]>=1.0.2',
 ]
-description = 'Project to study sound stimulus synchronous, asynchronous and isochronous with the respiration during sleep.'
+description = 'Project to study sound stimulus synchronous, asynchronous and isochronous with the heartbeat during sleep.'
 keywords = [
   'audio',
   'cardiac',
   'eeg',
   'python',
-  'respiration',
   'sleep',
 ]
 license = {file = 'LICENSE'}
 maintainers = [
   {email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne'},
 ]
-name = 'resp_audio_sleep'
+name = 'cardio_audio_sleep'
 readme = 'README.md'
 requires-python = '>=3.10'
-version = '0.3.0.dev0'
+version = '1.0.0.dev0'
 
 [project.optional-dependencies]
 all = [
-  'resp_audio_sleep[build]',
-  'resp_audio_sleep[style]',
-  'resp_audio_sleep[test]',
+  'cardio_audio_sleep[build]',
+  'cardio_audio_sleep[style]',
+  'cardio_audio_sleep[test]',
 ]
 build = [
   'build',
   'twine',
 ]
 full = [
-  'resp_audio_sleep[all]',
+  'cardio_audio_sleep[all]',
 ]
 style = [
   'codespell[toml]>=2.2.4',
@@ -74,12 +73,12 @@ test = [
 ]
 
 [project.scripts]
-ras = 'resp_audio_sleep.commands.main:run'
-ras-sys_info = 'resp_audio_sleep.commands.sys_info:run'
+cas = 'cardio_audio_sleep.commands.main:run'
+cas-sys_info = 'cardio_audio_sleep.commands.sys_info:run'
 
 [project.urls]
-source = 'https://github.com/fcbg-platforms/eeg-resp-audio-sleep'
-tracker = 'https://github.com/fcbg-platforms/eeg-resp-audio-sleep/issues'
+source = 'https://github.com/fcbg-platforms/eeg-cardio-audio-sleep'
+tracker = 'https://github.com/fcbg-platforms/eeg-cardio-audio-sleep/issues'
 
 [tool.codespell]
 check-filenames = true
@@ -101,8 +100,8 @@ cover_pylib = false
 omit = [
   '**/__init__.py',
   '**/conftest.py',
-  '**/resp_audio_sleep/_version.py',
-  '**/resp_audio_sleep/utils/_fixes.py',
+  '**/cardio_audio_sleep/_version.py',
+  '**/cardio_audio_sleep/utils/_fixes.py',
   '**/tests/**',
 ]
 
@@ -134,14 +133,14 @@ select = ['A', 'B', 'D', 'E', 'F', 'G', 'I', 'LOG', 'NPY', 'PIE', 'PT', 'T20', '
 
 [tool.ruff.lint.pydocstyle]
 convention = 'numpy'
-ignore-decorators = ["resp_audio_sleep.utils._docs.copy_doc"]
+ignore-decorators = ["cardio_audio_sleep.utils._docs.copy_doc"]
 
 [tool.setuptools]
 include-package-data = false
 
 [tool.setuptools.packages.find]
-exclude = ['resp_audio_sleep*tests']
-include = ['resp_audio_sleep*']
+exclude = ['cardio_audio_sleep*tests']
+include = ['cardio_audio_sleep*']
 
 [tool.tomlsort]
 all = true

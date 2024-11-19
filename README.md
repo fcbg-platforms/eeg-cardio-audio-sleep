@@ -1,13 +1,13 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
-[![codecov](https://codecov.io/gh/fcbg-platforms/eeg-resp-audio-sleep/graph/badge.svg?token=nalw3f1s1X)](https://codecov.io/gh/fcbg-platforms/eeg-resp-audio-sleep)
-[![tests](https://github.com/fcbg-platforms/eeg-resp-audio-sleep/actions/workflows/pytest.yaml/badge.svg?branch=main)](https://github.com/fcbg-platforms/eeg-resp-audio-sleep/actions/workflows/pytest.yaml)
+[![codecov](https://codecov.io/gh/fcbg-platforms/eeg-cardio-audio-sleep/graph/badge.svg?token=0C2HBV5GSM)](https://codecov.io/gh/fcbg-platforms/eeg-cardio-audio-sleep)
+[![tests](https://github.com/fcbg-platforms/eeg-cardio-audio-sleep/actions/workflows/pytest.yaml/badge.svg?branch=main)](https://github.com/fcbg-platforms/eeg-cardio-audio-sleep/actions/workflows/pytest.yaml)
 
-# Resp-Audio-Sleep study
+# Cardio-Audio-Sleep study
 
 Project to study sound stimulus synchronous, asynchronous and isochronous with
-the respiration during sleep.
+the heartbeat during sleep.
 
 ## Install
 
@@ -51,19 +51,19 @@ Recommended OS: Ubuntu 22.04 LTS or 24.04 LTS, generic kernel.
   ```bash
   $ cd ~
   $ mkdir git
-  $ git clone https://github.com/fcbg-platforms/eeg-resp-audio-sleep
+  $ git clone https://github.com/fcbg-platforms/eeg-cardio-audio-sleep
   ```
 
 > [!Tip]
 > I recommend you install [VSCode](https://code.visualstudio.com/Download) and use it to
 > spawn the terminal with an activated environment. In VSCode, `File` -> `OpenFolder`
-> then open the `~/git/eeg-resp-audio-sleep` folder just cloned, `Ctrl+Shift+P` ->
+> then open the `~/git/eeg-cardio-audio-sleep` folder just cloned, `Ctrl+Shift+P` ->
 > `Create New Terminal`.
 
 - Create a virtual environment.
 
   ```bash
-  $ cd ~/git/eeg-resp-audio-sleep  # if not in VSCode
+  $ cd ~/git/eeg-cardio-audio-sleep  # if not in VSCode
   $ python3.10 -m venv .venv --copies
   ```
 
@@ -71,7 +71,7 @@ Recommended OS: Ubuntu 22.04 LTS or 24.04 LTS, generic kernel.
 > If you are using VSCode, a pop-up on the bottom right detects the new environment
 > and ask if it should be the default environment for this folder. Select `Yes`, you
 > will not always have this environment activated in VSCode when you open the folder
-> `~/git/eeg-resp-audio-sleep`.
+> `~/git/eeg-cardio-audio-sleep`.
 
 ### PsychoPy preparation
 
@@ -114,7 +114,7 @@ From within the created virtual environment:
 ```bash
 $ pip install uv
 $ pip install stimuli --ignore-requires-python
-$ cd ~/git/eeg-resp-audio-sleep  # not in this directory already
+$ cd ~/git/eeg-cardio-audio-sleep  # not in this directory already
 $ uv pip install -e .[all]
 ```
 
@@ -145,8 +145,8 @@ The paradigm is controlled by command-line from the activated environment.
 
 > [!Tip]
 > If you use VSCode, the environment will always be activated provided that your
-> workspace is set to `eeg-resp-audio-sleep`, i.e. thjat you opened the folder
-> `~/git/eeg-resp-audio-sleep`.
+> workspace is set to `eeg-cardio-audio-sleep`, i.e. thjat you opened the folder
+> `~/git/eeg-cardio-audio-sleep`.
 
 In the terminal, enter:
 
@@ -196,7 +196,7 @@ command.
 ### Configuration
 
 The configuration of the triggers, sound, sequence, ... is done in the file
-`~/git/eeg-resp-audio-sleep/resp_audio_sleep/tasks/_config.py`.
+`~/git/eeg-cardio-audio-sleep/cardio_audio_sleep/tasks/_config.py`.
 
 Important variables:
 - The variable `TARGET_DELAY` controls how long after a peak the sound should be
@@ -209,7 +209,7 @@ Important variables:
   `1000` and `2000`.
 
 The configuration of the detector settings is done in the file
-`~/git/eeg-resp-audio-sleep/resp_audio_sleep/tasks/_config_detector.py`.
+`~/git/eeg-cardio-audio-sleep/cardio_audio_sleep/tasks/_config_detector.py`.
 
 ### Note about the detector testing
 
@@ -223,26 +223,8 @@ those commands with the `--no-viewer` flag which disables visualization. The tim
 the console should now be reasonable.
 
 ```bash
-$ ras test-detector-respiration --stream STREAM --ch-name-resp AUX7 --n-peaks 20 --no-viewer
+$ cas test-detector-respiration --stream STREAM --ch-name-resp AUX7 --n-peaks 20 --no-viewer
 ```
-
-## Timing measurements
-
-In `script/conversion-fif.py`, you have a conversion script from XDF to FIFF.
-In `script/timings.py`, you have a parsing and timing measurement script which uses the
-FIFF files. The script is organized as a notebook file with `# %%` defined cells. In
-VSCode, you can run an entire cell at once.
-
-> [!IMPORTANT]
-> Make sure to modify the path at which it will search for the files. By default, it
-> takes the files in `data/` which have been measured at Campus Biotech.
-
-Pay attention to the channels for the synchronous condition and for the audio
-measurements (jack to touchproof). For now, the channels are set as:
-
-- AUX7: Cardiac
-- AUX8: Respiration
-- AUX9: Audio
 
 > [!IMPORTANT]
 > Make sure to disable deviant sounds with `N_DEVIANT=0` and to use a target sound which

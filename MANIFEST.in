@@ -1,1 +1,1 @@
-exclude resp_audio_sleep/conftest.py
+exclude cardio_audio_sleep/conftest.py

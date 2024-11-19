@@ -6,6 +6,7 @@ import click
 import numpy as np
 
 from .. import set_log_level
+from ..detector import _BUFSIZE
 from ..tasks import asynchronous as asynchronous_task
 from ..tasks import baseline as baseline_task
 from ..tasks import isochronous as isochronous_task
@@ -67,7 +68,7 @@ def paradigm(
         start = time.time()
         result = mapping_func[blocks[-1]](*mapping_args[blocks[-1]])
         end = time.time()
-        logger.info("Block '%s' took %.3f seconds.", blocks[-1], end - start)
+        logger.info("Block '%s' took %.3f seconds.", blocks[-1], end - start - _BUFSIZE)
         # prepare arguments for future blocks if we just ran a synchronous block
         if result is not None:
             # sanity-check
@@ -75,7 +76,7 @@ def paradigm(
             assert isinstance(result, np.ndarray)
             assert result.ndim == 1
             assert result.size != 0
-            mapping_args["baseline"][0] = end - start
+            mapping_args["baseline"][0] = end - start - _BUFSIZE
             mapping_args["asynchronous"][0] = result
             delay = np.median(np.diff(result))
             mapping_args["isochronous"][0] = delay

@@ -7,10 +7,9 @@ from .. import set_log_level
 from ..tasks import asynchronous as asynchronous_task
 from ..tasks import baseline as baseline_task
 from ..tasks import isochronous as isochronous_task
-from ..tasks import synchronous_cardiac as synchronous_cardiac_task
-from ..tasks import synchronous_respiration as synchronous_respiration_task
+from ..tasks import synchronous as synchronous_task
 from ..tasks._config import BASELINE_DURATION, N_DEVIANT, N_TARGET
-from ._utils import ch_name_ecg, ch_name_resp, fq_deviant, fq_target, stream, verbose
+from ._utils import ch_name_ecg, fq_deviant, fq_target, stream, verbose
 
 
 @click.command()
@@ -73,20 +72,6 @@ def asynchronous(
 
 @click.command()
 @stream
-@ch_name_resp
-@fq_target
-@fq_deviant
-@verbose
-def synchronous_respiration(
-    stream: str, ch_name_resp: str, target: float, deviant: float, verbose: str
-) -> None:
-    """Run a synchronous respiration task."""
-    set_log_level(verbose)
-    synchronous_respiration_task(stream, ch_name_resp, target=target, deviant=deviant)
-
-
-@click.command()
-@stream
 @ch_name_ecg
 @click.option(
     "--delays",
@@ -98,7 +83,7 @@ def synchronous_respiration(
 @fq_target
 @fq_deviant
 @verbose
-def synchronous_cardiac(
+def synchronous(
     stream: str,
     ch_name_ecg: str,
     delays: tuple[float, float],
@@ -116,4 +101,4 @@ def synchronous_cardiac(
     rng = np.random.default_rng()
     delays = rng.uniform(low=delays[0], high=delays[1], size=N_TARGET + N_DEVIANT - 1)
     peaks = np.hstack(([0], np.cumsum(delays)))
-    synchronous_cardiac_task(stream, ch_name_ecg, peaks, target=target, deviant=deviant)
+    synchronous_task(stream, ch_name_ecg, peaks, target=target, deviant=deviant)

@@ -1,6 +1,6 @@
 import pytest
 
-from resp_audio_sleep.utils._imports import import_optional_dependency
+from cardio_audio_sleep.utils._imports import import_optional_dependency
 
 
 def test_import_optional_dependency():

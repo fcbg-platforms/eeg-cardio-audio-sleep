@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from resp_audio_sleep.utils._docs import copy_doc, docdict, fill_doc
-from resp_audio_sleep.utils.logs import verbose
+from cardio_audio_sleep.utils._docs import copy_doc, docdict, fill_doc
+from cardio_audio_sleep.utils.logs import verbose
 
 
 def test_fill_doc_function():

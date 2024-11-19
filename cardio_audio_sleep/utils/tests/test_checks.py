@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from resp_audio_sleep.utils._checks import (
+from cardio_audio_sleep.utils._checks import (
     check_type,
     check_value,
     check_verbose,

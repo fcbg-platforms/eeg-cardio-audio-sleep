@@ -1,7 +1,7 @@
 import pytest
 from click.testing import CliRunner
 
-from resp_audio_sleep.commands.sys_info import run
+from cardio_audio_sleep.commands.sys_info import run
 
 
 @pytest.mark.parametrize("developer", [False, True])

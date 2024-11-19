@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from resp_audio_sleep.tasks._config import N_DEVIANT, N_TARGET
-from resp_audio_sleep.tasks._utils import (
+from cardio_audio_sleep.tasks._config import N_DEVIANT, N_TARGET
+from cardio_audio_sleep.tasks._utils import (
     _check_triggers,
     _ensure_valid_frequencies,
     generate_sequence,

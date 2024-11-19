@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from resp_audio_sleep.utils.logs import (
+from cardio_audio_sleep.utils.logs import (
     _use_log_level,
     add_file_handler,
     logger,

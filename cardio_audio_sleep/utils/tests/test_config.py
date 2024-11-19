@@ -1,6 +1,6 @@
 from io import StringIO
 
-from resp_audio_sleep.utils.config import sys_info
+from cardio_audio_sleep.utils.config import sys_info
 
 
 def test_sys_info():

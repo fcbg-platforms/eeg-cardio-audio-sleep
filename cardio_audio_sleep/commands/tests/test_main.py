@@ -1,6 +1,6 @@
 from click.testing import CliRunner
 
-from resp_audio_sleep.commands.main import run
+from cardio_audio_sleep.commands.main import run
 
 
 def test_main():

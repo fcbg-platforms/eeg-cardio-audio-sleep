@@ -15,12 +15,11 @@ if TYPE_CHECKING:
 
 @fill_doc
 class Viewer:
-    """Viewer of a real-time respiration and/or cardiac signal with peak detection.
+    """Viewer of a real-time cardiac signal with peak detection.
 
     Parameters
     ----------
     %(ecg_ch_name)s
-    %(resp_ch_name)s
     ecg_height : float | None
         The height of the ECG peaks as a percentage of the data range, between 0 and 1.
     """
@@ -28,26 +27,18 @@ class Viewer:
     def __init__(
         self,
         ecg_ch_name: str | None,
-        resp_ch_name: str | None,
         ecg_height: float | None,
     ) -> None:
         if plt.get_backend() != "QtAgg":
             plt.switch_backend("QtAgg")
         if not plt.isinteractive():
             plt.ion()  # enable interactive mode
-        picks = [elt for elt in (ecg_ch_name, resp_ch_name) if elt is not None]
+        picks = [elt for elt in (ecg_ch_name,) if elt is not None]
         self._fig, axes = plt.subplots(len(picks), 1, figsize=(8, 8 * len(picks)))
-        if ecg_ch_name is not None and resp_ch_name is not None:
-            self._axes = {"ecg": axes[0], "resp": axes[1]}
-            axes[0].set_title(f"ECG: {ecg_ch_name}")
-            axes[1].set_title(f"Respiration: {resp_ch_name}")
-        elif ecg_ch_name is not None:
+        if ecg_ch_name is not None:
             self._axes = {"ecg": axes}
             axes.set_title(f"ECG: {ecg_ch_name}")
-        elif resp_ch_name is not None:
-            self._axes = {"resp": axes}
-            axes.set_title(f"Respiration: {resp_ch_name}")
-        self._peaks = {"ecg": [], "resp": []}
+        self._peaks = {"ecg": []}
         self._ecg_height = ecg_height
         plt.show()
 

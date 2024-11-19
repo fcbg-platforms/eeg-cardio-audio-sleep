@@ -181,7 +181,7 @@ $ cas COMMAND ARG1 VALUE1 ARG2 VALUE2
 For instance:
 
 ```bash
-$  cas test-sequence --verbose debug
+$  cas test-sequence --verbose DEBUG
 ```
 
 > [!TIP]

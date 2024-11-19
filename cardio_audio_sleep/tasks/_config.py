@@ -2,33 +2,28 @@ from __future__ import annotations
 
 from ._config_detector import ECG_DISTANCE, ECG_HEIGHT, ECG_PROMINENCE
 
-# triggers are defined in the format 'target|deviant/frequency' with frequency as float
-TRIGGERS: dict[str, int] = {
-    "target/1000.0": 1,
-    "target/2000.0": 2,
-    "target/440.0": 3,
-    "deviant/1000.0": 11,
-    "deviant/2000.0": 12,
-}
-TRIGGER_TYPE: str = "arduino"  # one of 'arduino', 'serial', 'lpt', 'mock'
+# TRIGGERS must contain 2 keys, 'sound' and 'omission'.
 # For TRIGGER_ARGS:
 # - 'serial' -> COM Port, e.g. '/dev/ttyUSB0'
 # - 'lpt' -> port address, e.g. '/dev/parport0'
 # - 'arduino' -> None
 # - 'mock' -> None
+TRIGGERS: dict[str, int] = {"sound": 1, "omission": 2}
+TRIGGER_TYPE: str = "arduino"  # one of 'arduino', 'serial', 'lpt', 'mock'
 TRIGGER_ARGS: str | int | None = None
 TRIGGER_TASKS: dict[str, tuple[int, int]] = {
-    "baseline": (200, 201),
-    "synchronous": (220, 221),
-    "isochronous": (230, 231),
-    "asynchronous": (240, 241),
+    "baseline": (4, 5),
+    "synchronous": (16, 17),
+    "isochronous": (32, 33),
+    "asynchronous": (64, 65),
 }
 # sound settings
+SOUND_FREQUENCY: float = 1000.0  # pure tone frequency in Hz
+SOUND_DURATION: float = 0.2
+N_SOUND: int = 50
+N_OMISSION: int = 0
 BACKEND: str = "ptb"  # "ptb" or "stimuli" to select the audio playback backend
 DEVICE: str | int | None = None  # None to use the default device
-N_TARGET: int = 50
-N_DEVIANT: int = 0
-SOUND_DURATION: float = 0.2
 BLOCKSIZE: int = 4  # default 128, controls part of the latency <-> stability trade-off
 # sequence and task settings
 BASELINE_DURATION: float = 60  # default setting when nothing is available
@@ -55,9 +50,10 @@ class ConfigRepr:  # noqa: D101
             repr_str += f"    {key}: {value}\n"
         # sounds
         repr_str += "Sounds:\n"
-        repr_str += f"  number of targets: {N_TARGET}\n"
-        repr_str += f"  number of deviants: {N_DEVIANT}\n"
+        repr_str += f"  frequency: {SOUND_FREQUENCY} Hz\n"
         repr_str += f"  duration: {SOUND_DURATION} s\n"
+        repr_str += f"  number of sound: {N_SOUND}\n"
+        repr_str += f"  number of omission: {N_OMISSION}\n"
         repr_str += f"  backend: {BACKEND}\n"
         repr_str += f"  device: {DEVICE}\n"
         # sequence settings

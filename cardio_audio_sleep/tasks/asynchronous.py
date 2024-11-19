@@ -17,7 +17,7 @@ from ._config import (
     TRIGGER_TASKS,
     TRIGGERS,
 )
-from ._utils import create_sounds, create_trigger, generate_sequence
+from ._utils import create_sound, create_trigger, generate_sequence
 
 if BACKEND == "ptb":
     import psychtoolbox as ptb
@@ -27,36 +27,22 @@ if TYPE_CHECKING:
 
 
 @fill_doc
-def asynchronous(
-    peaks: NDArray[np.float64],
-    *,
-    target: float,
-    deviant: float,
-) -> None:
+def asynchronous(peaks: NDArray[np.float64]) -> None:
     """Asynchronous blocks where a synchronous sequence is repeated.
 
     Parameters
     ----------
     %(peaks)s
-    %(fq_target)s
-    %(fq_deviant)s
     """  # noqa: D401
     check_type(peaks, (np.ndarray,), "peaks")
     if peaks.ndim != 1:
         raise ValueError("The peaks array must be one-dimensional.")
     logger.info("Starting asynchronous block.")
     # create sound stimuli, trigger, sequence and clock
-    sounds = create_sounds()
+    sound = create_sound()
     trigger = create_trigger()
-    sequence = generate_sequence(target, deviant)
+    sequence = generate_sequence()
     clock = Clock()
-    # the sequence, sound and trigger generation validates the trigger dictionary, thus
-    # we can safely map the target and deviant frequencies to their corresponding
-    # trigger values and sounds.
-    stimulus = {
-        TRIGGERS[f"target/{target}"]: sounds[str(target)],
-        TRIGGERS[f"deviant/{deviant}"]: sounds[str(deviant)],
-    }
     # generate delays between peaks
     rng = np.random.default_rng()
     delays = np.diff(peaks)
@@ -69,9 +55,17 @@ def asynchronous(
     trigger.signal(TRIGGER_TASKS["asynchronous"][0])
     while counter <= sequence.size - 1:
         start = clock.get_time()
-        stimulus.get(sequence[counter]).play(
-            when=ptb.GetSecs() + TARGET_DELAY if BACKEND == "ptb" else TARGET_DELAY
-        )
+        if sequence[counter] == TRIGGERS["sound"]:
+            sound.play(
+                when=ptb.GetSecs() + TARGET_DELAY if BACKEND == "ptb" else TARGET_DELAY
+            )
+            logger.debug(
+                "[sound/trigger] %i in %.3f ms.", sequence[counter], TARGET_DELAY
+            )
+        else:
+            logger.debug(
+                "[omission/trigger] %i in %.3f ms.", sequence[counter], TARGET_DELAY
+            )
         logger.debug("Triggering %i in %.2f ms.", sequence[counter], TARGET_DELAY)
         sleep(TARGET_DELAY)
         trigger.signal(sequence[counter])

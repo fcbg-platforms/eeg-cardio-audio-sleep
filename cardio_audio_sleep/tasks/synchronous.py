@@ -20,7 +20,7 @@ from ._config import (
     TRIGGER_TASKS,
     TRIGGERS,
 )
-from ._utils import create_sounds, create_trigger, generate_sequence
+from ._utils import create_sound, create_trigger, generate_sequence
 
 if BACKEND == "ptb":
     import psychtoolbox as ptb
@@ -33,21 +33,13 @@ if TYPE_CHECKING:
 
 
 @fill_doc
-def synchronous(
-    stream_name: str,
-    ecg_ch_name: str,
-    *,
-    target: float,
-    deviant: float,
-) -> NDArray[np.float64]:
+def synchronous(stream_name: str, ecg_ch_name: str) -> NDArray[np.float64]:
     """Synchronous auditory stimulus with the respiration peak signal.
 
     Parameters
     ----------
     %(stream_name)s
     %(ecg_ch_name)s
-    %(fq_target)s
-    %(fq_deviant)s
 
     Returns
     -------
@@ -56,16 +48,9 @@ def synchronous(
     """  # noqa: D401
     logger.info("Starting synchronous block.")
     # create sound stimuli, trigger, sequence
-    sounds = create_sounds()
+    sound = create_sound()
     trigger = create_trigger()
-    sequence = generate_sequence(target, deviant)
-    # the sequence, sound and trigger generation validates the trigger dictionary, thus
-    # we can safely map the target and deviant frequencies to their corresponding
-    # trigger values and sounds.
-    stimulus = {
-        TRIGGERS[f"target/{target}"]: sounds[str(target)],
-        TRIGGERS[f"deviant/{deviant}"]: sounds[str(deviant)],
-    }
+    sequence = generate_sequence()
     # create detector
     detector = Detector(
         stream_name=stream_name,
@@ -85,7 +70,7 @@ def synchronous(
         pos = detector.new_peak()
         if pos is None:
             continue
-        success = _deliver_stimuli(pos, sequence[counter], stimulus, trigger)
+        success = _deliver_stimuli(pos, sequence[counter], sound, trigger)
         if not success:
             continue
         counter += 1
@@ -101,7 +86,7 @@ def synchronous(
 
 
 def _deliver_stimuli(
-    pos: float, elt: int, stimulus: dict[int, SoundPTB | Tone], trigger: BaseTrigger
+    pos: float, elt: int, sound: SoundPTB | Tone, trigger: BaseTrigger
 ) -> bool:
     """Deliver precisely a sound and its trigger."""
     wait = pos + TARGET_DELAY - local_clock()
@@ -117,8 +102,11 @@ def _deliver_stimuli(
                 wait * 1000,
             )
         return False
-    stimulus.get(elt).play(when=ptb.GetSecs() + wait if BACKEND == "ptb" else wait)
-    logger.debug("Triggering %i in %.3f ms.", elt, wait * 1000)
+    if elt == TRIGGERS["sound"]:
+        sound.play(when=ptb.GetSecs() + wait if BACKEND == "ptb" else wait)
+        logger.debug("[sound/trigger] %i in %.3f ms.", elt, wait * 1000)
+    else:
+        logger.debug("[omission/trigger] %i in %.3f ms.", elt, wait * 1000)
     sleep(wait)
     trigger.signal(elt)
     return True

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from itertools import groupby
 from typing import TYPE_CHECKING
 
@@ -15,9 +14,10 @@ from ._config import (
     BLOCKSIZE,
     DEVICE,
     EDGE_PERC,
-    N_DEVIANT,
-    N_TARGET,
+    N_OMISSION,
+    N_SOUND,
     SOUND_DURATION,
+    SOUND_FREQUENCY,
     TRIGGER_ARGS,
     TRIGGER_TYPE,
     TRIGGERS,
@@ -31,79 +31,19 @@ if TYPE_CHECKING:
 
 
 @fill_doc
-def _check_triggers(*, triggers: dict[str, int] = TRIGGERS) -> None:
-    """Check that the trigger dictionary is correctly formatted.
-
-    Parameters
-    ----------
-    %(triggers_dict)s
-    """
-    pattern = re.compile(r"^\b(target|deviant)\b\/\d+(\.\d+)+$")
-    for elt in triggers:
-        check_type(elt, (str,), "trigger-key")
-        if not re.fullmatch(pattern, elt):
-            raise ValueError(
-                "The trigger names must be in the format 'name/frequency', "
-                "with name set to 'target' or 'deviant' and frequency as float, but "
-                f"got '{elt}' with is invalid."
-            )
-
-
-@fill_doc
-def _ensure_valid_frequencies(
-    frequencies: dict[str, float | int], *, triggers: dict[str, int] = TRIGGERS
-) -> dict[str, float]:
-    """Check that the frequencies are valid.
-
-    Parameters
-    ----------
-    frequencies : dict
-        Dictionary of frequency name and value.
-    %(triggers_dict)s
-
-    Returns
-    -------
-    frequencies : dict
-        Dictionary of frequency name and value, cast to float.
-    """
-    check_type(frequencies, (dict,), "frequencies")
-    _check_triggers()
-    for name, value in frequencies.items():
-        check_type(value, ("numeric",), name)
-        if value <= 0:
-            raise ValueError(
-                f"The {name} frequency must be strictly positive. Provided {value} is "
-                "invalid."
-            )
-        value = float(value)  # ensure float
-        if f"{name}/{value}" not in triggers:
-            raise ValueError(
-                f"The {name} frequency '{value}' is not in the trigger dictionary."
-            )
-        frequencies[name] = value
-    return frequencies
-
-
-@fill_doc
-def create_sounds(
-    *, triggers: dict[str, int] = TRIGGERS, backend: str = "ptb"
-) -> dict[str, SoundPTB | Tone]:
+def create_sound(*, backend: str = "ptb") -> SoundPTB | Tone:
     """Create auditory simuli.
 
     Parameters
     ----------
-    %(triggers_dict)s
     backend : ``"ptb"`` | ``"stimuli"``
         The backend to use for the sound generation.
 
     Returns
     -------
-    sounds : dict
-        The sounds to use in the task, with the keys as sound frequency (str) and the
-        values as the corresponding SoundPTB or Tone object.
+    sound : SoundPTB | Tone
+        The sound to use in the task.
     """
-    _check_triggers(triggers=triggers)
-    frequencies = set(elt.split("/")[1] for elt in triggers)
     check_value(backend, ("ptb", "stimuli"), "backend")
     if backend == "ptb":
         if DEVICE is not None:
@@ -113,35 +53,26 @@ def create_sounds(
 
         from psychopy.sound.backend_ptb import SoundPTB
 
-        sounds = {
-            frequency: SoundPTB(
-                value=float(frequency),
-                secs=SOUND_DURATION,
-                blockSize=BLOCKSIZE,
-                stereo=True,
-            )
-            for frequency in frequencies
-        }
+        sound = SoundPTB(
+            value=SOUND_FREQUENCY,
+            secs=SOUND_DURATION,
+            blockSize=BLOCKSIZE,
+            stereo=True,
+        )
     elif backend == "stimuli":
         from scipy.signal.windows import hann
         from stimuli.audio import Tone
 
-        sounds = {
-            frequency: Tone(
-                frequency=float(frequency),
-                volume=100,
-                duration=SOUND_DURATION,
-                block_size=BLOCKSIZE,
-                device=DEVICE,
-            )
-            for frequency in frequencies
-        }
-        n_samples = sounds[frequencies[0]].times.size
-        assert all(sound.times.size == n_samples for sound in sounds)  # sanity-check
-        window = hann(n_samples)
-        for sound in sounds.values():
-            sound.window = window
-    return sounds
+        sound = Tone(
+            frequency=SOUND_FREQUENCY,
+            volume=100,
+            duration=SOUND_DURATION,
+            block_size=BLOCKSIZE,
+            device=DEVICE,
+        )
+        window = hann(sound.times.size)
+        sound.window = window
+    return sound
 
 
 def create_trigger() -> BaseTrigger:
@@ -178,20 +109,16 @@ def create_trigger() -> BaseTrigger:
 
 @fill_doc
 def generate_sequence(
-    target: float,
-    deviant: float,
     *,
     edge_perc: int | float = EDGE_PERC,
     max_iter: int = 500,
     on_diverge: str = "warn",
     triggers: dict[str, int] = TRIGGERS,
 ) -> NDArray[np.int32]:
-    """Generate a random sequence of target and deviant stimuli.
+    """Generate a random sequence of target and omission.
 
     Parameters
     ----------
-    %(fq_target)s
-    %(fq_deviant)s
     edge_perc : int | float
         Percentage of the total number of elements that have to be targets at
         the beginning and at the end of the sequence.
@@ -206,13 +133,10 @@ def generate_sequence(
     Returns
     -------
     sequence : array of int
-        The sequence of stimuli, with the target and deviant sounds randomly ordered.
+        The sequence of stimuli, with the target and omission sounds ordered.
     """
-    n_target = ensure_int(N_TARGET, "N_TARGET")
-    n_deviant = ensure_int(N_DEVIANT, "N_DEVIANT")
-    frequencies = _ensure_valid_frequencies(
-        {"target": target, "deviant": deviant}, triggers=triggers
-    )
+    n_sound = ensure_int(N_SOUND, "N_SOUND")
+    n_omission = ensure_int(N_OMISSION, "N_OMISSION")
     check_type(edge_perc, ("numeric",), "edge_perc")
     if not (0 <= edge_perc <= 100):
         raise ValueError(
@@ -228,27 +152,29 @@ def generate_sequence(
     check_type(on_diverge, (str,), "on_diverge")
     check_value(on_diverge, ("warn", "raise"), "on_diverge")
     # retrieve trigger values
-    trigger_target = triggers[f"target/{frequencies['target']}"]
-    trigger_deviant = triggers[f"deviant/{frequencies['deviant']}"]
     logger.debug(
-        "Generating a sequence of %i target and %i deviant stimuli, using %s for "
-        "target and %s for deviant.",
-        n_target,
-        n_deviant,
-        trigger_target,
-        trigger_deviant,
+        "Generating a sequence of %i sound and %i omission, using %s for sound and %s "
+        "for omission.",
+        n_sound,
+        n_omission,
+        TRIGGERS["sound"],
+        TRIGGERS["omission"],
     )
     # pseudo-randomize the sequence
-    n_edge = np.ceil(edge_perc * (n_target + n_deviant) / 100).astype(int)
-    start = [trigger_target] * n_edge
-    middle = [trigger_target] * (n_target - 2 * n_edge) + [trigger_deviant] * n_deviant
-    end = [trigger_target] * n_edge
+    n_edge = np.ceil(edge_perc * (n_sound + n_omission) / 100).astype(int)
+    start = [TRIGGERS["sound"]] * n_edge
+    middle = [TRIGGERS["sound"]] * (n_sound - 2 * n_edge) + [
+        TRIGGERS["omission"]
+    ] * n_omission
+    end = [TRIGGERS["sound"]] * n_edge
     rng = np.random.default_rng()
     rng.shuffle(middle)
     iter_ = 0
     while True:
         groups = [(n, list(group)) for n, group in groupby(middle)]
-        if all(len(group[1]) == 1 for group in groups if group[0] == trigger_deviant):
+        if all(
+            len(group[1]) == 1 for group in groups if group[0] == TRIGGERS["omission"]
+        ):
             converged = True
             break
         if max_iter < iter_:
@@ -260,10 +186,12 @@ def generate_sequence(
             else:
                 raise RuntimeError(msg)
         for i, (n, group) in enumerate(groups):
-            if n == trigger_target or len(group) == 1:
+            if n == TRIGGERS["sound"] or len(group) == 1:
                 continue
             # find the longest group of TRIGGERS['sound']
-            idx = np.argmax([len(g) if n == trigger_target else 0 for n, g in groups])
+            idx = np.argmax(
+                [len(g) if n == TRIGGERS["sound"] else 0 for n, g in groups]
+            )
             pos_sound = sum(len(g) for k, (_, g) in enumerate(groups) if k < idx)
             pos_sound = pos_sound + len(groups[idx][1]) // 2  # center
             # find position of current group
@@ -278,11 +206,12 @@ def generate_sequence(
     sequence = start + middle + end
     # sanity-checks
     if converged:
-        assert all(len(group) == 1 for n, group in groups if n == trigger_deviant)
+        assert all(len(group) == 1 for n, group in groups if n == TRIGGERS["omission"])
         assert not any(
-            middle[i - 1] == middle[i] == trigger_deviant for i in range(1, len(middle))
+            middle[i - 1] == middle[i] == TRIGGERS["omission"]
+            for i in range(1, len(middle))
         )
-    assert len(sequence) == n_target + n_deviant
-    assert trigger_deviant not in start
-    assert trigger_deviant not in end
+    assert len(sequence) == n_sound + n_omission
+    assert TRIGGERS["omission"] not in start
+    assert TRIGGERS["omission"] not in end
     return np.array(sequence, dtype=np.int32)

@@ -27,7 +27,7 @@ def isochronous(delay: float) -> None:
         raise ValueError("The delay must be strictly positive.")
     logger.info("Starting isochronous block.")
     # create sound stimuli, trigger, sequence and clock
-    sound = create_sound()
+    sound = create_sound(backend=BACKEND)
     trigger = create_trigger()
     sequence = generate_sequence()
     clock = Clock()

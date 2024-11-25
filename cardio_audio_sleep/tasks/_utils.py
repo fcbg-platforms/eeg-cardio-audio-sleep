@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 
 
 @fill_doc
-def create_sound(*, backend: str = "ptb") -> SoundPTB | Tone:
+def create_sound(*, backend: str) -> SoundPTB | Tone:
     """Create auditory simuli.
 
     Parameters

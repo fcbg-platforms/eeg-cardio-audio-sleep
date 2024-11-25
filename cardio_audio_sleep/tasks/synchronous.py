@@ -47,7 +47,7 @@ def synchronous(stream_name: str, ecg_ch_name: str) -> NDArray[np.float64]:
     """  # noqa: D401
     logger.info("Starting synchronous block.")
     # create sound stimuli, trigger, sequence
-    sound = create_sound()
+    sound = create_sound(backend=BACKEND)
     trigger = create_trigger()
     sequence = generate_sequence()
     # create detector

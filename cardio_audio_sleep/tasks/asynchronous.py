@@ -33,7 +33,7 @@ def asynchronous(peaks: NDArray[np.float64]) -> None:
         raise ValueError("The peaks array must be one-dimensional.")
     logger.info("Starting asynchronous block.")
     # create sound stimuli, trigger, sequence and clock
-    sound = create_sound()
+    sound = create_sound(backend=BACKEND)
     trigger = create_trigger()
     sequence = generate_sequence()
     clock = Clock()

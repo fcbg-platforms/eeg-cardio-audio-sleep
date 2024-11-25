@@ -134,6 +134,15 @@ $ uv pip install -e .[all]
 > use this flag in-case you need to update the package from source, im which case a
 > simple `git pull` will suffice.
 
+> [!IMPORTANT]
+> Note that `mne-lsl` version 1.7 and above include a pre-compiled version of `liblsl`.
+> On Linux, it is compatible with the `manylinux2` and `manylinux2014` standards since
+> it was compiled on an 'old' version. If you can compile the library yourself, you
+> might see performance improvements due to the use of newer compilers and standard
+> libraries. To install `mne-lsl` from source you can use the `pip` flag `--no-binary`
+> or you can set the environment variables `MNE_LSL_LIB` with a path to your manually
+> compiled or fetched `liblsl`.
+
 Install also the additional `ipython` and `ipykernel` packages if you are in VSCode, as
 they are useful especially for interactive windows.
 

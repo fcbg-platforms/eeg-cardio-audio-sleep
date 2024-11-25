@@ -44,7 +44,7 @@ maintainers = [
 name = 'cardio_audio_sleep'
 readme = 'README.md'
 requires-python = '>=3.10'
-version = '1.0.0'
+version = '1.1.0.dev0'
 
 [project.optional-dependencies]
 all = [

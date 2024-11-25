@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import time
-
 import click
 import numpy as np
+from psychopy import logging
+from psychopy.hardware.keyboard import Keyboard
+from stimuli.time import Clock, sleep
 
 from .. import set_log_level
 from ..detector import _BUFSIZE
@@ -13,7 +14,7 @@ from ..tasks import isochronous as isochronous_task
 from ..tasks import synchronous as synchronous_task
 from ..tasks._config import BASELINE_DURATION, INTER_BLOCK_DELAY, ConfigRepr
 from ..utils.blocks import _BLOCKS, generate_blocks_sequence
-from ..utils.logs import logger
+from ..utils.logs import logger, warn
 from ._utils import ch_name_ecg, stream, verbose
 from .tasks import asynchronous, baseline, isochronous, synchronous
 from .testing import test_detector, test_sequence, test_triggers
@@ -59,16 +60,19 @@ def paradigm(
         "synchronous": [stream, ch_name_ecg],
     }
     assert len(set(mapping_args) - set(_BLOCKS)) == 0  # sanity-check
-
+    # create a keyboard object to monitor for breaks
+    keyboard = Keyboard()
+    with _disable_psychopy_logs():
+        keyboard.stop()
     # execute paradigm loop
     blocks = list()
     while len(blocks) < n_blocks:
         blocks.append(generate_blocks_sequence(blocks))
         logger.info("Running block %i / %i: %s.", len(blocks), n_blocks, blocks[-1])
-        start = time.time()
+        clock = Clock()
         result = mapping_func[blocks[-1]](*mapping_args[blocks[-1]])
-        end = time.time()
-        logger.info("Block '%s' took %.3f seconds.", blocks[-1], end - start - _BUFSIZE)
+        duration = clock.get_time()
+        logger.info("Block '%s' took %.3f seconds.", blocks[-1], duration - _BUFSIZE)
         # prepare arguments for future blocks if we just ran a synchronous block
         if result is not None:
             # sanity-check
@@ -76,14 +80,67 @@ def paradigm(
             assert isinstance(result, np.ndarray)
             assert result.ndim == 1
             assert result.size != 0
-            mapping_args["baseline"][0] = end - start - _BUFSIZE
+            mapping_args["baseline"][0] = duration - _BUFSIZE
             mapping_args["asynchronous"][0] = result
             delay = np.median(np.diff(result))
             mapping_args["isochronous"][0] = delay
             logger.info("Median delay between R-peaks set to %.3f seconds.", delay)
-        # prepare keyword argument for future blocks if we just ran 4 blocks
-        time.sleep(INTER_BLOCK_DELAY)
+        # wait in the inter block delay or a space key press
+        _wait_inter_block(INTER_BLOCK_DELAY, keyboard)
     logger.info("Paradigm complete.")
+
+
+def _wait_inter_block(delay: float, keyboard: Keyboard) -> None:
+    """Wait the inter-block delay.
+
+    Parameters
+    ----------
+    delay : float
+        The delay to wait in seconds.
+    keyboard : Keyboard
+        The PsychoPy keyboard object used to monitor the space key press.
+    """
+    assert 0 < delay  # sanity-check
+    clock = Clock()
+    keyboard.start()
+    logger.info("Inter-block for %.1f seconds (press space to pause).", delay)
+    while True:
+        keys = keyboard.getKeys(keyList=["space"], waitRelease=True)
+        if len(keys) > 1:
+            warn("Multiple space key pressed simultaneously. Skipping.")
+            continue
+        elif len(keys) == 1:
+            logger.info("Space key pressed, pausing execution.")
+            start_hold = clock.get_time_ns()
+            while True:
+                keys = keyboard.getKeys(keyList=["space"], waitRelease=True)
+                if len(keys) > 1:
+                    warn("Multiple space key pressed simultaneously. Skipping.")
+                    continue
+                elif len(keys) == 1:
+                    break
+                sleep(0.05)
+            stop_hold = clock.get_time_ns()
+            delay += (stop_hold - start_hold) / 1e9
+            logger.info(
+                "Space key pressed, resuming execution. Inter-block delay "
+                "remaining duration: %.1f seconds.",
+                delay - clock.get_time(),
+            )
+        if clock.get_time() > delay:
+            break
+        sleep(0.05)
+    with _disable_psychopy_logs():
+        keyboard.stop()
+    logger.info("Inter-block complete.")
+
+
+class _disable_psychopy_logs:
+    def __enter__(self) -> None:
+        logging.console.setLevel(logging.CRITICAL)
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        logging.console.setLevel(logging.WARNING)
 
 
 run.add_command(baseline)

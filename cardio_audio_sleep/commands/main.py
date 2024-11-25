@@ -1,181 +1,96 @@
-import argparse
-import os
-import sys
+from __future__ import annotations
+
 import time
-from datetime import datetime
-from pathlib import Path
 
-from bsl.triggers import ParallelPortTrigger
-from bsl.utils.lsl import list_lsl_streams
-from PyQt5.QtWidgets import QApplication
+import click
+import numpy as np
 
-from .. import logger, peak_detection_parameters_tuning, set_log_level
-from ..config import load_triggers
-from ..config.constants import AMPLIFIER
-from ..triggers import SerialTrigger
-from ..utils import search_amplifier
-from ..utils._imports import import_optional_dependency
-from .cli import input_ecg_ch_name
-from .gui import GUI
-
-
-def cas():
-    """Entrypoint for cas <command> usage."""
-    parser = argparse.ArgumentParser(prog="CAS", description="Cardio-Audio-Sleep GUI")
-    parser.add_argument("--ecg", help="name of the ECG channel", type=str, metavar=str)
-    parser.add_argument(
-        "--eye_tracker", help="enable eye-tracking", action="store_true"
-    )
-    parser.add_argument(
-        "--instrument", help="enable instrument sounds", action="store_true"
-    )
-    parser.add_argument(
-        "--dev", help="load short sequence for testing", action="store_true"
-    )
-    parser.add_argument("--verbose", help="enable debug logs", action="store_true")
-    args = parser.parse_args()
-    set_log_level("DEBUG" if args.verbose else "INFO")
-
-    # setup eye-tracker
-    if args.eye_tracker:
-        import_optional_dependency("pylink", raise_error=True)
-        if sys.platform == "linux":
-            import_optional_dependency("wx", raise_error=True)
-        from ..eye_link import Eyelink
-
-        directory = str(Path().home() / "cardio-audio-sleep-eye-tracker")
-        os.makedirs(directory, exist_ok=True)
-        fname = datetime.now().strftime("%m%dh%I")
-        eye_link = Eyelink(directory, fname)
-    else:
-        from ..eye_link import EyelinkMock
-
-        eye_link = EyelinkMock()
-
-    # ask for ECG channel name if it's not provided as argument
-    ecg_ch_name = input_ecg_ch_name() if args.ecg is None else args.ecg
-
-    app = QApplication([])
-    window = GUI(ecg_ch_name, eye_link, args.instrument, args.dev)
-    window.show()
-    app.exec()
+from .. import set_log_level
+from ..detector import _BUFSIZE
+from ..tasks import asynchronous as asynchronous_task
+from ..tasks import baseline as baseline_task
+from ..tasks import isochronous as isochronous_task
+from ..tasks import synchronous as synchronous_task
+from ..tasks._config import BASELINE_DURATION, INTER_BLOCK_DELAY, ConfigRepr
+from ..utils.blocks import _BLOCKS, generate_blocks_sequence
+from ..utils.logs import logger
+from ._utils import ch_name_ecg, stream, verbose
+from .tasks import asynchronous, baseline, isochronous, synchronous
+from .testing import test_detector, test_sequence, test_triggers
 
 
-def pds():
-    """Entrypoint for pds <command> usage."""
-    parser = argparse.ArgumentParser(
-        prog="CAS - PDS", description="Peak detection settings."
-    )
-    parser.add_argument(
-        "--ecg_ch_name",
-        type=str,
-        metavar="str",
-        help="Name of the ECG channel.",
-        default=None,
-    )
-    parser.add_argument(
-        "--stream_name",
-        type=str,
-        metavar="str",
-        help="Name of the LSL stream.",
-        default=None,
-    )
-    parser.add_argument(
-        "--duration_buffer",
-        type=int,
-        metavar="int",
-        help="Duration of the detector's buffer in seconds.",
-        default=4,
-    )
-    args = parser.parse_args()
-    if args.ecg_ch_name is None:
-        ecg_ch_name = input_ecg_ch_name()
-    else:
-        ecg_ch_name = args.ecg_ch_name
-    height, prominence, width = peak_detection_parameters_tuning(
-        ecg_ch_name, args.stream_name, args.duration_buffer
-    )
-
-    # format output
-    print("-----------------------------------------")
-    print("The peak detection settings selected are:")
-    print(f"Height       ->  {height}")
-    print(f"Prominence   ->  {prominence}")
-    print(f"Width:       ->  {width}")
-    print("-----------------------------------------")
+@click.group()
+def run():
+    """Entry point to start the tasks."""
+    config = ConfigRepr()
+    click.echo(config)
 
 
-def test():
-    """Run test on the LSL stream and triggers."""
-    parser = argparse.ArgumentParser(prog="CAS - Test", description="Test CAS system.")
-    parser.parse_args()
+@click.command()
+@click.option(
+    "--n-blocks", prompt="Number of blocks", help="Number of blocks.", type=int
+)
+@stream
+@ch_name_ecg
+@verbose
+def paradigm(
+    n_blocks: int,
+    stream: str,
+    ch_name_ecg: str,
+    verbose: str,
+) -> None:
+    """Run the paradigm, alternating between blocks."""
+    set_log_level(verbose)
+    if n_blocks <= 0:
+        raise ValueError(f"Number of blocks must be positive. '{n_blocks}' is invalid.")
+    # prepare mapping between function and block name
+    mapping_func = {
+        "baseline": baseline_task,
+        "isochronous": isochronous_task,
+        "asynchronous": asynchronous_task,
+        "synchronous": synchronous_task,
+    }
+    assert len(set(mapping_func) - set(_BLOCKS)) == 0  # sanity-check
+    # prepare mapping between argument and block name
+    mapping_args = {
+        "baseline": [BASELINE_DURATION],
+        "isochronous": [None],
+        "asynchronous": [None],
+        "synchronous": [stream, ch_name_ecg],
+    }
+    assert len(set(mapping_args) - set(_BLOCKS)) == 0  # sanity-check
 
-    # look for the LSL stream
-    logger.info("Looking for LSL stream..")
-    try:
-        stream_name = search_amplifier(AMPLIFIER)
-        logger.info("LSL stream found!")
-    except RuntimeError:
-        logger.error(
-            "LSL stream could not be found. Is the amplifier "
-            "correctly connected and the LSL app started? "
-            "Aborting further tests.."
-        )
-        return None
+    # execute paradigm loop
+    blocks = list()
+    while len(blocks) < n_blocks:
+        blocks.append(generate_blocks_sequence(blocks))
+        logger.info("Running block %i / %i: %s.", len(blocks), n_blocks, blocks[-1])
+        start = time.time()
+        result = mapping_func[blocks[-1]](*mapping_args[blocks[-1]])
+        end = time.time()
+        logger.info("Block '%s' took %.3f seconds.", blocks[-1], end - start - _BUFSIZE)
+        # prepare arguments for future blocks if we just ran a synchronous block
+        if result is not None:
+            # sanity-check
+            assert blocks[-1] == "synchronous"
+            assert isinstance(result, np.ndarray)
+            assert result.ndim == 1
+            assert result.size != 0
+            mapping_args["baseline"][0] = end - start - _BUFSIZE
+            mapping_args["asynchronous"][0] = result
+            delay = np.median(np.diff(result))
+            mapping_args["isochronous"][0] = delay
+            logger.info("Median delay between R-peaks set to %.3f seconds.", delay)
+        # prepare keyword argument for future blocks if we just ran 4 blocks
+        time.sleep(INTER_BLOCK_DELAY)
+    logger.info("Paradigm complete.")
 
-    # check the sampling rate
-    stream_names, stream_infos = list_lsl_streams(ignore_markers=True)
-    idx = stream_names.index(stream_name)
-    sinfo = stream_infos[idx]
-    if sinfo.nominal_srate() == 1024:
-        logger.info("ANT LSL stream sampling rate is correctly set at 1024 Hz.")
-    else:
-        logger.error(
-            "ANT LSL stream sampling rate is not correctly set! "
-            "Currently %s Hz, while 1024 Hz is expected! "
-            "Aborting further tests..",
-            sinfo.nominal_srate(),
-        )
-        return None
 
-    # check the trigger
-    triggers = dict()
-    try:
-        trigger = ParallelPortTrigger("/dev/parport0", delay=5)
-        triggers["lpt"] = trigger
-    except Exception:
-        pass
-    try:
-        trigger = ParallelPortTrigger("arduino", delay=5)
-        triggers["arduino"] = trigger
-    except Exception:
-        pass
-    try:
-        trigger = SerialTrigger()
-        triggers["serial"] = trigger
-    except Exception:
-        pass
-
-    if len(triggers) == 0:
-        logger.error(
-            "Could not find a parallel port or an arduino to parallel port converter. "
-            "Aborting further tests.."
-        )
-        return None
-    elif len(triggers) != 1:
-        logger.error("Found multiple triggers connected.")
-        return None
-
-    # check the trigger pins
-    logger.info(
-        "Testing all the triggers. Please look at a viewer and "
-        "confirm that each value is correctly displayed."
-    )
-    tdef = load_triggers()
-    for value in tdef.by_value:
-        logger.info("Testing trigger %i..", value)
-        trigger.signal(value)
-        time.sleep(1)
-
-    # clean-up
-    del trigger
+run.add_command(baseline)
+run.add_command(isochronous)
+run.add_command(asynchronous)
+run.add_command(synchronous)
+run.add_command(paradigm)
+run.add_command(test_detector)
+run.add_command(test_sequence)
+run.add_command(test_triggers)

@@ -1,4 +1,4 @@
-from ._version import __version__  # noqa: F401
-from .detector import Detector  # noqa: F401
-from .detector_tuning import peak_detection_parameters_tuning  # noqa: F401
-from .utils._logs import logger, set_log_level  # noqa: F401
+from . import detector, record, tasks, trigger, utils, viz
+from ._version import __version__
+from .utils.config import sys_info
+from .utils.logs import add_file_handler, set_log_level

@@ -50,6 +50,7 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+junit-results.xml
 
 # Translations
 *.mo
@@ -68,12 +69,9 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
-docs/generated/
-docs/auto_examples/
-doc/generated/
-doc/auto_examples/
 doc/_build/
+doc/generated/
+doc/api/generated/
 
 # PyBuilder
 target/
@@ -124,5 +122,5 @@ dmypy.json
 # PyCharm
 **/.idea/
 
-# Eye-tracker
-*.EDF
+# VSCode
+.vscode

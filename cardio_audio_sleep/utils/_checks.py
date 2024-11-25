@@ -1,23 +1,25 @@
-"""Utility functions for checking types and values. Inspired from MNE."""
+from __future__ import annotations
 
 import logging
 import operator
 import os
 from pathlib import Path
-from typing import Union
+from typing import TYPE_CHECKING
 
 import numpy as np
-from bsl.triggers import TriggerDef
-from numpy.typing import ArrayLike
+
+from ._docs import fill_doc
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
-def _ensure_int(item, item_name=None):
-    """
-    Ensure a variable is an integer.
+def ensure_int(item: Any, item_name: str | None = None) -> int:
+    """Ensure a variable is an integer.
 
     Parameters
     ----------
-    item : object
+    item : Any
         Item to check.
     item_name : str | None
         Name of the item to show inside the error message.
@@ -36,17 +38,17 @@ def _ensure_int(item, item_name=None):
             raise TypeError
         item = int(operator.index(item))
     except TypeError:
-        item_name = "Item" if item_name is None else "'%s'" % item_name
-        raise TypeError("%s must be an int, got %s instead." % (item_name, type(item)))
+        item_name = "Item" if item_name is None else f"'{item_name}'"
+        raise TypeError(f"{item_name} must be an integer, got {type(item)} instead.")
 
     return item
 
 
 class _IntLike:
     @classmethod
-    def __instancecheck__(cls, other):
+    def __instancecheck__(cls, other: Any) -> bool:
         try:
-            _ensure_int(other)
+            ensure_int(other)
         except TypeError:
             return False
         else:
@@ -55,21 +57,21 @@ class _IntLike:
 
 class _Callable:
     @classmethod
-    def __instancecheck__(cls, other):
+    def __instancecheck__(cls, other: Any) -> bool:
         return callable(other)
 
 
 _types = {
     "numeric": (np.floating, float, _IntLike()),
     "path-like": (str, Path, os.PathLike),
-    "int": (_IntLike(),),
+    "int-like": (_IntLike(),),
     "callable": (_Callable(),),
+    "array-like": (list, tuple, set, np.ndarray),
 }
 
 
-def _check_type(item, types, item_name=None):
-    """
-    Check that item is an instance of types.
+def check_type(item: Any, types: tuple, item_name: str | None = None) -> None:
+    """Check that item is an instance of types.
 
     Parameters
     ----------
@@ -77,8 +79,8 @@ def _check_type(item, types, item_name=None):
         Item to check.
     types : tuple of types | tuple of str
         Types to be checked against.
-        If str, must be one of:
-            ('int', 'str', 'numeric', 'path-like', 'callable')
+        If str, must be one of ('int-like', 'numeric', 'path-like', 'callable',
+        'array-like').
     item_name : str | None
         Name of the item to show inside the error message.
 
@@ -89,11 +91,11 @@ def _check_type(item, types, item_name=None):
     """
     check_types = sum(
         (
-            (
-                (type(None),)
-                if type_ is None
-                else (type_,) if not isinstance(type_, str) else _types[type_]
-            )
+            (type(None),)
+            if type_ is None
+            else (type_,)
+            if not isinstance(type_, str)
+            else _types[type_]
             for type_ in types
         ),
         (),
@@ -101,11 +103,11 @@ def _check_type(item, types, item_name=None):
 
     if not isinstance(item, check_types):
         type_name = [
-            (
-                "None"
-                if cls_ is None
-                else cls_.__name__ if not isinstance(cls_, str) else cls_
-            )
+            "None"
+            if cls_ is None
+            else cls_.__name__
+            if not isinstance(cls_, str)
+            else cls_
             for cls_ in types
         ]
         if len(type_name) == 1:
@@ -115,30 +117,30 @@ def _check_type(item, types, item_name=None):
         else:
             type_name[-1] = "or " + type_name[-1]
             type_name = ", ".join(type_name)
-        item_name = "Item" if item_name is None else "'%s'" % item_name
+        item_name = "Item" if item_name is None else f"'{item_name}'"
         raise TypeError(
-            f"{item_name} must be an instance of {type_name}, "
-            f"got {type(item)} instead."
+            f"{item_name} must be an instance of {type_name}, got {type(item)} instead."
         )
 
-    return item
 
-
-def _check_value(item, allowed_values, item_name=None, extra=None):
-    """
-    Check the value of a parameter against a list of valid options.
+def check_value(
+    item: Any,
+    allowed_values: tuple | dict[Any, Any],
+    item_name: str | None = None,
+    extra: str | None = None,
+) -> None:
+    """Check the value of a parameter against a list of valid options.
 
     Parameters
     ----------
     item : object
         Item to check.
-    allowed_values : tuple of objects
-        Allowed values to be checked against.
+    allowed_values : tuple of objects | dict of objects
+        Allowed values to be checked against. If a dictionary, checks against the keys.
     item_name : str | None
         Name of the item to show inside the error message.
     extra : str | None
-        Extra string to append to the invalid value sentence, e.g.
-        "when using ico mode".
+        Extra string to append to the invalid value sentence, e.g. "when using DC mode".
 
     Raises
     ------
@@ -146,7 +148,7 @@ def _check_value(item, allowed_values, item_name=None, extra=None):
         When the value of the item is not one of the valid options.
     """
     if item not in allowed_values:
-        item_name = "" if item_name is None else " '%s'" % item_name
+        item_name = "" if item_name is None else f" '{item_name}'"
         extra = "" if extra is None else " " + extra
         msg = (
             "Invalid value for the{item_name} parameter{extra}. "
@@ -154,11 +156,11 @@ def _check_value(item, allowed_values, item_name=None, extra=None):
         )
         allowed_values = tuple(allowed_values)  # e.g., if a dict was given
         if len(allowed_values) == 1:
-            options = "The only allowed value is %s" % repr(allowed_values[0])
+            options = f"The only allowed value is {repr(allowed_values[0])}"
         elif len(allowed_values) == 2:
-            options = "Allowed values are %s and %s" % (
-                repr(allowed_values[0]),
-                repr(allowed_values[1]),
+            options = (
+                f"Allowed values are {repr(allowed_values[0])} "
+                f"and {repr(allowed_values[1])}"
             )
         else:
             options = "Allowed values are "
@@ -168,16 +170,14 @@ def _check_value(item, allowed_values, item_name=None, extra=None):
             msg.format(item_name=item_name, extra=extra, options=options, item=item)
         )
 
-    return item
 
-
-def _check_verbose(verbose: Union[bool, str, int, None]) -> int:
+@fill_doc
+def check_verbose(verbose: Any) -> int:
     """Check that the value of verbose is valid.
 
     Parameters
     ----------
-    verbose : bool | str | int | None
-        The verbosity level.
+    %(verbose)s
 
     Returns
     -------
@@ -192,13 +192,13 @@ def _check_verbose(verbose: Union[bool, str, int, None]) -> int:
         CRITICAL=logging.CRITICAL,
     )
 
-    _check_type(verbose, (bool, str, "int", None), item_name="verbose")
+    check_type(verbose, (bool, str, "int-like", None), item_name="verbose")
 
     if verbose is None:
         verbose = logging.WARNING
     elif isinstance(verbose, str):
         verbose = verbose.upper()
-        _check_value(verbose, logging_types, item_name="verbose")
+        check_value(verbose, logging_types, item_name="verbose")
         verbose = logging_types[verbose]
     elif isinstance(verbose, bool):
         if verbose:
@@ -206,89 +206,42 @@ def _check_verbose(verbose: Union[bool, str, int, None]) -> int:
         else:
             verbose = logging.WARNING
     elif isinstance(verbose, int):
+        verbose = ensure_int(verbose)
         if verbose <= 0:
             raise ValueError(
-                "Argument 'verbose' can not be a negative integer, "
-                f"{verbose} is invalid."
+                f"Argument 'verbose' can not be a negative integer, {verbose} is "
+                "invalid."
             )
 
     return verbose
 
 
-def _check_tdef(tdef: TriggerDef) -> TriggerDef:
-    """Check that the trigger definition contains all the required keys."""
-    _check_type(tdef, (TriggerDef,), "tdef")
-    keys = (
-        "sound",
-        "omission",
-        "sync_start",
-        "sync_stop",
-        "iso_start",
-        "iso_stop",
-        "async_start",
-        "async_stop",
-        "baseline_start",
-        "baseline_stop",
-    )
-    assert all(hasattr(tdef, attribute) for attribute in keys)
-    return TriggerDef
+def ensure_path(item: Any, must_exist: bool) -> Path:
+    """Ensure a variable is a Path.
 
+    Parameters
+    ----------
+    item : Any
+        Item to check.
+    must_exist : bool
+        If True, the path must resolve to an existing file or directory.
 
-def _check_sequence(sequence: ArrayLike, tdef: TriggerDef) -> ArrayLike:
-    """Check that the sequence is valid."""
-    _check_type(sequence, (list, tuple, np.ndarray), "sequence")
-    if isinstance(sequence, (list, tuple)):
-        sequence = np.array(sequence)
-    elif len(sequence.shape) != 1:
-        raise ValueError(
-            "Argument 'sequence' should be a 1D iterable and not a "
-            f"{len(sequence.shape)}D iterable. "
+    Returns
+    -------
+    path : Path
+        Path validated and converted to a pathlib.Path object.
+    """
+    try:
+        item = Path(item)
+    except TypeError:
+        try:
+            str_ = f"'{str(item)}' "
+        except Exception:
+            str_ = ""
+        raise TypeError(
+            f"The provided path {str_}is invalid and can not be converted. Please "
+            f"provide a str, an os.PathLike or a pathlib.Path object, not {type(item)}."
         )
-
-    valids = (tdef.sound, tdef.omission)
-    if any(elt not in valids for elt in sequence):
-        raise ValueError(
-            "Unknown value within 'sequence'. All elements should be among "
-            f"'{valids}'."
-        )
-
-    return sequence
-
-
-def _check_sequence_timings(
-    sequence_timings: ArrayLike,
-    sequence: ArrayLike,
-    min_distance: Union[int, float] = 0.1,  # sound duration
-) -> ArrayLike:
-    """Check that the sequence timings are valid."""
-    _check_type(sequence_timings, (list, tuple, np.ndarray), "sequence_timings")
-    if isinstance(sequence_timings, (list, tuple)):
-        sequence_timings = np.array(sequence_timings)
-    elif len(sequence_timings.shape) != 1:
-        raise ValueError(
-            "Argument 'sequence_timings' should be a 1D iterable and not a "
-            f"{len(sequence_timings.shape)}D iterable. "
-        )
-
-    if sequence.size != sequence_timings.size:
-        raise ValueError(
-            "Arguments 'sequence' and 'sequence_timings' did not have the "
-            "same number of elements."
-        )
-
-    if any(elt < 0 for elt in sequence_timings):
-        raise ValueError(
-            "All sequence timings should be strictly positive integers, "
-            "except the first timing equal to 0."
-        )
-
-    if sequence_timings[0] != 0:
-        sequence_timings -= sequence_timings[0]
-
-    if any(elt <= min_distance for elt in np.diff(sequence_timings)):
-        raise ValueError(
-            "All sequence timings should be separated by at least "
-            f"{min_distance} seconds."
-        )
-
-    return sequence_timings
+    if must_exist and not item.exists():
+        raise FileNotFoundError(f"The provided path '{str(item)}' does not exist.")
+    return item

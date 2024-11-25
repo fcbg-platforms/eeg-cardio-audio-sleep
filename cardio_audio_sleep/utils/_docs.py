@@ -4,64 +4,67 @@ Inspired from mne: https://mne.tools/stable/index.html
 Inspired from mne.utils.docs.py by Eric Larson <larson.eric.d@gmail.com>
 """
 
+from __future__ import annotations
+
 import sys
-from typing import Callable, List
+from typing import TYPE_CHECKING
 
-# ------------------------- Documentation dictionary -------------------------
-docdict = dict()
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import Any
 
-# ----------------------------------- tasks ----------------------------------
-docdict[
-    "task_verbose"
-] = """
-verbose : bool
-    If True, a timer is logged with the info level every second."""
-docdict[
-    "trigger"
-] = """
-trigger : Trigger
-    A combination of a BSL trigger instance and of a mock or real eye-link."""
-docdict[
-    "volume"
-] = """
-volume : float
-    Sound volume between 0 (mute) and 100."""
-docdict[
-    "instrument"
-] = """
-instrument : Path | None
-    Path to the instrument sound to play. If None, instrument sounds are
-    disabled."""
-docdict[
-    "n_instrument"
-] = """
-n_instrument : int
-    Number of instrument sounds played after the pure tone if instrument is not
-    None."""
-docdict[
-    "sequence"
-] = """
-sequence : array
-    Sequence of stimulus/omissions.
-    1 corresponds to a stound stimulus. 2 corresponds to an omission."""
-docdict[
-    "disable_end_trigger"
-] = """
-disable_end_trigger : bool
-    If True, disable the end of block trigger."""
+# -- Documentation dictionary ----------------------------------------------------------
+docdict: dict[str, str] = dict()
 
-# --------------------------------- eye-tracker ------------------------------
-docdict[
-    "eye_link"
-] = """
-eye_link : Eyelink
-    Eyelink class which communicates with the Eye-Tracker device."""
+# -- A ---------------------------------------------------------------------------------
+# -- B ---------------------------------------------------------------------------------
+# -- C ---------------------------------------------------------------------------------
+# -- D ---------------------------------------------------------------------------------
+# -- E ---------------------------------------------------------------------------------
+docdict["ecg_ch_name"] = """
+ecg_ch_name : str | None
+    Name of the ECG channel in the LSL stream. This channel should contain the ECG
+    signal recorded with 2 bipolar electrodes."""
 
-# ------------------------- Documentation functions --------------------------
-docdict_indented = dict()
+# -- F ---------------------------------------------------------------------------------
+# -- G ---------------------------------------------------------------------------------
+# -- H ---------------------------------------------------------------------------------
+# -- I ---------------------------------------------------------------------------------
+# -- J ---------------------------------------------------------------------------------
+# -- K ---------------------------------------------------------------------------------
+# -- L ---------------------------------------------------------------------------------
+# -- M ---------------------------------------------------------------------------------
+# -- N ---------------------------------------------------------------------------------
+# -- O ---------------------------------------------------------------------------------
+# -- P ---------------------------------------------------------------------------------
+# -- Q ---------------------------------------------------------------------------------
+# -- R ---------------------------------------------------------------------------------
+# -- S ---------------------------------------------------------------------------------
+docdict["stream_name"] = """
+stream_name : str
+    Name of the LSL stream to use for the cardiac detection. The stream should contain
+    an ECG channel."""
+
+# -- T ---------------------------------------------------------------------------------
+# -- U ---------------------------------------------------------------------------------
+# -- V ---------------------------------------------------------------------------------
+docdict["verbose"] = """
+verbose : int | str | bool | None
+    Sets the verbosity level. The verbosity increases gradually between ``"CRITICAL"``,
+    ``"ERROR"``, ``"WARNING"``, ``"INFO"`` and ``"DEBUG"``. If None is provided, the
+    verbosity is set to ``"WARNING"``. If a bool is provided, the verbosity is set to
+    ``"WARNING"`` for False and to ``"INFO"`` for True."""
+
+# -- W ---------------------------------------------------------------------------------
+# -- X ---------------------------------------------------------------------------------
+# -- Y ---------------------------------------------------------------------------------
+# -- Z ---------------------------------------------------------------------------------
+
+# -- Documentation functions -----------------------------------------------------------
+docdict_indented: dict[int, dict[str, str]] = dict()
 
 
-def fill_doc(f: Callable) -> Callable:
+def fill_doc(f: Callable[..., Any]) -> Callable[..., Any]:
     """Fill a docstring with docdict entries.
 
     Parameters
@@ -104,19 +107,19 @@ def fill_doc(f: Callable) -> Callable:
     return f
 
 
-def _indentcount_lines(lines: List[str]) -> int:
+def _indentcount_lines(lines: list[str]) -> int:
     """Minimum indent for all lines in line list.
 
-    >>> lines = [' one', '  two', '   three']
+    >>> lines = [" one", "  two", "   three"]
     >>> indentcount_lines(lines)
     1
     >>> lines = []
     >>> indentcount_lines(lines)
     0
-    >>> lines = [' one']
+    >>> lines = [" one"]
     >>> indentcount_lines(lines)
     1
-    >>> indentcount_lines(['    '])
+    >>> indentcount_lines(["    "])
     0
     """
     indent = sys.maxsize
@@ -126,19 +129,17 @@ def _indentcount_lines(lines: List[str]) -> int:
         line_stripped = line.lstrip()
         if line_stripped:
             indent = min(indent, len(line) - len(line_stripped))
-    if indent == sys.maxsize:
-        return 0
     return indent
 
 
-def copy_doc(source: Callable) -> Callable:
+def copy_doc(source: Callable[..., Any]) -> Callable[..., Any]:
     """Copy the docstring from another function (decorator).
 
-    The docstring of the source function is prepepended to the docstring of the
-    function wrapped by this decorator.
+    The docstring of the source function is prepepended to the docstring of the function
+    wrapped by this decorator.
 
-    This is useful when inheriting from a class and overloading a method. This
-    decorator can be used to copy the docstring of the original method.
+    This is useful when inheriting from a class and overloading a method. This decorator
+    can be used to copy the docstring of the original method.
 
     Parameters
     ----------
@@ -159,17 +160,17 @@ def copy_doc(source: Callable) -> Callable:
     >>> class B(A):
     ...     @copy_doc(A.m1)
     ...     def m1():
-    ...         ''' this gets appended'''
+    ...         '''this gets appended'''
     ...         pass
     >>> print(B.m1.__doc__)
     Docstring for m1 this gets appended
     """
 
-    def wrapper(func):
+    def wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
         if source.__doc__ is None or len(source.__doc__) == 0:
             raise RuntimeError(
-                f"The docstring from {source.__name__} could not be copied "
-                "because it was empty."
+                f"The docstring from {source.__name__} could not be copied because it "
+                "was empty."
             )
         doc = source.__doc__
         if func.__doc__ is not None:

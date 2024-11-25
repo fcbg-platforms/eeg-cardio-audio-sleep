@@ -1,130 +1,148 @@
 [build-system]
-requires = ['setuptools >= 61.0.0']
 build-backend = 'setuptools.build_meta'
+requires = ['setuptools >= 64.0.0']
 
 [project]
-name = 'cardio_audio_sleep'
-version = '0.5.0.dev'
-description = 'Cardio-audio-sleep study.'
-readme = 'README.md'
-license = {file = 'LICENSE'}
-requires-python = '>=3.9'
 authors = [
-    {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'},
-]
-maintainers = [
-    {name = 'Mathieu Scheltienne', email = 'mathieu.scheltienne@fcbg.ch'},
-]
-keywords = [
-    'python',
-    'neuroscience',
-    'neuroimaging',
-    'sleep',
+  {email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne'},
 ]
 classifiers = [
-    'Operating System :: Microsoft :: Windows',
-    'Operating System :: Unix',
-    'Operating System :: MacOS',
-    'Programming Language :: Python :: 3 :: Only',
-    'Programming Language :: Python :: 3.9',
-    'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.11',
-    'Natural Language :: English',
-    'License :: OSI Approved :: MIT License',
-    'Intended Audience :: Science/Research',
-    'Topic :: Scientific/Engineering',
+  'License :: OSI Approved :: MIT License',
+  'Natural Language :: English',
+  'Operating System :: MacOS',
+  'Operating System :: Microsoft :: Windows',
+  'Operating System :: Unix',
+  'Programming Language :: Python :: 3 :: Only',
+  'Programming Language :: Python :: 3.10',
+  'Programming Language :: Python :: 3.11',
+  'Programming Language :: Python :: 3.12',
 ]
 dependencies = [
-    'byte_triggers',
-    'bsl==0.6.4',
-    'matplotlib',
-    'mne>=1.0.0',
-    'numpy>=1.21',
-    'packaging',
-    'pandas',
-    'psutil',
-    'psychopy',
-    'PyQt5',
-    'pyserial',
-    'pyxdf',
-    'scipy',
-    'stimuli>=0.4.1',
+  'click>=8.1',
+  'mne-lsl>=1.4.0',
+  'mne>=1.6',
+  'numpy>=1.21,<2.0',
+  'packaging',
+  'psutil',
+  'psychopy',
+  'psychtoolbox',
+  'pyserial',
+  'stimuli[pport]>=1.0.2',
 ]
+description = 'Project to study sound stimulus synchronous, asynchronous and isochronous with the heartbeat during sleep.'
+keywords = [
+  'audio',
+  'cardiac',
+  'eeg',
+  'python',
+  'sleep',
+]
+license = {file = 'LICENSE'}
+maintainers = [
+  {email = 'mathieu.scheltienne@fcbg.ch', name = 'Mathieu Scheltienne'},
+]
+name = 'cardio_audio_sleep'
+readme = 'README.md'
+requires-python = '>=3.10'
+version = '1.0.0.dev0'
 
 [project.optional-dependencies]
-build = ['build', 'twine']
-style = ['black', 'codespell', 'isort', 'pydocstyle[toml]', 'ruff']
 all = [
-    'cardio_audio_sleep[build]',
-    'cardio_audio_sleep[style]',
+  'cardio_audio_sleep[build]',
+  'cardio_audio_sleep[style]',
+  'cardio_audio_sleep[test]',
 ]
-full = ['cardio_audio_sleep[all]']
+build = [
+  'build',
+  'twine',
+]
+full = [
+  'cardio_audio_sleep[all]',
+]
+style = [
+  'codespell[toml]>=2.2.4',
+  'pre-commit',
+  'ruff>=0.6.0',
+  'toml-sort',
+  'yamllint',
+]
+test = [
+  'pytest-cov',
+  'pytest-timeout',
+  'pytest>=8.0',
+]
+
+[project.scripts]
+cas = 'cardio_audio_sleep.commands.main:run'
+cas-sys_info = 'cardio_audio_sleep.commands.sys_info:run'
 
 [project.urls]
-homepage = 'https://github.com/fcbg-platforms/eeg-cardio-audio-sleep'
-documentation = 'https://github.com/fcbg-platforms/eeg-cardio-audio-sleep'
 source = 'https://github.com/fcbg-platforms/eeg-cardio-audio-sleep'
 tracker = 'https://github.com/fcbg-platforms/eeg-cardio-audio-sleep/issues'
 
-[project.scripts]
-cas = 'cardio_audio_sleep.commands.main:cas'
-cas-sys_info = 'cardio_audio_sleep.commands.sys_info:run'
-cas_test = 'cardio_audio_sleep.commands.main:test'
-pds = 'cardio_audio_sleep.commands.main:pds'
+[tool.codespell]
+check-filenames = true
+check-hidden = true
+ignore-words = '.codespellignore'
+skip = 'build,.git,.mypy_cache,.pytest_cache'
+
+[tool.coverage.report]
+exclude_lines = [
+  'if __name__ == .__main__.:',
+  'if TYPE_CHECKING:',
+  'pragma: no cover',
+]
+precision = 2
+
+[tool.coverage.run]
+branch = true
+cover_pylib = false
+omit = [
+  '**/__init__.py',
+  '**/conftest.py',
+  '**/cardio_audio_sleep/_version.py',
+  '**/cardio_audio_sleep/utils/_fixes.py',
+  '**/tests/**',
+]
+
+[tool.pytest.ini_options]
+addopts = ['--color=yes', '--cov-report=', '--durations=20', '--junit-xml=junit-results.xml', '--strict-config', '--tb=short', '-ra', '-v']
+junit_family = 'xunit2'
+minversion = '8.0'
+
+[tool.ruff]
+extend-exclude = []
+line-length = 88
+
+[tool.ruff.format]
+docstring-code-format = true
+line-ending = "lf"
+
+[tool.ruff.lint]
+ignore = []
+select = ['A', 'B', 'D', 'E', 'F', 'G', 'I', 'LOG', 'NPY', 'PIE', 'PT', 'T20', 'UP', 'W']
+
+[tool.ruff.lint.per-file-ignores]
+'*' = [
+  'B904', # 'Within an except clause, raise exceptions with raise ... from ...'
+  'D100', # 'Missing docstring in public module'
+  'D104', # 'Missing docstring in public package'
+  'D107', # 'Missing docstring in __init__'
+]
+'__init__.py' = ['F401']
+
+[tool.ruff.lint.pydocstyle]
+convention = 'numpy'
+ignore-decorators = ["cardio_audio_sleep.utils._docs.copy_doc"]
 
 [tool.setuptools]
 include-package-data = false
 
 [tool.setuptools.packages.find]
-include = ['cardio_audio_sleep*']
 exclude = ['cardio_audio_sleep*tests']
+include = ['cardio_audio_sleep*']
 
-[tool.setuptools.package-data]
-"cardio_audio_sleep.audio" = ["*/*.wav"]
-"cardio_audio_sleep.config" = ["*.ini"]
-"cardio_audio_sleep.visuals" = ["*.png"]
-
-[tool.black]
-line-length = 88
-target-version = ['py39']
-include = '\.pyi?$'
-extend-exclude = '''
-(
-      __pycache__
-    | .github
-    | .ruff_cache
-    | setup.py
-    | script/
-    | data/
-)
-'''
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-line_length = 88
-py_version = 39
-extend_skip_glob = [
-    'setup.py',
-    'script/*',
-    'data/*',
-]
-
-[tool.pydocstyle]
-convention = 'numpy'
-ignore-decorators = '(copy_doc|property|.*setter|.*getter|pyqtSlot|Slot)'
-match = '^(?!setup|__init__|test_).*\.py'
-match-dir = '^cardio_audio_sleep.*'
-add_ignore = 'D100,D104,D107'
-
-[tool.ruff]
-line-length = 88
-extend-exclude = [
-    "doc",
-    "setup.py",
-    "script/",
-    "data/",
-]
-
-[tool.ruff.per-file-ignores]
-"__init__.py" = ["F401"]
+[tool.tomlsort]
+all = true
+ignore_case = true
+trailing_comma_inline_array = true

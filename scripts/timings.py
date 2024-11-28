@@ -151,7 +151,7 @@ events = events[idx_events, 0]
 delays_sample = events - peaks
 delays_ms = delays_sample * 1000 / raw.info["sfreq"]
 f, ax = plt.subplots(1, 2, layout="constrained")
-f.suptitle("Task: synchronous respiration - target: 50 ms post peak")
+f.suptitle("Task: synchronous - target: 50 ms post peak")
 ax[0].hist(
     delays_sample,
     bins=np.arange(np.min(delays_sample) - 0.5, np.max(delays_sample) + 1.5, 1),

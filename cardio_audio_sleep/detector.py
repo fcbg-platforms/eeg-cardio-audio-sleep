@@ -107,7 +107,7 @@ class Detector:
             differs.
         """
         self._stream = StreamLSL(bufsize, name=stream_name).connect(
-            acquisition_delay=0, processing_flags="all"
+            acquisition_delay=None, processing_flags="all"
         )
         if recorder:
             self._stream.pick([TRG_CHANNEL, self._ecg_ch_name])

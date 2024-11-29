@@ -70,7 +70,7 @@ def _mock_lsl_stream(raw_samples, request):
 @pytest.mark.usefixtures("_mock_lsl_stream")
 def test_recorder(raw_samples: BaseRaw, tmp_path: Path):
     """Test the recorder class."""
-    stream = StreamLSL(bufsize=4).connect(acquisition_delay=0)
+    stream = StreamLSL(bufsize=4).connect(acquisition_delay=None)
     assert stream.ch_names == raw_samples.ch_names
     channels = [stream.ch_names[0], stream.ch_names[-1]]
     recorder = Recorder(stream, channels, bufsize=10)
